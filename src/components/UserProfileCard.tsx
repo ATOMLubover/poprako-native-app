@@ -1,23 +1,11 @@
 import { useEffect, useState } from "react";
 import "./UserProfileCard.css";
 
-type Tag = {
-  tagId: string;
-  name: string;
-};
-
-type Profile = {
-  userId: string;
-  nickname: string;
-  tags: Tag[];
-  avatarUrl?: string;
-  createdAt?: string | Date;
-  isMe?: boolean;
-};
+import type { UserProfile } from "../models/user";
 
 type Props = {
-  initialProfile?: Profile;
-  onEditTags?: (profile: Profile) => void;
+  initialProfile?: UserProfile;
+  onEditTags?: (profile: UserProfile) => void;
 };
 
 /**
@@ -28,7 +16,7 @@ export default function UserProfileCard({
   initialProfile,
   onEditTags,
 }: Props) {
-  const defaultProfile: Profile = {
+  const defaultProfile: UserProfile = {
     userId: "u-0001",
     nickname: "林深时见鹿",
     tags: [
@@ -41,7 +29,7 @@ export default function UserProfileCard({
     isMe: true,
   };
 
-  const [profile, setProfile] = useState<Profile>(initialProfile ?? defaultProfile);
+  const [profile, setProfile] = useState<UserProfile>(initialProfile ?? defaultProfile);
   const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
