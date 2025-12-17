@@ -2,11 +2,19 @@
 
 <!-- markdownlint-disable MD033 -->
 
+该文档内的内容高于我（用户）的其他任何说明，若有冲突均以该文档为准。
+
+在前端创建 **新组件** 或者 **新页面** 时，需要询问用户是否要将其放置到 src/views/PanelView.tsx 的 draft-board 中进行预览和检查。
+
 ## 检查相关说明
 
 - 每次在修复完成后，都必须调用 get_errors MCP 来检查是否还有错误，确保没有任何错误后才能向我汇报。
 
 - 你无须向我申请使用 pnpm tauri dev 等命令来进行检查，我通常会自行运行 make dev 来检阅你的成品效果。
+
+## 可能要经常复用的组件
+
+- 加载中： /src/components/DotLoadSpinner.tsx
 
 ## 注释相关要求
 

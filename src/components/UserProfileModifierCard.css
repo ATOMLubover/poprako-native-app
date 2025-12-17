@@ -1,0 +1,121 @@
+.modifier-card {
+  width: 100%;
+  max-width: 340px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.05);
+  animation: slideUp 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.header {
+  margin-bottom: 18px;
+  text-align: center;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #2d3748;
+  font-weight: 600;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  color: #718096;
+  margin-bottom: 8px;
+  font-weight: 600;
+  padding-left: 4px;
+}
+
+.input-control {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #edf2f7;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #4a5568;
+  box-sizing: border-box;
+  transition: all 0.22s ease;
+  background-color: #fafcff;
+}
+
+.input-control:focus {
+  outline: none;
+  border-color: #C8E6C9;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(200, 230, 201, 0.25);
+}
+
+.input-control::placeholder {
+  color: #cbd5e0;
+}
+
+textarea.input-control {
+  resize: none;
+  height: 84px;
+  line-height: 1.5;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-cancel {
+  background-color: #f1f5f9;
+  color: #64748b;
+}
+
+.btn-cancel:hover {
+  background-color: #e2e8f0;
+  color: #475569;
+}
+
+.btn-save {
+  background-color: #E8F6EA;
+  color: #4b6b50;
+  border: 1px solid #C8E6C9;
+}
+
+.btn-save:hover {
+  background-color: #DBEFD9;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(200, 230, 201, 0.32);
+}
+
+.btn-save:active {
+  transform: translateY(0);
+}
+
+.counter {
+  font-size: 12px;
+  color: #c0c7cf;
+  text-align: right;
+  margin-top: 6px;
+}

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import TestComponent from "../components/TestComponent";
+import UserProfileCard from "../components/UserProfileCard";
 import Icon from "../components/Icon";
 import "./PanelView.css";
 
@@ -31,7 +31,11 @@ export default function PanelView() {
   const renderContent = () => {
     switch (activeItem) {
       case "draft-board":
-        return <TestComponent />;
+        return (
+          <div style={{ display: "flex", justifyContent: "center", paddingTop: 18 }}>
+            <UserProfileCard />
+          </div>
+        );
       case "dashboard":
         return <div>实时概览页面开发中</div>;
       case "messages":

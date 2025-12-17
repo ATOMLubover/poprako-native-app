@@ -1,0 +1,51 @@
+.profile-card {
+  width: 100%;
+  max-width: 380px;
+  background-color: #ffffff;
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.03);
+  display: flex;
+  gap: 14px;
+  box-sizing: border-box;
+  transition: transform 0.22s ease;
+  animation: fadeIn 0.34s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.avatar-container { flex-shrink: 0; }
+
+.avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 3px solid #E6F0F5;
+  transition: all 0.22s;
+}
+
+.avatar:hover { transform: scale(1.04); border-color: #A3C9CC; }
+
+.info-container { flex-grow: 1; display: flex; flex-direction: column; align-items: flex-start; }
+
+.nickname { font-size: 18px; font-weight: 600; color: #333333; margin-bottom: 10px; line-height: 1.18; }
+
+.tags-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
+
+.created-at { font-size: 13px; color: #7d8995; margin-top: 12px; width: 100%; display: flex; justify-content: flex-end; align-items: center; }
+.clock-icon { margin-right: 6px; font-size: 14px; color: #7d8995; }
+
+.nature-tag { display: inline-flex; align-items: center; padding: 6px 12px; border: 2px solid transparent; border-radius: 999px; cursor: pointer; transition: all 0.16s ease-in-out; font-size: 13px; font-weight: 500; white-space: nowrap; }
+.nature-tag:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+
+.theme-mist { background-color: #E3F2E5; border-color: #C8E6C9; color: #749577; }
+.theme-mist:hover { background-color: #D1E8D5; border-color: #bce0bd; }
+
+.edit-tag-button { background-color: #F0F4F8; border-color: #DDE2E7; color: #5A6978; padding: 6px 8px; }
+.edit-tag-button svg { display: block; }
+
+.local-toast { position: fixed; top: 18px; right: 18px; background: #fff; padding: 8px 14px; border: 1px solid #E2E6EA; border-radius: 8px; box-shadow: 0 6px 18px rgba(0,0,0,0.06); z-index: 9999; }
