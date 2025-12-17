@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>汉化组信息卡片</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap');
+
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --accent-green: #749577;
+            --accent-green-light: #E3F2E5;
+            --border-color: #e2e8f0;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        /* 卡片主体 */
+        .team-card {
+            width: 100%;
+            max-width: 420px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .team-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.06);
+        }
+
+        /* 顶部布局 */
+        .card-header {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        /* 头像部分 */
+        .avatar-wrapper {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        /* 字符头像样式 */
+        .team-avatar-char {
+            width: 80px;
+            height: 80px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #E3F2E5 0%, #C8E6C9 100%);
+            border: 3px solid #fff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--accent-green);
+            user-select: none;
+            transition: all 0.3s ease;
+        }
+
+        /* 隐藏状态指示器 */
+        .status-badge {
+            position: absolute;
+            bottom: -5px;
+            right: -5px;
+            background: #fff;
+            padding: 2px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #cbd5e1; /* 默认灰色 */
+        }
+
+        .status-dot.active {
+            background: #10b981; /* 在线/可见 */
+        }
+
+        /* 文字信息 */
+        .team-info {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .team-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 0 0 4px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .team-signature {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* 数据统计栏 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding-top: 16px;
+            border-top: 1px dashed var(--border-color);
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            background: #f8fafc;
+            border-radius: 12px;
+            transition: background 0.2s;
+        }
+
+        .stat-item:hover {
+            background: var(--accent-green-light);
+        }
+
+        .stat-icon {
+            color: var(--accent-green);
+            display: flex;
+            align-items: center;
+        }
+
+        .stat-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+
+        /* 隐藏提示标签 */
+        .hidden-overlay {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #fee2e2;
+            color: #ef4444;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 999px;
+            display: none;
+        }
+
+        .is-hidden .hidden-overlay {
+            display: block;
+        }
+        
+        .is-hidden .team-avatar-char {
+            filter: grayscale(0.8);
+            opacity: 0.7;
+            background: #e2e8f0;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 汉化组卡片组件 -->
+    <div id="team-card-container">
+        <!-- 动态注入内容 -->
+    </div>
+
+    <script>
+        /**
+         * 模拟父组件注入的数据结构
+         */
+        const teamData = {
+            teamId: "白杨汉化组",
+            signature: "落英缤纷，寻向所志。我们专注于东方漫画翻译。",
+            memberNum: 24,
+            comicNum: 158,
+            isHidden: false
+        };
+
+        /**
+         * 渲染函数
+         * @param {TeamProfile} profile 
+         */
+        function renderTeamCard(profile) {
+            const container = document.getElementById('team-card-container');
+            
+            // 获取团队名称的第一个字符
+            const firstChar = profile.teamId ? profile.teamId.charAt(0) : '?';
+
+            const cardHtml = `
+                <div class="team-card ${profile.isHidden ? 'is-hidden' : ''}">
+                    <!-- 隐藏提示 -->
+                    <div class="hidden-overlay">已隐藏</div>
+
+                    <div class="card-header">
+                        <!-- 左侧头像：使用首字符渲染 -->
+                        <div class="avatar-wrapper">
+                            <div class="team-avatar-char">
+                                ${firstChar}
+                            </div>
+                            <div class="status-badge">
+                                <div class="status-dot ${profile.isHidden ? '' : 'active'}"></div>
+                            </div>
+                        </div>
+
+                        <!-- 右侧信息 -->
+                        <div class="team-info">
+                            <h3 class="team-name">${profile.teamId}</h3>
+                            <p class="team-signature" title="${profile.signature}">${profile.signature}</p>
+                        </div>
+                    </div>
+
+                    <!-- 底部统计 -->
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            </div>
+                            <div class="stat-content">
+                                <span class="stat-value">${profile.memberNum.toLocaleString()}</span>
+                                <span class="stat-label">成员</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <!-- 翻开的书籍图标 (Book Open) -->
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                                </svg>
+                            </div>
+                            <div class="stat-content">
+                                <span class="stat-value">${profile.comicNum.toLocaleString()}</span>
+                                <span class="stat-label">作品</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = cardHtml;
+        }
+
+        // 执行渲染
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTeamCard(teamData);
+        });
+    </script>
+</body>
+</html>

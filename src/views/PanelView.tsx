@@ -1,5 +1,6 @@
 import { useState } from "react";
 import UserProfileCard from "../components/UserProfileCard";
+import TeamProfileCard from "../components/TeamProfileCard";
 import Icon from "../components/Icon";
 import "./PanelView.css";
 
@@ -32,8 +33,9 @@ export default function PanelView() {
     switch (activeItem) {
       case "draft-board":
         return (
-          <div style={{ display: "flex", justifyContent: "center", paddingTop: 18 }}>
+          <div style={{ display: "flex", justifyContent: "center", paddingTop: 18, gap: 24 }}>
             <UserProfileCard />
+            <TeamProfileCard />
           </div>
         );
       case "dashboard":

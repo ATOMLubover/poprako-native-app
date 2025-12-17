@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "./UserProfileCard.css";
 
 import type { UserProfile } from "../models/user";
+import NatureTag from "./NatureTag";
 
 type Props = {
   initialProfile?: UserProfile;
@@ -75,9 +76,7 @@ export default function UserProfileCard({
 
         <div className="tags-container">
           {profile.tags.map((t) => (
-            <button key={t.tagId} className="nature-tag theme-mist" title={t.name}>
-              <span className="tag-label">{t.name}</span>
-            </button>
+            <NatureTag key={t.tagId} tag={t} theme="theme-mist" />
           ))}
 
           {profile.isMe ? (
