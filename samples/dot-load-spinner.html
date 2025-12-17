@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>波浪跳动加载动画 - 定制版</title>
+    <style>
+        /* 页面居中容器 */
+        .loading-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f9fafb; /* 定制：背景颜色 */
+        }
+
+        /* 动画主体容器 */
+        .dot-flashing {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px; /* 【可定制】圆点之间的间距 */
+        }
+
+        /* 单个圆点的基本样式 */
+        .dot-flashing div {
+            width: 12px;  /* 【可定制】圆点宽度 */
+            height: 12px; /* 【可定制】圆点高度 */
+            background-color: #3b82f6; /* 【可定制】圆点主色调 */
+            border-radius: 50%; /* 保持圆形 */
+            
+            /* 动画参数：
+               - dot-pulse: 动画关键帧名称
+               - 1s: 【可定制】循环周期总时长
+               - infinite: 永久循环
+               - ease-in-out: 缓动效果（平滑起步和结束）
+            */
+            animation: dot-pulse 1s infinite ease-in-out;
+        }
+
+        /* 【可定制】波浪感延迟设置：
+           通过设置不同的延迟（animation-delay），使圆点看起来像在“排队”跳动。
+           延迟时间越接近，跳动越紧凑；延迟差距越大，波浪感越明显。
+        */
+        .dot-flashing div:nth-child(2) {
+            animation-delay: 0.2s; /* 第二个点的延迟时间 */
+        }
+
+        .dot-flashing div:nth-child(3) {
+            animation-delay: 0.4s; /* 第三个点的延迟时间 */
+        }
+
+        /* 定义动画行为：
+           0% 和 100% 代表开始和结束状态
+           50% 代表中间状态
+        */
+        @keyframes dot-pulse {
+            0%, 100% {
+                transform: scale(0.5); /* 【可定制】缩小的比例（0.5即一半大小） */
+                opacity: 0.3;          /* 【可定制】最小状态时的透明度 */
+            }
+            50% {
+                transform: scale(1);   /* 【可定制】放大的比例（1即原始大小） */
+                opacity: 1;            /* 【可定制】最大状态时的透明度 */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 
+       复用说明：
+       直接复制下方 div 结构到你的项目中，并确保上面的 CSS 样式已加载。
+       如果需要更多圆点，只需添加 <div></div> 并相应增加 CSS 中的 nth-child 延迟。
+    -->
+    <div class="loading-wrapper">
+        <div class="dot-flashing">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+    </div>
+
+</body>
+</html>

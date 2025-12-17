@@ -1,86 +1,127 @@
-### Purpose
+# 对 Copilot 的说明和要求文档
 
-Provide concise, actionable guidance for AI coding agents working on this Tauri + React + TypeScript repo.
+<!-- markdownlint-disable MD033 -->
 
-### Big picture
+## 检查相关说明
 
-- **Stack:** Vite (frontend) + React + TypeScript + Tauri (Rust backend). Frontend lives in `src/`; native integration and Rust code live in `src-tauri/`.
-- **Data flow:** Frontend calls Rust commands via `invoke(...)` (see `src/App.tsx`), Rust exposes handlers with `#[tauri::command]` (see `src-tauri/src/lib.rs`) and registers them with `invoke_handler` in `run()`.
-- **Build outputs:** Frontend dist is `dist/` (configured in `src-tauri/tauri.conf.json` as `frontendDist: ../dist`). Rust build artifacts live in `src-tauri/target/`.
+- 每次在修复完成后，都必须调用 get_errors MCP 来检查是否还有错误，确保没有任何错误后才能向我汇报。
 
-### Key files to inspect
+- 你无须向我申请使用 pnpm tauri dev 等命令来进行检查，我通常会自行运行 make dev 来检阅你的成品效果。
 
-- `package.json` — frontend scripts: `dev`, `build`, `preview`, `tauri` (runs the Tauri CLI).
-- `vite.config.ts` — important dev settings: Vite server port `1420`, `strictPort: true`, HMR host/port logic (env `TAURI_DEV_HOST`), and `watch.ignored` excludes `src-tauri`.
-- `src/App.tsx` — example of frontend -> backend pattern using `invoke("greet", { name })`.
-- `src-tauri/tauri.conf.json` — Tauri dev/build hooks: `beforeDevCommand: pnpm dev`, `devUrl: http://localhost:1420`, `beforeBuildCommand: pnpm build`.
-- `src-tauri/Cargo.toml` — Rust crate configuration. Note special `lib.name = "__letter_lib"` used to avoid name collisions on Windows.
+## 注释相关要求
 
-### Developer workflows / useful commands
+- 所有注释均使用中文。
 
-- Install deps (pnpm is used in `tauri.conf.json`):
+- 需要的是备忘录式的注释，而不是教学式的注释
 
-  - `pnpm install`
+## React（前端）部分相关要求
 
-- Run frontend only (fast iteration):
+- 文件组织方式：
 
-  - `pnpm dev` (runs Vite on `:1420`)
+  - 按照功能模块进行文件夹划分，每个功能模块一个文件夹。
 
-- Run the full Tauri dev environment (recommended):
+  - 每个功能模块内，按组件、页面、接口等进行二级划分。
 
-  - `pnpm run tauri dev`
+  - 公共组件放在 /src/components 下，公共页面放在 /src/views 下，公共接口放在 /src/api 下，公共样式放在 /src/styles 下，Tauri IPC 函数的 wrapper 放在 /src/ipc 下。
 
-  This triggers `beforeDevCommand` (frontend dev server), points to `devUrl`, and launches the Tauri runtime.
+  - 在各个大功能文件夹下，使用文件区分不同 domain 的子功能模块。比如 /src/ipc/project.ts、/src/ipc/file.ts 等。
 
-- Build production frontend + bundle native app:
+- 风格、配色参考用的纯 html 文件放在 /samples/ 目录下。
 
-  - `pnpm run tauri build` (runs `pnpm build` first per `tauri.conf.json`)
+- 除非一个大括号作用块内只有一行或两行代码，否则任意两个语句之间都需要添加空格（除非是强相关的几个变量的声明）。
 
-### Project-specific conventions & gotchas
+  例如：
 
-- Vite uses a fixed port (`1420`) and `strictPort: true` — do not change without updating `src-tauri/tauri.conf.json` `devUrl`.
-- HMR can be configured for remote development via `TAURI_DEV_HOST` env var; when set, HMR uses port `1421`.
-- `vite.config.ts` sets `clearScreen: false` so Rust/Tauri error output remains visible in the terminal.
-- `src-tauri` is intentionally excluded from Vite watch to avoid rebuild loops — direct edits in `src-tauri` require a Tauri/Rust rebuild.
-- Rust lib name uses `__letter_lib` (see `src-tauri/Cargo.toml`) to avoid Windows naming collisions; keep that unless you understand the platform implications.
+  ```ts
+  // 单行的例子
+  function singleLine() {
+    console.log("Single line");
+  }
 
-### Integration patterns (examples to follow)
+  // 双行的例子
+  function doubleLines() {
+    console.log("Double lines");
+    return "Ok";
+  }
 
-- Frontend -> Rust command: in `src/App.tsx`:
+  // 多行的例子（要添加空行）
+  function multiLines() {
+    console.log("Mulitple lines");
 
-  - `const resp = await invoke("greet", { name })`
+    let result = await someFunc();
 
-- Rust command handler: in `src-tauri/src/lib.rs`:
+    return result;
+  }
+  ```
 
-  - `#[tauri::command]
-fn greet(name: &str) -> String { ... }`
+- 打日志时，首字母大写，但是不添加 “.” 句号结尾。有错误或上下文时添加进日志。
 
-  - Registered with `tauri::generate_handler![greet]` inside `run()`.
+- 严格遵循 TypeScript 语法，不允许任何的 any，必须使用 type 进行指名（注意不是 interface）。
 
-### External dependencies / plugins
+- 组件、页面需要实现高内聚低耦合，如子组件所需要的状态从父页面注入。
 
-- Frontend: `@tauri-apps/api`, `@tauri-apps/plugin-opener` — used for platform APIs and opener plugin (registered in Rust with `tauri_plugin_opener::init()`).
-- Rust: `tauri`, `tauri-build`, `serde`, `serde_json` — check `src-tauri/Cargo.toml` for versions and features.
+- 注释流程时，不要给注释中添加流程序号，因为流程很可能更改。
 
-### What an AI agent should do first
+- 一个模拟 mock 函数，必须以 \_\_mock 开头，这样方便后期去除 mock。
 
-- Read `vite.config.ts`, `src-tauri/tauri.conf.json`, and `src-tauri/Cargo.toml` to understand dev/build hooks and port assumptions.
-- Search for `invoke(` usages in `src/` to find existing frontend->Rust interactions (pattern: action name string and argument shape).
-- When modifying backend commands, update both Rust handler signatures and all frontend `invoke` call sites.
+- 在模板中直接使用的函数不允许是 mock 的，mock 的逻辑应该在该模版引用的函数中使用。比如模板直接引用 onClick={() => doSomething()}，则 doSomething 不能是 mock 的，mock 逻辑应该在 doSomething 内部实现，例如：
 
-### When to run tests / builds locally
+  ```ts
+  function doSomething() {
+    if (isMock) {
+      __mockDoSomething();
+      return;
+    }
 
-- There are no automated tests in the repo. Validate changes by running the dev workflow:
+    // 正常逻辑
+  }
+  ```
 
-  - `pnpm install`
-  - `pnpm run tauri dev`
+- 整体风格简约、现代、干净、自然。
 
-  Observe Vite output on port `1420` and Tauri logs in the same terminal. For release builds, run `pnpm run tauri build`.
+- 无须适配暗色模式，只需要亮色模式。
 
-### If you need clarification
+- 可以使用天蓝色等让人感觉轻松的颜色进行配色，颜色要求统一、清淡。
 
-- Ask which environment the maintainer uses (`pnpm` vs `npm` vs `yarn`) and whether changing fixed ports or the Rust lib name is allowed.
+- 要求简洁，减少文字，优先使用图标（简约！！），能让人一看自明。允许引入一些图标库。
 
----
+## Rust 后端部分
 
-Please review and tell me if you want additional details (e.g., example code snippets, tests, or CI steps).
+- IPC 函数（即 tauri::command 指定的函数）必须放在 /src-tauri/src/ipc mod 下，且按 domain 进行文件划分。
+
+- 对于每一个使用 ? 进行传播的 Result，必须在引入 crate::result_trace 模块后，使用 ResultTrace trait 的 .trace_debug("some message") **等**方法进行错误追踪。你需要自行决定使用什么级别的 trace 方法（trace_debug、trace_info、trace_warn、trace_error）。
+
+- 除非一个大括号作用块内只有一行或两行代码（与 React 部分要求相同），否则任意两个语句之间都需要添加空格（除非是强相关的几个变量的声明）。
+
+  例如：
+
+  ```rust
+  // 单行的例子
+  pub async fn single_line() {
+      some_func().await;
+  }
+
+  // 双行的例子
+  fn double_lines() -> i32 {
+      let some_val = func();
+      return some_val;
+  }
+
+  // 多行的例子（要添加空行）
+  fn multi_lines() -> anyhow::Result<()> {
+      let prev_index = foo();
+      let prev_term = bar();
+
+      let result = calc(prev_index, prev_term)?;
+
+      Ok(result)
+  }
+  ```
+
+- 对于 tauri::command 指定的函数，必须使用 #[tracing::instrument] 宏进行函数调用追踪。
+
+- 在书写带有 DTO 定义的函数时，不要先把所有 DTO 写出再写 fn，而是将 DTO 与 fn 分组，按一类 DTO + fn 的周期从上到下依次编写。
+
+- 在一些重要或过长的函数中，需要使用 tracing::debug! 来书写报错日志。但是注意，debug 日志可以不用是结构化的，而是语义化的。
+
+- 注释使用中文，但是日志使用英文。
