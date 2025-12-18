@@ -4,6 +4,8 @@ import "./UserProfileCard.css";
 import type { UserProfile } from "../models/user";
 import type { SavePayload } from "./UserProfileModifierCard";
 import NatureTag from "./NatureTag";
+import NatureButton from "./NatureButton";
+import Icon from "./Icon";
 import UserProfileModifierCard from "./UserProfileModifierCard";
 
 type Props = {
@@ -26,6 +28,7 @@ export default function UserProfileCard({
       { tagId: "t-003", name: "纯爱" },
     ],
     avatarUrl: "https://placehold.co/72x72/81C784/ffffff?text=L",
+    signature: "树深时见鹿，溪午不闻钟。",
     createdAt: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
     isMe: true,
   };
@@ -52,6 +55,7 @@ export default function UserProfileCard({
     setProfile((prev) => ({
       ...prev,
       nickname: payload.nickname,
+      signature: payload.signature,
     }));
     setShowModifierModal(false);
   }
@@ -74,28 +78,30 @@ export default function UserProfileCard({
             img.src = "https://placehold.co/72x72/A3C9CC/ffffff?text=U";
           }}
         />
+        {profile.isMe ? (
+          <div style={{ marginTop: 8 }}>
+            <NatureButton variant="cloud" onClick={handleEditProfile}>
+              修改
+            </NatureButton>
+          </div>
+        ) : null}
       </div>
 
       <div className="info-container">
         <span className="nickname">{profile.nickname}</span>
 
+        {profile.signature ? (
+          <p className="user-signature" title={profile.signature}>{profile.signature}</p>
+        ) : null}
+
         <div className="tags-container">
           {profile.tags.map((t) => (
             <NatureTag key={t.tagId} tag={t} theme="theme-mist" />
           ))}
-
-          {profile.isMe ? (
-            <button className="nature-tag edit-tag-button" title="修改信息" onClick={handleEditProfile}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                <path d="m15 5 4 4" />
-              </svg>
-            </button>
-          ) : null}
         </div>
 
         <span className="created-at">
-          <span className="clock-icon">CREATED AT</span>
+          <Icon name="clock" className="clock-icon" />
           {formatDate(profile.createdAt)}
         </span>
       </div>
@@ -105,6 +111,7 @@ export default function UserProfileCard({
           <div className="modal-container" onClick={(e) => e.stopPropagation()}>
             <UserProfileModifierCard
               initialNickname={profile.nickname}
+              initialSignature={profile.signature}
               onSave={handleSaveProfile}
             />
             <button

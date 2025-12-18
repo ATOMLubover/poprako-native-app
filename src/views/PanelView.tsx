@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Icon from "../components/Icon";
-import NatureButton from "../components/NatureButton";
+import UserProfileCard from "../components/UserProfileCard";
 import "./PanelView.css";
 
 type MenuItem = "draft-board" | "dashboard" | "messages" | "analytics" | "resources" | "settings";
@@ -33,26 +33,13 @@ export default function PanelView() {
       case "draft-board":
         return (
           <div style={{ display: "flex", flexDirection: "column", gap: 12, paddingTop: 18, height: "100%", minHeight: 0 }}>
-            {/* 草稿板仅保留 NatureButton 供预览检查 */}
+            {/* 草稿板仅保留 UserProfileCard 供预览检查 */}
             <div style={{ flex: 1, minHeight: 0 }}>
               <div className="nb-card">
-                <div className="nb-section-title">Nature Button — Draft Preview</div>
-                <div className="nb-row">
-                  <NatureButton variant="mist">晨雾绿</NatureButton>
-                  <NatureButton variant="rose">晚霞粉</NatureButton>
-                  <NatureButton variant="cloud">云舒蓝</NatureButton>
-                  <NatureButton variant="clay">幽谷灰</NatureButton>
-                </div>
+                <div className="nb-section-title">User Profile — Draft Preview</div>
 
-                <div className="nb-row">
-                  <NatureButton variant="outline">硬核描边</NatureButton>
-                  <NatureButton variant="glass">圆润磨砂</NatureButton>
-                </div>
-
-                <div style={{ marginTop: 10 }}>
-                  <NatureButton variant="cloud" onClick={async () => { await new Promise((r) => setTimeout(r, 1200)); }}>
-                    确认提交
-                  </NatureButton>
+                <div className="nb-row" style={{ gap: 12, alignItems: "center" }}>
+                  <UserProfileCard />
                 </div>
               </div>
             </div>

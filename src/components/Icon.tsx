@@ -1,6 +1,6 @@
 import React from "react";
 import type { SVGProps } from "react";
-import { Settings as LucideSettings, TreePine as LucideTreePine } from "lucide-react";
+import { Settings as LucideSettings, TreePine as LucideTreePine, Clock as LucideClock } from "lucide-react";
 
 type IconProps = {
   name: string;
@@ -29,6 +29,10 @@ export default function Icon({ name, size = 19, className }: IconProps) {
 
   if (name === "tree-pine") {
     return <LucideTreePine size={size} className={className} />;
+  }
+
+  if (name === "clock") {
+    return <LucideClock size={size} className={className} />;
   }
 
   switch (name) {

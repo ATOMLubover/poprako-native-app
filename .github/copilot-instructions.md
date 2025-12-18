@@ -14,9 +14,13 @@
 
 - 你无须向我申请使用 pnpm tauri dev 等命令来进行检查，我通常会自行运行 make dev 来检阅你的成品效果。
 
-## 可能要经常复用的组件
+## 复用的组件
 
-- 加载中： /src/components/DotLoadSpinner.tsx
+- 加载占位符： /src/components/DotLoadSpinner.tsx
+
+- 按钮： /src/components/NatureButton.tsx, /src/components/NatureSwitchButton.tsx
+
+- TAG： /src/components/NatureTag.tsx
 
 ## 注释相关要求
 
@@ -90,8 +94,6 @@
 - 整体风格简约、现代、干净、自然。
 
 - 无须适配暗色模式，只需要亮色模式。
-
-- 可以使用天蓝色等让人感觉轻松的颜色进行配色，颜色要求统一、清淡。
 
 - 要求简洁，减少文字，优先使用图标（简约！！），能让人一看自明。允许引入一些图标库。
 

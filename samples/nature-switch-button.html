@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>圆润明晰·自然切换按钮</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500&display=swap');
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #f8f9fa; 
+            color: #333;
+        }
+
+        /* 基础按钮样式 */
+        .btn-base {
+            padding: 12px 32px;
+            border-radius: 9999px;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid transparent; 
+            outline: none;
+            position: relative;
+            letter-spacing: 0.5px;
+            background-color: white !important; /* 强制背景始终为白色 */
+        }
+
+        /* 状态 1：关闭状态 (基于云舒蓝) */
+        .btn-switch-off {
+            color: #5676a1;
+            border-color: #cfe2f5;
+        }
+        .btn-switch-off:hover {
+            border-color: #a3c7eb;
+            transform: translateY(-1px);
+        }
+
+        /* 状态 2：开启状态 (基于晨雾绿) */
+        .btn-switch-on {
+            color: #436d58;
+            border-color: #8fbc9f; /* 明显的绿色边框 */
+        }
+        .btn-switch-on:hover {
+            border-color: #6da383;
+            transform: translateY(-1px);
+        }
+
+        /* 点击缩放反馈 */
+        .btn-base:active {
+            transform: scale(0.95) !important;
+        }
+
+        /* 加载中状态微调 */
+        .is-loading {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 40px;
+            padding: 60px 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.02);
+            max-width: 600px;
+            margin: 80px auto;
+            border: 1px solid #f0f0f0;
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #cbd5e0;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-12">
+
+    <div class="card">
+        <h2 class="section-title">双向切换按钮 (Switch Toggle)</h2>
+        
+        <div class="flex flex-col items-center gap-6">
+            <!-- 初始状态为关闭 -->
+            <button class="btn-base btn-switch-off" id="switchButton" data-state="off">
+                <span id="btnIcon" class="mr-2">○</span>
+                <span id="btnText">已关闭</span>
+            </button>
+            
+            <p class="text-xs text-gray-400 italic">
+                点击切换状态 • 背景始终保持纯白
+            </p>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * 模拟异步操作（如 API 调用）
+         */
+        async function performToggleAction(targetState) {
+            console.log(`正在切换到: ${targetState}...`);
+            return new Promise((resolve) => setTimeout(resolve, 800));
+        }
+
+        const switchBtn = document.getElementById('switchButton');
+        const btnText = document.getElementById('btnText');
+        const btnIcon = document.getElementById('btnIcon');
+
+        switchBtn.addEventListener('click', async () => {
+            const currentState = switchBtn.getAttribute('data-state');
+            const newState = currentState === 'off' ? 'on' : 'off';
+            
+            // 1. 设置加载状态
+            switchBtn.classList.add('is-loading');
+            const originalText = btnText.innerText;
+            btnText.innerText = "处理中...";
+            
+            try {
+                // 2. 执行注入的逻辑
+                await performToggleAction(newState);
+
+                // 3. 逻辑成功后切换 UI
+                if (newState === 'on') {
+                    // 切换到开启状态
+                    switchBtn.classList.remove('btn-switch-off');
+                    switchBtn.classList.add('btn-switch-on');
+                    switchBtn.setAttribute('data-state', 'on');
+                    btnText.innerText = "已开启";
+                    btnIcon.innerText = "●";
+                } else {
+                    // 切换回关闭状态
+                    switchBtn.classList.remove('btn-switch-on');
+                    switchBtn.classList.add('btn-switch-off');
+                    switchBtn.setAttribute('data-state', 'off');
+                    btnText.innerText = "已关闭";
+                    btnIcon.innerText = "○";
+                }
+            } catch (error) {
+                btnText.innerText = "切换失败";
+                console.error(error);
+            } finally {
+                switchBtn.classList.remove('is-loading');
+            }
+        });
+    </script>
+</body>
+</html>

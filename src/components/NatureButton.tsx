@@ -11,6 +11,8 @@ type NatureButtonProps = {
   loadingText?: string;
   children?: React.ReactNode;
   onClick?: () => void | Promise<void>;
+  /** 最小宽度，可接收数字（像素）或字符串（CSS 单位） */
+  minWidth?: number | string;
 };
 
 /**
@@ -21,6 +23,8 @@ type NatureButtonProps = {
  */
 export default function NatureButton(props: NatureButtonProps) {
   const { variant = "cloud", disabled = false, loadingText = "处理中...", children, onClick } = props;
+
+  const { minWidth } = props;
 
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -69,9 +73,10 @@ export default function NatureButton(props: NatureButtonProps) {
   })();
 
   const classes = ["nb-btn-base", variantClass, disabled ? "nb-disabled" : ""].join(" ");
+  const inlineStyle = minWidth ? { minWidth: typeof minWidth === "number" ? `${minWidth}px` : minWidth } : undefined;
 
   return (
-    <button className={classes} onClick={handleClick} aria-disabled={disabled || loading}>
+    <button className={classes} style={inlineStyle} onClick={handleClick} aria-disabled={disabled || loading}>
       {loading ? loadingText : children}
     </button>
   );
