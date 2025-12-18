@@ -1,0 +1,106 @@
+/* NatureTagLikesButton 专用样式，复用 .nature-tag 基础样式 */
+
+.nature-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.18s ease-in-out;
+  box-sizing: border-box;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* 强制移除阴影，防止其他全局样式（如 UserProfileCard.css）覆盖本组件 */
+.nature-tag,
+.nature-tag:focus,
+.nature-tag:active,
+.nature-tag:hover {
+  box-shadow: none !important;
+}
+
+.tag-label {
+  white-space: nowrap;
+}
+
+.tag-divider {
+  width: 1px;
+  height: 14px;
+  background-color: currentColor;
+  opacity: 0.12;
+  border-radius: 1px;
+}
+
+.tag-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tag-icon {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+  transform-origin: center;
+}
+
+.count {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.nature-tag:hover {
+  transform: translateY(-1px);
+  /* 保持无阴影：交互仅通过位移与图标变换表现 */
+}
+
+.nature-tag:active {
+  transform: translateY(0);
+}
+
+/* hover 时图标放大并微旋转（保留样本的交互反馈） */
+.nature-tag:hover .tag-icon {
+  transform: scale(1.2) rotate(-10deg);
+}
+
+/* 主题配色（与现有 theme 类保持一致） */
+.theme-mist {
+  background-color: #E3F2E5;
+  border: 1px solid #C8E6C9;
+  color: #2E5C33;
+}
+
+.theme-glacier {
+  background-color: #E3F2FD;
+  border: 1px solid #BBDEFB;
+  color: #1565C0;
+}
+
+.theme-sand {
+  background-color: #F0EEE9;
+  border: 1px solid #E0DBCF;
+  color: #5D5448;
+}
+
+/* 不在非 hover 情况下保留阴影：将 liked 的视觉提升仅在 hover 时生效 */
+/* removed empty liked hover shadow rules to avoid empty selector lint errors */
+
+/* 确保 hover 时边框颜色与主题一致 （避免所有主题 hover 时变为蓝色） */
+.theme-mist:hover {
+  border-color: #bce0bd;
+}
+
+.theme-glacier:hover {
+  border-color: #aecdF0;
+}
+
+.theme-sand:hover {
+  border-color: #d6d1c4;
+}

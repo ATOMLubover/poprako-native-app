@@ -29,7 +29,7 @@ export default function UserProfileCard({
     ],
     avatarUrl: "https://placehold.co/72x72/81C784/ffffff?text=L",
     signature: "树深时见鹿，溪午不闻钟。",
-    createdAt: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
+    lastActive: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
     isMe: true,
   };
 
@@ -102,7 +102,7 @@ export default function UserProfileCard({
 
         <span className="created-at">
           <Icon name="clock" className="clock-icon" />
-          {formatDate(profile.createdAt)}
+          {formatDate(profile.lastActive)}
         </span>
       </div>
 

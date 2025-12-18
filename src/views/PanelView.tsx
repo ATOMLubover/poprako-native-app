@@ -1,6 +1,8 @@
 import { useState } from "react";
 import Icon from "../components/Icon";
 import UserProfileCard from "../components/UserProfileCard";
+import NatureTagLikesButton from "../components/NatureTagLikesButton";
+import type { Tag } from "../models/tag";
 import "./PanelView.css";
 
 type MenuItem = "draft-board" | "dashboard" | "messages" | "analytics" | "resources" | "settings";
@@ -10,6 +12,13 @@ type NavItem = {
   icon: string;
   label: string;
 };
+
+// 示例 tag 数据，用于草稿板预览
+const sampleTags: Array<{ tag: Tag; likes: number; theme: string }> = [
+  { tag: { tagId: "1", name: "UI Design Ideas" }, likes: 1024, theme: "theme-mist" },
+  { tag: { tagId: "2", name: "React Components" }, likes: 856, theme: "theme-glacier" },
+  { tag: { tagId: "3", name: "Minimalism" }, likes: 42, theme: "theme-sand" },
+];
 
 /**
  * 主面板视图
@@ -33,7 +42,7 @@ export default function PanelView() {
       case "draft-board":
         return (
           <div style={{ display: "flex", flexDirection: "column", gap: 12, paddingTop: 18, height: "100%", minHeight: 0 }}>
-            {/* 草稿板仅保留 UserProfileCard 供预览检查 */}
+            {/* 草稿板保留 UserProfileCard 供预览检查，同时显示标签草稿预览 */}
             <div style={{ flex: 1, minHeight: 0 }}>
               <div className="nb-card">
                 <div className="nb-section-title">User Profile — Draft Preview</div>
@@ -41,6 +50,21 @@ export default function PanelView() {
                 <div className="nb-row" style={{ gap: 12, alignItems: "center" }}>
                   <UserProfileCard />
                 </div>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 8 }}>
+              <h2 style={{ margin: 0, marginBottom: 14 }}>Draft Board</h2>
+
+              <div style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
+                {sampleTags.map((s) => (
+                  <NatureTagLikesButton
+                    key={s.tag.tagId}
+                    tag={s.tag}
+                    initialLikes={s.likes}
+                    theme={s.theme}
+                  />
+                ))}
               </div>
             </div>
           </div>

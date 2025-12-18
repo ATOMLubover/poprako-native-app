@@ -6,7 +6,7 @@ export type UserProfile = {
   nickname: string;
   tags: Tag[];
   avatarUrl?: string;
-  createdAt?: string | Date;
+  lastActive?: string | Date;
   signature?: string;
   isMe?: boolean;
 };
