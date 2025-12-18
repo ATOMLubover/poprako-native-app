@@ -1,0 +1,23 @@
+.termbase-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.termbase-page .termbase-title {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 16px 0 12px 0;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.termbase-page .termbase-page-content {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 24px 24px 24px;
+}

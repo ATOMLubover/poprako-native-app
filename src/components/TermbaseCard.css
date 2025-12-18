@@ -20,7 +20,8 @@
 
 .termbase-card {
   width: 100%;
-  max-width: 280px;
+  max-width: 250px;
+  min-width: 250px;
   background-color: var(--card-bg);
   border-radius: 12px;
   padding: 12px;

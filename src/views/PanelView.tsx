@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Icon from "../components/Icon";
-import TermbaseCard from "../components/TermbaseCard";
+import TermbasePage from "./TermbasePage";
+import TermbaseList from "../components/TermbaseList";
 import "./PanelView.css";
 
 type MenuItem = "draft-board" | "team-list" | "tag-pool" | "termbase-pool" | "font-repo" | "compressor-helper" | "settings";
@@ -64,27 +65,13 @@ export default function PanelView() {
   const renderContent = () => {
     switch (activeItem) {
       case "draft-board":
-        // draft-board: 仅保留 TermbaseCard 用于测试悬浮窗
-        const mockTermbase = {
-          teamBrief: { teamId: "t-1", name: "白杨" },
-          name: "Demo Termbase",
-          description: "用于测试悬浮式 TermList 弹窗",
-          termNum: 42,
-          createdAt: new Date("2024-01-01"),
-          updatedAt: new Date(),
-        };
-
         return (
           <div style={{ display: "flex", flexDirection: "column", gap: 0, height: "100%", minHeight: 0 }}>
-            <h2 style={{ margin: 0, marginBottom: 10, flexShrink: 0 }}>Draft Board (TermbaseCard Test)</h2>
+            <h2 style={{ margin: 0, marginBottom: 10, flexShrink: 0 }}>Draft Board (TermbaseList Test)</h2>
 
-            <div className="nb-card" style={{ padding: "12px 14px", display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
-              <div className="nb-section-title" style={{ marginBottom: 8, flexShrink: 0 }}>TermbaseCard — Hover to open</div>
-
-              <div style={{ display: "flex", justifyContent: "center", flex: 1, minHeight: 0, overflow: "hidden" }}>
-                <div style={{ width: 600 }}>
-                  <TermbaseCard data={mockTermbase} />
-                </div>
+            <div className="nb-card" style={{ padding: "20px 24px", display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+              <div style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
+                <TermbaseList />
               </div>
             </div>
           </div>
@@ -94,7 +81,7 @@ export default function PanelView() {
       case "tag-pool":
         return <div>漫画标签池页面开发中</div>;
       case "termbase-pool":
-        return <div>术语库页面开发中</div>;
+        return <TermbasePage />;
       case "font-repo":
         return <div>字体仓库页面开发中</div>;
       case "compressor-helper":

@@ -1,0 +1,51 @@
+.termbase-list-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.termbase-list-container .input-section {
+  flex-shrink: 0;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.termbase-list-container .termbase-input {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #d9e2ec;
+  border-radius: 4px;
+  font-size: 13px;
+  outline: none;
+  transition: all 0.12s ease;
+}
+
+.termbase-list-container .termbase-input:focus {
+  border-color: #a3b9cc;
+  box-shadow: 0 0 0 1px rgba(163, 185, 204, 0.12);
+}
+
+.termbase-list-container .termbase-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-content: flex-start;
+}
+
+.termbase-list-container .empty-state {
+  width: 100%;
+  padding: 24px 12px;
+  text-align: center;
+  color: #8794a1;
+  font-size: 13px;
+}
+
+.termbase-list-container .plus-icon {
+  display: block;
+}
