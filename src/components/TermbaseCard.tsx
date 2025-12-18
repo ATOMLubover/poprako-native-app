@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { TermBase } from "../models/term";
 import "./TermbaseCard.css";
 import NatureButton from "./NatureButton";
+import TermList from "./TermList";
 // 使用与 TermCard 相同的 modifier-info 样式替代原有 RectNatureTag
 
 type TermbaseCardProps = {
@@ -20,47 +22,73 @@ function formatNumber(num: number): string {
   return new Intl.NumberFormat().format(num);
 }
 
+// 仅显示字符串的最多前三个字符，用于紧凑展示（完整内容仍在 title 中）
+function shortText(s: string): string {
+  if (s === undefined || s === null) return "-";
+
+  const str = String(s);
+
+  if (str.length <= 4) {
+    return str;
+  }
+
+  return str.slice(0, 4) + "..";
+}
+
 export default function TermbaseCard({ data }: TermbaseCardProps) {
+  const [open, setOpen] = useState(false);
+
   const createdAtStr = formatDate(data.createdAt);
   const updatedAtStr = formatDate(data.updatedAt);
 
   return (
-    <div className="termbase-card">
-      <div className="header">
-        <h2 className="term-name" title={data.name}>
-          {data.name}
-        </h2>
-        <span className="time-range">
-          {createdAtStr} ~ {updatedAtStr}
-        </span>
-      </div>
-
-      <p className="term-description">{data.description || "暂无描述信息"}</p>
-
-      <div className="tags-footer-row">
-        <div className="tags-row">
-        <div className="modifier-info" title={data.teamBrief.name}>
-          <svg width="10" height="10" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-          {data.teamBrief.name}
+    <>
+      <div className="termbase-card">
+        <div className="header">
+          <h2 className="term-name" title={data.name}>
+            {data.name}
+          </h2>
+          <span className="time-range">
+            {createdAtStr} ~ {updatedAtStr}
+          </span>
         </div>
 
-        <div className="modifier-info" title={data.creatorNickname}>
-          <svg width="10" height="10" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          {data.creatorNickname}
-        </div>
+        <p className="term-description">{data.description || "暂无描述信息"}</p>
 
-        <div className="modifier-info" title={String(formatNumber(data.termNum))}>
-          <svg width="10" height="10" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M13 8H7"/><path d="M17 12H7"/></svg>
-          {formatNumber(data.termNum)}
-        </div>
-        </div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <div style={{ display: "flex", gap: 6, alignItems: "center", flex: 1, minWidth: 0 }}>
+            <div className="modifier-info" title={data.teamBrief.name}>
+              <svg width="10" height="10" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+              {shortText(data.teamBrief.name)}
+            </div>
 
-        <div className="card-footer">
-          <NatureButton variant="mist" onClick={() => console.log("View termbase", data.name)} fontSize={11}>
-            查看
-          </NatureButton>
+            <div className="modifier-info" title={String(formatNumber(data.termNum))}>
+              <svg width="10" height="10" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M13 8H7"/><path d="M17 12H7"/></svg>
+              {shortText(formatNumber(data.termNum))}
+            </div>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
+            <NatureButton variant="mist" onClick={() => setOpen(true)} fontSize={11}>
+              查看
+            </NatureButton>
+          </div>
         </div>
       </div>
-    </div>
+
+      {open ? (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
+          <div style={{ width: 700, maxWidth: "95%", height: "85vh", maxHeight: "85vh", background: "#fff", borderRadius: 10, padding: 12, boxShadow: "0 8px 28px rgba(0,0,0,0.25)", display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <div style={{ fontWeight: 600 }}>{data.name}</div>
+            </div>
+
+            <div style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
+              <TermList onExit={() => setOpen(false)} />
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }

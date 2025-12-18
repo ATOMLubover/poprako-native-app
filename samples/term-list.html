@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>术语列表管理 - TermList</title>
+    <!-- 引入 Lucide 图标库用于图标 -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --primary-text: #1e293b;
+            --secondary-text: #64748b;
+            --accent-mist: #f1f5f9;
+            --accent-mist-text: #475569;
+            --border-color: #e2e8f0;
+            --time-text: #94a3b8;
+            --action-color: #6366f1;
+            --input-focus: #818cf8;
+            --transition: all 0.2s ease;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-container {
+            width: 100%;
+            /* 适应两个卡片宽度的精确计算：
+               卡片最大 320px * 2 = 640px
+               间距 (Gap) = 12px
+               容器内边距 (Padding) 20px * 2 = 40px
+               容器边框 (Border) 2px * 2 = 4px
+               总计：696px
+            */
+            max-width: 696px; 
+        }
+
+        /* 输入区域样式：调整为 Flex 布局以支持同行按钮 */
+        .input-section {
+            margin-bottom: 24px;
+            width: 100%;
+            display: flex;
+            gap: 12px;
+        }
+
+        .term-input {
+            flex: 1;
+            box-sizing: border-box;
+            padding: 12px 16px;
+            font-size: 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            outline: none;
+            transition: var(--transition);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .term-input:focus {
+            border-color: var(--input-focus);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+        }
+
+        /* 主添加按钮样式 */
+        .add-main-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0 20px;
+            background-color: var(--action-color);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .add-main-btn:hover {
+            background-color: #4f46e5;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+        }
+
+        .add-main-btn:active {
+            transform: translateY(0);
+        }
+
+        /* 术语列表布局容器（带边框演示边界） */
+        .term-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-content: flex-start;
+            
+            /* 边界演示样式：宽度现已通过父容器 max-width 限制以适应两列卡片 */
+            border: 2px dashed #cbd5e1;
+            padding: 20px;
+            border-radius: 16px;
+            background-color: rgba(226, 232, 240, 0.2);
+            min-height: 400px;
+            box-sizing: border-box;
+        }
+
+        /* 术语卡片样式 */
+        .term-card {
+            flex: 1 1 260px; 
+            max-width: 320px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px 16px;
+            transition: var(--transition);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+        }
+
+        .term-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .term-content {
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 12px;
+            word-break: break-word;
+        }
+
+        .term-original {
+            font-weight: 700;
+            color: var(--primary-text);
+            margin-right: 8px;
+        }
+
+        .term-definition {
+            font-weight: 400;
+            color: var(--secondary-text);
+        }
+
+        .term-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 8px;
+            border-top: 1px solid #f1f5f9;
+            gap: 8px;
+        }
+
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow: hidden;
+        }
+
+        .modifier-info {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: var(--accent-mist-text);
+            background: var(--accent-mist);
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .update-time {
+            font-size: 10px;
+            color: var(--time-text);
+            white-space: nowrap;
+        }
+
+        .edit-btn {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--action-color);
+            padding: 4px 6px;
+            border-radius: 4px;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .edit-btn:hover {
+            background-color: #f5f3ff;
+        }
+
+        /* 搜索为空的状态 */
+        .empty-state {
+            color: var(--secondary-text);
+            text-align: center;
+            width: 100%;
+            padding: 60px 0;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- 搜索区域：现在包含添加按钮 -->
+        <div class="input-section">
+            <input type="text" id="termInput" class="term-input" placeholder="输入搜索词并按 Enter 筛选，或点击添加...">
+            <button class="add-main-btn" onclick="handleAdd()">
+                <i data-lucide="plus" style="width:18px; height:18px;"></i>
+                添加
+            </button>
+        </div>
+
+        <!-- 术语列表 -->
+        <div id="termList" class="term-list">
+            <!-- 术语卡片 -->
+        </div>
+    </div>
+
+    <script>
+        const allTerms = [
+            { termBaseId: "1", original: "ふわふわ", definition: "柔软且轻盈的状态，常形容云朵或蛋糕", modifierNickname: "Hatsu1ki", updatedAt: new Date("2024-01-10") },
+            { termBaseId: "2", original: "Typography", definition: "排版艺术，研究字体的视觉呈现", modifierNickname: "DesignBot", updatedAt: new Date("2024-02-15") },
+            { termBaseId: "3", original: "Debounce", definition: "防抖函数，用于限制高频率执行的函数", modifierNickname: "DevExpert", updatedAt: new Date("2024-03-20") },
+            { termBaseId: "4", original: "API", definition: "应用程序接口，允许不同软件组件进行通信", modifierNickname: "TechLead", updatedAt: new Date("2024-04-05") },
+            { termBaseId: "5", original: "Responsive", definition: "响应式设计，使网页适配不同屏幕尺寸", modifierNickname: "UXMaster", updatedAt: new Date("2024-05-12") },
+            { termBaseId: "6", original: "Komorebi", definition: "日语词汇，指从树叶缝隙中漏下的阳光", modifierNickname: "NihonGo", updatedAt: new Date("2024-05-20") },
+            { termBaseId: "7", original: "Middleware", definition: "中间件，介于操作系统与应用程序之间的软件层", modifierNickname: "BackendDev", updatedAt: new Date("2024-06-01") },
+            { termBaseId: "8", original: "Z-Index", definition: "CSS 属性，控制重叠元素的堆叠顺序", modifierNickname: "FrontendG", updatedAt: new Date("2024-06-05") },
+            { termBaseId: "9", original: "Schema", definition: "数据库模式，描述数据的逻辑结构", modifierNickname: "DBAdmin", updatedAt: new Date("2024-06-10") },
+            { termBaseId: "10", original: "Caching", definition: "缓存技术，通过存储副本加快数据检索速度", modifierNickname: "PerfEng", updatedAt: new Date("2024-06-12") },
+            { termBaseId: "11", original: "Latency", definition: "延迟，指数据从源传输到目的地的时间差", modifierNickname: "NetOps", updatedAt: new Date("2024-06-15") },
+            { termBaseId: "12", original: "Refactoring", definition: "代码重构，优化内部结构", modifierNickname: "CleanCoder", updatedAt: new Date("2024-06-18") }
+        ];
+
+        function renderTermList(termList) {
+            const listContainer = document.getElementById('termList');
+            if (termList.length === 0) {
+                listContainer.innerHTML = '<div class="empty-state">没有找到匹配的术语...</div>';
+                return;
+            }
+
+            listContainer.innerHTML = termList.map(term => {
+                const timeStr = new Date(term.updatedAt).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+                return `
+                    <div class="term-card">
+                        <div class="term-content">
+                            <span class="term-original">${term.original}</span>
+                            <span class="term-definition">${term.definition}</span>
+                        </div>
+                        <div class="term-footer">
+                            <div class="footer-left">
+                                <div class="modifier-info" title="${term.modifierNickname}">
+                                    <i data-lucide="user" style="width:10px; height:10px;"></i>
+                                    ${term.modifierNickname}
+                                </div>
+                                <span class="update-time">${timeStr} 更新</span>
+                            </div>
+                            <button class="edit-btn" onclick="handleEdit(event, '${term.termBaseId}')">
+                                <i data-lucide="pencil" style="width:12px; height:12px;"></i>
+                                修改
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function onEnter(keyword) {
+            const query = keyword.toLowerCase().trim();
+            const filtered = query 
+                ? allTerms.filter(t => t.original.toLowerCase().includes(query) || t.definition.toLowerCase().includes(query))
+                : allTerms;
+            renderTermList(filtered);
+        }
+
+        // 处理添加按钮点击
+        function handleAdd() {
+            const input = document.getElementById('termInput');
+            const val = input.value.trim();
+            if (val) {
+                console.log("执行添加逻辑:", val);
+                // 此处可添加实际的新增逻辑
+                input.value = '';
+                onEnter('');
+            } else {
+                console.log("请输入内容后再添加");
+            }
+        }
+
+        document.getElementById('termInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') onEnter(e.target.value);
+        });
+
+        function handleEdit(event, id) {
+            event.stopPropagation();
+            console.log("编辑:", id);
+        }
+
+        window.onload = () => renderTermList(allTerms);
+    </script>
+</body>
+</html>

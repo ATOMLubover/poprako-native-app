@@ -6,8 +6,6 @@ export type TermBase = {
   name: string;
   description: string;
   termNum: number;
-  creatorId: string;
-  creatorNickname: string;
   createdAt: Date;
   updatedAt: Date;
 };

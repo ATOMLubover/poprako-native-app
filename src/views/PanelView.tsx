@@ -1,7 +1,6 @@
 import { useState } from "react";
 import Icon from "../components/Icon";
-// Draft-board 简化为 SimpleTermCard 预览
-import SimpleTermCard from "../components/SimpleTermCard";
+import TermbaseCard from "../components/TermbaseCard";
 import "./PanelView.css";
 
 type MenuItem = "draft-board" | "team-list" | "tag-pool" | "termbase-pool" | "font-repo" | "compressor-helper" | "settings";
@@ -12,7 +11,37 @@ type NavItem = {
   label: string;
 };
 
-
+/**
+ * draft-board 测试组件注意事项
+ * 
+ * 在 draft-board 中集成需要内部滚动的组件（如 TermList）时，必须确保整个高度约束链路正确传递：
+ * 
+ * 1. 最外层容器：使用 `display: flex; flex-direction: column; height: 100%; minHeight: 0`
+ *    - height: 100% 使其占满父容器（PanelView.main-content）
+ *    - minHeight: 0 允许 flex 在空间不足时收缩子项（关键！）
+ * 
+ * 2. 固定高度项（如 h2 标题）：添加 `flexShrink: 0`
+ *    - 防止 flex 自动压缩该项目，保证其完整显示
+ * 
+ * 3. 卡片容器（.nb-card）：改为 flex 容器
+ *    - `display: flex; flex-direction: column; flex: 1; minHeight: 0`
+ *    - flex: 1 使其占满剩余空间
+ *    - minHeight: 0 允许其进一步压缩内部子项
+ * 
+ * 4. 包裹测试组件的 div：必须指定
+ *    - `flex: 1; minHeight: 0; overflow: hidden`
+ *    - 这样测试组件才能接收完整的可用高度
+ * 
+ * 5. 测试组件本身（如 TermList）：需要支持高度约束
+ *    - 在组件中使用 `height: 100%; overflow-y: auto` 实现内部滚动
+ *    - 结构：`.term-list-container { height: 100%; display: flex; flex-direction: column; min-height: 0; }`
+ * 
+ * 错误示例（会导致无法滚动）：
+ * - 移除 minHeight: 0
+ * - 给中间层设置固定高度
+ * - 忘记在 flex 子项上设置 flex: 1
+ * - 包裹组件的 div 没有 overflow: hidden
+ */
 
 /**
  * 主面板视图
@@ -35,42 +64,26 @@ export default function PanelView() {
   const renderContent = () => {
     switch (activeItem) {
       case "draft-board":
+        // draft-board: 仅保留 TermbaseCard 用于测试悬浮窗
+        const mockTermbase = {
+          teamBrief: { teamId: "t-1", name: "白杨" },
+          name: "Demo Termbase",
+          description: "用于测试悬浮式 TermList 弹窗",
+          termNum: 42,
+          createdAt: new Date("2024-01-01"),
+          updatedAt: new Date(),
+        };
+
         return (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingTop: 12, height: "100%", minHeight: 0 }}>
-            <div style={{ marginTop: 6 }}>
-              <h2 style={{ margin: 0, marginBottom: 10 }}>Draft Board</h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: 0, height: "100%", minHeight: 0 }}>
+            <h2 style={{ margin: 0, marginBottom: 10, flexShrink: 0 }}>Draft Board (TermbaseCard Test)</h2>
 
-              <div style={{ marginTop: 6 }}>
-                <div className="nb-card" style={{ padding: "12px 14px" }}>
-                  <div className="nb-section-title" style={{ marginBottom: 8 }}>SimpleTermCard — Draft Demo</div>
+            <div className="nb-card" style={{ padding: "12px 14px", display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+              <div className="nb-section-title" style={{ marginBottom: 8, flexShrink: 0 }}>TermbaseCard — Hover to open</div>
 
-                  <div style={{ display: "flex", gap: 12, justifyContent: "center", padding: "12px 0", flexWrap: "wrap" }}>
-                    <SimpleTermCard
-                      data={{
-                        termBaseId: "tb-001",
-                        original: "ふわふわ",
-                        definition: "形容柔软且轻盈的状态，常用于描述棉花糖或云朵。",
-                        modifierId: "u-99",
-                        modifierNickname: "Hatsu1ki",
-                        createdAt: new Date("2024-06-10"),
-                        updatedAt: new Date("2024-06-12T10:30:00"),
-                      }}
-                      onClick={(t) => console.log("点击术语", t)}
-                    />
-
-                    <SimpleTermCard
-                      data={{
-                        termBaseId: "tb-002",
-                        original: "ぽかぽか",
-                        definition: "形容温暖舒适的感觉，常用于天气或环境描述。",
-                        modifierId: "u-55",
-                        modifierNickname: "Yuki",
-                        createdAt: new Date("2024-01-02"),
-                        updatedAt: new Date("2024-02-15T09:00:00"),
-                      }}
-                      onClick={(t) => console.log("点击术语", t)}
-                    />
-                  </div>
+              <div style={{ display: "flex", justifyContent: "center", flex: 1, minHeight: 0, overflow: "hidden" }}>
+                <div style={{ width: 600 }}>
+                  <TermbaseCard data={mockTermbase} />
                 </div>
               </div>
             </div>
