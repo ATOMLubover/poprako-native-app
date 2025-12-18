@@ -95,7 +95,7 @@ export default function UserProfileCard({
         </div>
 
         <span className="created-at">
-          <span className="clock-icon">CREATE AT</span>
+          <span className="clock-icon">CREATED AT</span>
           {formatDate(profile.createdAt)}
         </span>
       </div>

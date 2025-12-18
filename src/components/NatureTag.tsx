@@ -1,4 +1,5 @@
 import type { Tag } from "../models/tag";
+import "./NatureTag.css";
 
 type Props = {
   tag: Tag;
@@ -8,7 +9,7 @@ type Props = {
 
 /**
  * 自然风格的 Tag 按钮
- * 简洁的外观，样式由现有的 CSS 类 `nature-tag` 与主题类控制
+ * 简洁的外观，样式由 CSS 类 `nature-tag` 与主题类控制
  */
 export default function NatureTag({ tag, theme = "theme-mist", onClick }: Props) {
   return (

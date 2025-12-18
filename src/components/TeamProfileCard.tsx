@@ -55,7 +55,6 @@ export default function TeamProfileCard({ initial }: Props) {
           </div>
           <div className="stat-content">
             <span className="stat-value">{defaultProfile.memberNum.toLocaleString()}</span>
-            <span className="stat-label">成员</span>
           </div>
         </div>
 
@@ -68,7 +67,6 @@ export default function TeamProfileCard({ initial }: Props) {
           </div>
           <div className="stat-content">
             <span className="stat-value">{defaultProfile.comicNum.toLocaleString()}</span>
-            <span className="stat-label">作品</span>
           </div>
         </div>
       </div>

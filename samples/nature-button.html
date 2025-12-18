@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>圆润明晰·自然按钮系列</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500&display=swap');
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #f8f9fa; 
+            color: #333;
+        }
+
+        /* 基础按钮样式 - 增强圆角与边框 */
+        .btn-base {
+            padding: 12px 32px;
+            border-radius: 9999px; /* 超大圆角 */
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid transparent; /* 边框加粗到 2px */
+            outline: none;
+            position: relative;
+            letter-spacing: 0.5px;
+        }
+
+        /* 1. 晨雾绿 (Morning Mist) */
+        .btn-mist {
+            background-color: #eef7f2;
+            color: #436d58;
+            border-color: #bcdbc9; /* 更加明显的边框 */
+        }
+        .btn-mist:hover {
+            background-color: #d8ede1;
+            border-color: #8fbc9f;
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(67, 109, 88, 0.1);
+        }
+
+        /* 2. 晚霞粉 (Dusty Rose) */
+        .btn-rose {
+            background-color: #fff5f5;
+            color: #a36161;
+            border-color: #f1d1d1;
+        }
+        .btn-rose:hover {
+            background-color: #fbe2e2;
+            border-color: #e3a8a8;
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(163, 97, 97, 0.1);
+        }
+
+        /* 3. 云舒蓝 (Cloud Blue) */
+        .btn-cloud {
+            background-color: #f0f7ff;
+            color: #5676a1;
+            border-color: #cfe2f5;
+        }
+        .btn-cloud:hover {
+            background-color: #e1effe;
+            border-color: #a3c7eb;
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(86, 118, 161, 0.1);
+        }
+
+        /* 4. 幽谷灰 (Soft Clay) */
+        .btn-clay {
+            background-color: #f5f5f5;
+            color: #666666;
+            border-color: #dddddd;
+        }
+        .btn-clay:hover {
+            background-color: #ebebeb;
+            border-color: #bbbbbb;
+            transform: scale(1.05);
+        }
+
+        /* 5. 极简强力描边 (Bold Outline) */
+        .btn-outline {
+            background-color: #ffffff;
+            color: #555555;
+            border: 2px solid #333333; /* 经典黑白高对比 */
+        }
+        .btn-outline:hover {
+            background-color: #333333;
+            color: #ffffff;
+            transform: translateY(-3px);
+        }
+
+        /* 6. 磨砂玻璃 (Frost Glass) */
+        .btn-glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+            color: #444;
+        }
+        .btn-glass:hover {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: #ffffff;
+            transform: translateY(-2px);
+        }
+
+        /* 点击缩放反馈 */
+        .btn-base:active {
+            transform: scale(0.95) !important;
+            filter: brightness(0.9);
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 40px;
+            padding: 60px 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.02);
+            max-width: 850px;
+            margin: 40px auto;
+            border: 1px solid #f0f0f0;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #cbd5e0;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-12">
+
+    <div class="card">
+        <h2 class="section-title">圆润自然色 (Rounded Nature)</h2>
+        <div class="flex flex-wrap justify-center gap-8 mb-16">
+            <button class="btn-base btn-mist">晨雾绿</button>
+            <button class="btn-base btn-rose">晚霞粉</button>
+            <button class="btn-base btn-cloud">云舒蓝</button>
+            <button class="btn-base btn-clay">幽谷灰</button>
+        </div>
+
+        <h2 class="section-title">高辨识度质感 (Distinct Textures)</h2>
+        <div class="flex flex-wrap justify-center gap-8 mb-16">
+            <button class="btn-base btn-outline">硬核描边</button>
+            <button class="btn-base btn-glass">圆润磨砂</button>
+        </div>
+
+        <h2 class="section-title">动态反馈 (Dynamic)</h2>
+        <div class="flex flex-wrap justify-center gap-8">
+            <button class="btn-base btn-mist opacity-40 cursor-not-allowed">不可点击</button>
+            <button class="btn-base btn-cloud" id="loadingBtn">
+                <span id="btnText">确认提交</span>
+            </button>
+        </div>
+
+        <div class="mt-16 text-center text-xs text-gray-300 tracking-widest">
+            2PX BORDER • CAPSULE RADIUS • SOFT TONES
+        </div>
+    </div>
+
+    <script>
+        const loadingBtn = document.getElementById('loadingBtn');
+        const btnText = document.getElementById('btnText');
+
+        loadingBtn.addEventListener('click', () => {
+            const originalText = btnText.innerText;
+            btnText.innerText = "处理中...";
+            loadingBtn.style.pointerEvents = "none";
+            
+            setTimeout(() => {
+                btnText.innerText = "已完成";
+                loadingBtn.classList.remove('btn-cloud');
+                loadingBtn.classList.add('btn-mist'); // 变绿表示成功
+                
+                setTimeout(() => {
+                    btnText.innerText = originalText;
+                    loadingBtn.classList.remove('btn-mist');
+                    loadingBtn.classList.add('btn-cloud');
+                    loadingBtn.style.pointerEvents = "auto";
+                }, 1500);
+            }, 1200);
+        });
+    </script>
+</body>
+</html>

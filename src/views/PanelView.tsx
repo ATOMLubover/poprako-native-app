@@ -1,9 +1,6 @@
 import { useState } from "react";
-import UserProfileCard from "../components/UserProfileCard";
-import TeamProfileCard from "../components/TeamProfileCard";
 import Icon from "../components/Icon";
-import VerticalAdaptiveList from "../components/VerticalAdaptiveList";
-import { smallHeightItems, largeHeightItems } from "../models/adaptiveList";
+import NatureButton from "../components/NatureButton";
 import "./PanelView.css";
 
 type MenuItem = "draft-board" | "dashboard" | "messages" | "analytics" | "resources" | "settings";
@@ -35,25 +32,29 @@ export default function PanelView() {
     switch (activeItem) {
       case "draft-board":
         return (
-          <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingTop: 18, height: "100%", minHeight: 0 }}>
-            <div style={{ display: "flex", gap: 24, justifyContent: "center" }}>
-              <UserProfileCard />
-              <TeamProfileCard />
-            </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, paddingTop: 18, height: "100%", minHeight: 0 }}>
+            {/* 草稿板仅保留 NatureButton 供预览检查 */}
+            <div style={{ flex: 1, minHeight: 0 }}>
+              <div className="nb-card">
+                <div className="nb-section-title">Nature Button — Draft Preview</div>
+                <div className="nb-row">
+                  <NatureButton variant="mist">晨雾绿</NatureButton>
+                  <NatureButton variant="rose">晚霞粉</NatureButton>
+                  <NatureButton variant="cloud">云舒蓝</NatureButton>
+                  <NatureButton variant="clay">幽谷灰</NatureButton>
+                </div>
 
-            <div style={{ display: "flex", gap: 24, justifyContent: "center", paddingBottom: 20, flex: 1, minHeight: 0, overflow: "hidden" }}>
-              <VerticalAdaptiveList
-                items={smallHeightItems}
-                gap={5}
-                title="自适应列表 - 小项目 (40px)"
-                debug={true}
-              />
-              <VerticalAdaptiveList
-                items={largeHeightItems}
-                gap={5}
-                title="自适应列表 - 大项目 (80px)"
-                debug={true}
-              />
+                <div className="nb-row">
+                  <NatureButton variant="outline">硬核描边</NatureButton>
+                  <NatureButton variant="glass">圆润磨砂</NatureButton>
+                </div>
+
+                <div style={{ marginTop: 10 }}>
+                  <NatureButton variant="cloud" onClick={async () => { await new Promise((r) => setTimeout(r, 1200)); }}>
+                    确认提交
+                  </NatureButton>
+                </div>
+              </div>
             </div>
           </div>
         );

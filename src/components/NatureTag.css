@@ -1,0 +1,70 @@
+/* 自然风格 Tag 按钮基础样式，参考 samples/simplified-tag-button.html 的边框和间距 */
+.nature-tag {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 8px 16px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease-in-out;
+  box-sizing: border-box;
+
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1;
+
+  user-select: none;
+  -webkit-user-select: none;
+  background-color: transparent;
+  box-shadow: none;
+}
+
+/* 文本部分，保持不换行 */
+.tag-label {
+  white-space: nowrap;
+}
+
+/* 悬停与按下效果 */
+.nature-tag:hover {
+  transform: translateY(-1px);
+  box-shadow: none;
+}
+
+.nature-tag:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* 主题配色 */
+.theme-mist {
+  background-color: #E3F2E5;
+  border-color: #C8E6C9;
+  color: #2E5C33;
+}
+
+.theme-mist:hover {
+  background-color: #D1E8D5;
+}
+
+.theme-glacier {
+  background-color: #E3F2FD;
+  border-color: #BBDEFB;
+  color: #1565C0;
+}
+
+.theme-glacier:hover {
+  background-color: #d0e9fc;
+}
+
+.theme-sand {
+  background-color: #F0EEE9;
+  border-color: #E0DBCF;
+  color: #5D5448;
+}
+
+.theme-sand:hover {
+  background-color: #e6e2db;
+}

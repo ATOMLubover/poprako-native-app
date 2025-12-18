@@ -1,0 +1,123 @@
+/*
+  来自 samples/nature-button.html 的样式简化版
+  仅用于预览与草稿板展示
+*/
+.nb-btn-base {
+  padding: 12px 32px;
+  border-radius: 9999px;
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid transparent;
+  outline: none;
+  position: relative;
+  letter-spacing: 0.5px;
+}
+
+.nb-mist {
+  background-color: #eef7f2;
+  color: #436d58;
+  border-color: #bcdbc9;
+}
+.nb-mist:hover {
+  background-color: #d8ede1;
+  border-color: #8fbc9f;
+  transform: scale(1.05);
+  box-shadow: 0 6px 15px rgba(67, 109, 88, 0.1);
+}
+
+.nb-rose {
+  background-color: #fff5f5;
+  color: #a36161;
+  border-color: #f1d1d1;
+}
+.nb-rose:hover {
+  background-color: #fbe2e2;
+  border-color: #e3a8a8;
+  transform: scale(1.05);
+  box-shadow: 0 6px 15px rgba(163, 97, 97, 0.1);
+}
+
+.nb-cloud {
+  background-color: #f0f7ff;
+  color: #5676a1;
+  border-color: #cfe2f5;
+}
+.nb-cloud:hover {
+  background-color: #e1effe;
+  border-color: #a3c7eb;
+  transform: scale(1.05);
+  box-shadow: 0 6px 15px rgba(86, 118, 161, 0.1);
+}
+
+.nb-clay {
+  background-color: #f5f5f5;
+  color: #666666;
+  border-color: #dddddd;
+}
+.nb-clay:hover {
+  background-color: #ebebeb;
+  border-color: #bbbbbb;
+  transform: scale(1.05);
+}
+
+.nb-outline {
+  background-color: #ffffff;
+  color: #555555;
+  border: 2px solid #333333;
+}
+.nb-outline:hover {
+  background-color: #333333;
+  color: #ffffff;
+  transform: translateY(-3px);
+}
+
+.nb-glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+  color: #444;
+}
+.nb-glass:hover {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: #ffffff;
+  transform: translateY(-2px);
+}
+
+.nb-btn-base:active {
+  transform: scale(0.95) !important;
+  filter: brightness(0.9);
+}
+
+.nb-disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.nb-card {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 36px 28px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.02);
+  max-width: 760px;
+  margin: 20px auto;
+  border: 1px solid #f0f0f0;
+  text-align: center;
+}
+
+.nb-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: #cbd5e0;
+  margin-bottom: 18px;
+}
+
+.nb-row { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-bottom:18px }
