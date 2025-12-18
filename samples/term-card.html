@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>术语条目卡片 - Term Card</title>
+    <style>
+        /* 引入 Inter 字体 */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --primary-text: #1e293b;
+            --secondary-text: #64748b;
+            --accent-mist: #f1f5f9;
+            --accent-mist-text: #475569;
+            --border-color: #e2e8f0;
+            --time-text: #94a3b8;
+            --action-color: #6366f1;
+            --transition: all 0.2s ease;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, "SF Pro SC", "HanHei SC", "PingFang SC", sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* 术语卡片主体 */
+        .term-card {
+            width: 100%;
+            max-width: 360px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px 16px; /* 稍微减小了上下内边距 */
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .term-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        }
+
+        /* 内容区：定义紧跟在原文后面 */
+        .term-content {
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 4px; /* 减小了底部外边距，让分割线更靠近内容 */
+            word-break: break-word;
+        }
+
+        .term-original {
+            font-weight: 700;
+            color: var(--primary-text);
+            margin-right: 8px;
+        }
+
+        .term-definition {
+            font-weight: 400;
+            color: var(--secondary-text);
+        }
+
+        /* 底部辅助信息：全部在一行 */
+        .term-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 8px; /* 调整了顶部的内边距 */
+            border-top: 1px solid #f1f5f9;
+            gap: 8px;
+        }
+
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow: hidden;
+        }
+
+        .modifier-info {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: var(--accent-mist-text);
+            background: var(--accent-mist);
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .update-time {
+            font-size: 10px;
+            color: var(--time-text);
+            white-space: nowrap;
+        }
+
+        /* 修改按钮 */
+        .edit-btn {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--action-color);
+            padding: 4px 6px;
+            border-radius: 4px;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .edit-btn:hover {
+            background-color: #f5f3ff;
+        }
+
+        .edit-btn svg {
+            width: 12px;
+            height: 12px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="term-container">
+        <!-- 术语卡片将在这里渲染 -->
+    </div>
+
+    <script>
+        /**
+         * 模拟 Term 类型数据
+         */
+        const mockTerm = {
+            termBaseId: "tb-001",
+            original: "ふわふわ",
+            definition: "形容柔软且轻盈的状态",
+            modifierId: "u-99",
+            modifierNickname: "Hatsu1ki",
+            updatedAt: new Date("2024-06-12T10:30:00")
+        };
+
+        function createTermCard(term) {
+            const container = document.getElementById('term-container');
+            
+            const timeStr = term.updatedAt.toLocaleDateString('zh-CN', {
+                month: 'short',
+                day: 'numeric'
+            });
+
+            const html = `
+                <div class="term-card">
+                    <div class="term-content">
+                        <span class="term-original">${term.original}</span>
+                        <span class="term-definition">${term.definition}</span>
+                    </div>
+
+                    <div class="term-footer">
+                        <div class="footer-left">
+                            <div class="modifier-info" title="${term.modifierNickname}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                ${term.modifierNickname}
+                            </div>
+                            <span class="update-time">${timeStr} 更新</span>
+                        </div>
+                        
+                        <button class="edit-btn" onclick="handleEdit(event)">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                            修改
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function handleEdit(event) {
+            event.stopPropagation();
+            console.log("点击了修改按钮");
+        }
+
+        window.onload = () => createTermCard(mockTerm);
+    </script>
+</body>
+</html>

@@ -4,7 +4,7 @@
 */
 .nb-btn-base {
   padding: 4px 10px;
-  border-radius: 9999px;
+  border-radius: 7px;
   font-size: 15px;
   font-weight: 500;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -12,81 +12,83 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid transparent;
+  border: 1px solid transparent;
   outline: none;
   position: relative;
   letter-spacing: 0.5px;
 }
 
 .nb-mist {
-  background-color: #eef7f2;
+  /* Variant: mist — 主色调：绿色 #436d58（用于文本/图标），背景使用全局变量 --accent-bg */
+  background-color: var(--accent-bg);
   color: #436d58;
-  border-color: #bcdbc9;
+  border-color: rgba(15,23,42,0.04);
 }
 .nb-mist:hover {
   background-color: #d8ede1;
-  border-color: #8fbc9f;
-  transform: scale(1.05);
-  box-shadow: 0 6px 15px rgba(67, 109, 88, 0.1);
+  border-color: rgba(15,23,42,0.06);
+  transform: scale(1.03);
 }
 
 .nb-rose {
+  /* Variant: rose — 主色调：玫瑰红 #a36161（用于文本/图标），背景为极浅红 */
   background-color: #fff5f5;
   color: #a36161;
-  border-color: #f1d1d1;
+  border-color: rgba(15,23,42,0.04);
 }
 .nb-rose:hover {
   background-color: #fbe2e2;
-  border-color: #e3a8a8;
-  transform: scale(1.05);
-  box-shadow: 0 6px 15px rgba(163, 97, 97, 0.1);
+  border-color: rgba(15,23,42,0.06);
+  transform: scale(1.03);
 }
 
 .nb-cloud {
+  /* Variant: cloud — 主色调：天空蓝 #5676a1（用于文本/图标），背景为浅蓝 */
   background-color: #f0f7ff;
   color: #5676a1;
-  border-color: #cfe2f5;
+  border-color: rgba(15,23,42,0.04);
 }
 .nb-cloud:hover {
   background-color: #e1effe;
-  border-color: #a3c7eb;
-  transform: scale(1.05);
-  box-shadow: 0 6px 15px rgba(86, 118, 161, 0.1);
+  border-color: rgba(15,23,42,0.06);
+  transform: scale(1.03);
 }
 
 .nb-clay {
+  /* Variant: clay — 主色调：中性灰 #666666（用于文本/图标），背景为浅灰 */
   background-color: #f5f5f5;
   color: #666666;
-  border-color: #dddddd;
+  border-color: rgba(15,23,42,0.04);
 }
 .nb-clay:hover {
   background-color: #ebebeb;
-  border-color: #bbbbbb;
-  transform: scale(1.05);
+  border-color: rgba(15,23,42,0.06);
+  transform: scale(1.03);
 }
 
 .nb-outline {
+  /* Variant: outline — 主色调：深灰 #555555（用于文本），边框为深色轮廓感 */
   background-color: #ffffff;
   color: #555555;
-  border: 2px solid #333333;
+  border: 2px solid rgba(15,23,42,0.06);
 }
 .nb-outline:hover {
   background-color: #333333;
   color: #ffffff;
-  transform: translateY(-3px);
+  transform: translateY(-2px);
 }
 
 .nb-glass {
+  /* Variant: glass — 主色调：半透明白（以玻璃/高光感为主），文本为近黑 #444 */
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 2px solid rgba(255, 255, 255, 0.8);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
   color: #444;
 }
 .nb-glass:hover {
   background: rgba(255, 255, 255, 0.9);
-  border-color: #ffffff;
+  border-color: rgba(255,255,255,0.85);
   transform: translateY(-2px);
 }
 
@@ -104,13 +106,10 @@
   background: #ffffff;
   border-radius: 24px;
   padding: 36px 28px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.02);
-  max-width: 760px;
   margin: 20px auto;
   border: 1px solid #f0f0f0;
   text-align: center;
 }
-
 .nb-section-title {
   font-size: 13px;
   font-weight: 600;

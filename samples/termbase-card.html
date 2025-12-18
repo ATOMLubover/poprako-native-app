@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>术语库卡片 - TermBase Card</title>
+    <style>
+        /* 引入 Inter 字体 */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        :root {
+            --bg-color: #f5f8fa;
+            --card-bg: #ffffff;
+            --primary-text: #2c3e50;
+            --secondary-text: #7f8c8d;
+            --time-text: #bdc3c7;
+            
+            /* 晨雾绿 - 创建者 */
+            --accent-mist: #e3f2e5;
+            --accent-mist-border: #c8e6c9;
+            --accent-mist-text: #5d7a5f;
+            
+            /* 微风蓝 - 团队 */
+            --accent-breeze: #e3f2fd;
+            --accent-breeze-border: #bbdefb;
+            --accent-breeze-text: #54759e;
+
+            /* 落霞紫 - 词数 */
+            --accent-sunset: #f3e5f5;
+            --accent-sunset-border: #e1bee7;
+            --accent-sunset-text: #7b1fa2;
+
+            --shadow-soft: 0 10px 25px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, "SF Pro SC", "HanHei SC", "PingFang SC", sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* 卡片主体 - 降低了宽度从 440px 到 360px */
+        .termbase-card {
+            width: 100%;
+            max-width: 360px;
+            background-color: var(--card-bg);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+            animation: slideUp 0.5s ease-out;
+        }
+
+        .termbase-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.07);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 顶部标题行布局 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 10px;
+            gap: 8px;
+        }
+
+        .term-name {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--primary-text);
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* 时间显示区域 */
+        .time-range {
+            font-size: 10px;
+            color: var(--time-text);
+            font-weight: 400;
+            white-space: nowrap;
+            letter-spacing: 0.1px;
+        }
+
+        /* 描述文本 */
+        .term-description {
+            font-size: 13.5px;
+            color: var(--secondary-text);
+            line-height: 1.5;
+            margin-bottom: 18px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: 3em; 
+        }
+
+        /* 标签区域 */
+        .tags-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            border: 1px solid transparent;
+            transition: opacity 0.2s;
+        }
+
+        .tag:hover {
+            opacity: 0.8;
+        }
+
+        .tag-team {
+            background-color: var(--accent-breeze);
+            border-color: var(--accent-breeze-border);
+            color: var(--accent-breeze-text);
+        }
+
+        .tag-creator {
+            background-color: var(--accent-mist);
+            border-color: var(--accent-mist-border);
+            color: var(--accent-mist-text);
+        }
+
+        .tag-count {
+            background-color: var(--accent-sunset);
+            border-color: var(--accent-sunset-border);
+            color: var(--accent-sunset-text);
+        }
+
+        .tag svg {
+            margin-right: 3px;
+            opacity: 0.8;
+            width: 11px;
+            height: 11px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="card-container">
+        <!-- 动态生成的卡片将放在这里 -->
+    </div>
+
+    <script>
+        const mockTermBase = {
+            name: "多语言医疗术语库",
+            description: "专门用于临床诊断与处方翻译的高精度术语集合，包含5000+核心词条，覆盖内外科常见疾病名。",
+            termNum: 5280,
+            teamBrief: {
+                teamId: "team-99",
+                name: "医疗翻译组"
+            },
+            creatorId: "u-777",
+            creatorNickname: "张医生",
+            createdAt: new Date("2023-11-15"),
+            updatedAt: new Date("2024-05-20")
+        };
+
+        function createTermBaseCard(data) {
+            const container = document.getElementById('card-container');
+            
+            const fmt = (d) => {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}.${month}.${day}`;
+            };
+
+            const numFmt = (num) => new Intl.NumberFormat().format(num);
+
+            const html = `
+                <div class="termbase-card">
+                    <div class="header">
+                        <h2 class="term-name" title="${data.name}">${data.name}</h2>
+                        <span class="time-range">${fmt(data.createdAt)} ~ ${fmt(data.updatedAt)}</span>
+                    </div>
+
+                    <p class="term-description">${data.description || '暂无描述信息'}</p>
+
+                    <div class="tags-row">
+                        <span class="tag tag-team">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            ${data.teamBrief.name}
+                        </span>
+                        <span class="tag tag-creator">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            ${data.creatorNickname}
+                        </span>
+                        <span class="tag tag-count">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M13 8H7"/><path d="M17 12H7"/></svg>
+                            ${numFmt(data.termNum)}
+                        </span>
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        window.onload = () => createTermBaseCard(mockTermBase);
+    </script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+.term-card-simple {
+  width: 100%;
+  max-width: 360px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.term-card-simple:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.term-content {
+  font-size: 14px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.term-original {
+  font-weight: 700;
+  color: #1e293b;
+  margin-right: 6px;
+}
+
+.term-definition {
+  font-weight: 400;
+  color: #64748b;
+}

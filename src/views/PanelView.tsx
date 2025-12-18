@@ -1,11 +1,10 @@
 import { useState } from "react";
 import Icon from "../components/Icon";
-import UserProfileCard from "../components/UserProfileCard";
-import NatureTagLikesButton from "../components/NatureTagLikesButton";
-import type { Tag } from "../models/tag";
+// Draft-board 简化为 SimpleTermCard 预览
+import SimpleTermCard from "../components/SimpleTermCard";
 import "./PanelView.css";
 
-type MenuItem = "draft-board" | "dashboard" | "messages" | "analytics" | "resources" | "settings";
+type MenuItem = "draft-board" | "team-list" | "tag-pool" | "termbase-pool" | "font-repo" | "compressor-helper" | "settings";
 
 type NavItem = {
   id: MenuItem;
@@ -13,12 +12,7 @@ type NavItem = {
   label: string;
 };
 
-// 示例 tag 数据，用于草稿板预览
-const sampleTags: Array<{ tag: Tag; likes: number; theme: string }> = [
-  { tag: { tagId: "1", name: "UI Design Ideas" }, likes: 1024, theme: "theme-mist" },
-  { tag: { tagId: "2", name: "React Components" }, likes: 856, theme: "theme-glacier" },
-  { tag: { tagId: "3", name: "Minimalism" }, likes: 42, theme: "theme-sand" },
-];
+
 
 /**
  * 主面板视图
@@ -29,10 +23,11 @@ export default function PanelView() {
 
   const navItems: NavItem[] = [
     { id: "draft-board", icon: "pencil", label: "草稿板" },
-    { id: "dashboard", icon: "dashboard", label: "实时概览" },
-    { id: "messages", icon: "message", label: "互动消息" },
-    { id: "analytics", icon: "chart", label: "增长数据" },
-    { id: "resources", icon: "layers", label: "资源库" },
+    { id: "team-list", icon: "users", label: "汉化组列表" },
+    { id: "tag-pool", icon: "tag", label: "漫画标签池" },
+    { id: "termbase-pool", icon: "database", label: "术语库" },
+    { id: "font-repo", icon: "font", label: "字体仓库" },
+    { id: "compressor-helper", icon: "image", label: "压图工具" },
   ];
 
   const settingsItem: NavItem = { id: "settings", icon: "settings", label: "设置" };
@@ -41,42 +36,56 @@ export default function PanelView() {
     switch (activeItem) {
       case "draft-board":
         return (
-          <div style={{ display: "flex", flexDirection: "column", gap: 12, paddingTop: 18, height: "100%", minHeight: 0 }}>
-            {/* 草稿板保留 UserProfileCard 供预览检查，同时显示标签草稿预览 */}
-            <div style={{ flex: 1, minHeight: 0 }}>
-              <div className="nb-card">
-                <div className="nb-section-title">User Profile — Draft Preview</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingTop: 12, height: "100%", minHeight: 0 }}>
+            <div style={{ marginTop: 6 }}>
+              <h2 style={{ margin: 0, marginBottom: 10 }}>Draft Board</h2>
 
-                <div className="nb-row" style={{ gap: 12, alignItems: "center" }}>
-                  <UserProfileCard />
+              <div style={{ marginTop: 6 }}>
+                <div className="nb-card" style={{ padding: "12px 14px" }}>
+                  <div className="nb-section-title" style={{ marginBottom: 8 }}>SimpleTermCard — Draft Demo</div>
+
+                  <div style={{ display: "flex", gap: 12, justifyContent: "center", padding: "12px 0", flexWrap: "wrap" }}>
+                    <SimpleTermCard
+                      data={{
+                        termBaseId: "tb-001",
+                        original: "ふわふわ",
+                        definition: "形容柔软且轻盈的状态，常用于描述棉花糖或云朵。",
+                        modifierId: "u-99",
+                        modifierNickname: "Hatsu1ki",
+                        createdAt: new Date("2024-06-10"),
+                        updatedAt: new Date("2024-06-12T10:30:00"),
+                      }}
+                      onClick={(t) => console.log("点击术语", t)}
+                    />
+
+                    <SimpleTermCard
+                      data={{
+                        termBaseId: "tb-002",
+                        original: "ぽかぽか",
+                        definition: "形容温暖舒适的感觉，常用于天气或环境描述。",
+                        modifierId: "u-55",
+                        modifierNickname: "Yuki",
+                        createdAt: new Date("2024-01-02"),
+                        updatedAt: new Date("2024-02-15T09:00:00"),
+                      }}
+                      onClick={(t) => console.log("点击术语", t)}
+                    />
+                  </div>
                 </div>
-              </div>
-            </div>
-
-            <div style={{ marginTop: 8 }}>
-              <h2 style={{ margin: 0, marginBottom: 14 }}>Draft Board</h2>
-
-              <div style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
-                {sampleTags.map((s) => (
-                  <NatureTagLikesButton
-                    key={s.tag.tagId}
-                    tag={s.tag}
-                    initialLikes={s.likes}
-                    theme={s.theme}
-                  />
-                ))}
               </div>
             </div>
           </div>
         );
-      case "dashboard":
-        return <div>实时概览页面开发中</div>;
-      case "messages":
-        return <div>互动消息页面开发中</div>;
-      case "analytics":
-        return <div>增长数据页面开发中</div>;
-      case "resources":
-        return <div>资源库页面开发中</div>;
+      case "team-list":
+        return <div>汉化组列表页面开发中</div>;
+      case "tag-pool":
+        return <div>漫画标签池页面开发中</div>;
+      case "termbase-pool":
+        return <div>术语库页面开发中</div>;
+      case "font-repo":
+        return <div>字体仓库页面开发中</div>;
+      case "compressor-helper":
+        return <div>压图工具页面开发中</div>;
       case "settings":
         return <div>设置页面开发中</div>;
       default:

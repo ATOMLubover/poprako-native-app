@@ -9,3 +9,9 @@ export type TeamProfile = {
   isHidden?: boolean;
   tags?: Tag[];
 };
+
+// 团队简要类型定义
+export type TeamBrief = {
+  teamId: string;
+  name: string;
+};

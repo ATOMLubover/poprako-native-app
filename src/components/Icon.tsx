@@ -1,6 +1,6 @@
 import React from "react";
 import type { SVGProps } from "react";
-import { Settings as LucideSettings, TreePine as LucideTreePine, Clock as LucideClock } from "lucide-react";
+import { Settings as LucideSettings, TreePine as LucideTreePine, Clock as LucideClock, Users as LucideUsers, Tag as LucideTag, Database as LucideDatabase, Image as LucideImage, Type as LucideType } from "lucide-react";
 
 type IconProps = {
   name: string;
@@ -35,12 +35,42 @@ export default function Icon({ name, size = 19, className }: IconProps) {
     return <LucideClock size={size} className={className} />;
   }
 
+  if (name === "users") {
+    return <LucideUsers size={size} className={className} />;
+  }
+
+  if (name === "tag") {
+    return <LucideTag size={size} className={className} />;
+  }
+
+  if (name === "database") {
+    return <LucideDatabase size={size} className={className} />;
+  }
+
+  if (name === "image") {
+    return <LucideImage size={size} className={className} />;
+  }
+
+  if (name === "font" || name === "type") {
+    return <LucideType size={size} className={className} />;
+  }
+
   switch (name) {
     case "pencil":
       return (
         <svg {...svgProps}>
           <path d="M3 21v-3.75L14.06 6.19l3.75 3.75L6.75 21H3z" />
           <path d="M18.37 6.63l-1.01-1.01 1.01 1.01z" />
+        </svg>
+      );
+    case "trash":
+      return (
+        <svg {...svgProps}>
+          <path d="M3 6h18" />
+          <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+          <path d="M10 11v6" />
+          <path d="M14 11v6" />
         </svg>
       );
     case "dashboard":

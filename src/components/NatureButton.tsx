@@ -13,6 +13,8 @@ type NatureButtonProps = {
   onClick?: () => void | Promise<void>;
   /** 最小宽度，可接收数字（像素）或字符串（CSS 单位） */
   minWidth?: number | string;
+  /** 字体大小，可接收数字（像素）或字符串（CSS 单位） */
+  fontSize?: number | string;
 };
 
 /**
@@ -73,7 +75,11 @@ export default function NatureButton(props: NatureButtonProps) {
   })();
 
   const classes = ["nb-btn-base", variantClass, disabled ? "nb-disabled" : ""].join(" ");
-  const inlineStyle = minWidth ? { minWidth: typeof minWidth === "number" ? `${minWidth}px` : minWidth } : undefined;
+  const inlineStyle = Object.assign(
+    {},
+    minWidth ? { minWidth: typeof minWidth === "number" ? `${minWidth}px` : minWidth } : undefined,
+    props.fontSize ? { fontSize: typeof props.fontSize === "number" ? `${props.fontSize}px` : props.fontSize } : undefined
+  );
 
   return (
     <button className={classes} style={inlineStyle} onClick={handleClick} aria-disabled={disabled || loading}>

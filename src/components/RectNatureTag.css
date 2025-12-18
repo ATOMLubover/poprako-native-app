@@ -1,0 +1,48 @@
+:root {
+  --rect-padding-y: 4px;
+  --rect-padding-x: 8px;
+  --rect-radius: 6px;
+  --rect-font-size: 11px;
+}
+
+.rect-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--rect-padding-y) var(--rect-padding-x);
+  border-radius: var(--rect-radius);
+  font-size: var(--rect-font-size);
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.rect-tag-icon {
+  display: inline-flex;
+  width: 12px;
+  height: 12px;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.9;
+}
+
+.rect-tag-label {
+  line-height: 1;
+}
+
+.rect-tag-breeze {
+  background-color: var(--accent-breeze);
+  border-color: var(--accent-breeze-border);
+  color: var(--accent-breeze-text);
+}
+
+.rect-tag-mist {
+  background-color: var(--accent-mist);
+  border-color: var(--accent-mist-border);
+  color: var(--accent-mist-text);
+}
+
+.rect-tag-sunset {
+  background-color: var(--accent-sunset);
+  border-color: var(--accent-sunset-border);
+  color: var(--accent-sunset-text);
+}

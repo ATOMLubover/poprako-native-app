@@ -1,11 +1,28 @@
 mod result_trace;
 
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
 #[tracing::instrument]
 fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
+
+// A simple enum to represent the environment.
+pub enum Environment {
+    Development,
+    Production,
+}
+
+// Use conditional compilation to set the environment.
+static ENVIRONMENT: Environment = {
+    #[cfg(debug_assertions)]
+    {
+        Environment::Development
+    }
+    #[cfg(not(debug_assertions))]
+    {
+        Environment::Production
+    }
+};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
