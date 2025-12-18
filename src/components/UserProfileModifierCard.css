@@ -1,11 +1,16 @@
 .modifier-card {
   width: 100%;
-  max-width: 340px;
+  min-width: 300px;
+  max-width: 400px;
   background: #ffffff;
   border-radius: 16px;
   padding: 20px;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.05);
   animation: slideUp 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+  /* 禁用滚动条，确保内容完全自适应 */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 @keyframes slideUp {
@@ -14,15 +19,17 @@
 }
 
 .header {
-  margin-bottom: 18px;
+  margin-bottom: 14px;
   text-align: center;
+  flex-shrink: 0;
 }
 
 .header h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: 16px;
   color: #2d3748;
   font-weight: 600;
+  line-height: 1.25;
 }
 
 .form-group {
@@ -63,14 +70,16 @@
 
 textarea.input-control {
   resize: none;
-  height: 84px;
-  line-height: 1.5;
+  height: 68px;
+  line-height: 1.4;
+  flex-shrink: 0;
 }
 
 .button-group {
   display: flex;
   gap: 10px;
-  margin-top: 20px;
+  margin-top: 16px;
+  flex-shrink: 0;
 }
 
 .btn {

@@ -49,3 +49,72 @@
 .edit-tag-button svg { display: block; }
 
 .local-toast { position: fixed; top: 18px; right: 18px; background: #fff; padding: 8px 14px; border: 1px solid #E2E6EA; border-radius: 8px; box-shadow: 0 6px 18px rgba(0,0,0,0.06); z-index: 9999; }
+
+/* Modal 样式 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeInOverlay 0.24s ease-out;
+}
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-container {
+  position: relative;
+  background-color: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.06);
+  animation: slideUpModal 0.28s ease-out;
+  max-width: 90vw;
+  /* 不设置 max-height 和 overflow，让内容自然适应 */
+}
+
+@keyframes slideUpModal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-close-button {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background-color: #F5F7FA;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5A6978;
+  transition: all 0.16s ease-in-out;
+  padding: 0;
+  z-index: 10001;
+}
+
+.modal-close-button:hover {
+  background-color: #E9ECEF;
+  color: #333333;
+}
+
+.modal-close-button svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}

@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import "./UserProfileCard.css";
 
 import type { UserProfile } from "../models/user";
+import type { SavePayload } from "./UserProfileModifierCard";
 import NatureTag from "./NatureTag";
+import UserProfileModifierCard from "./UserProfileModifierCard";
 
 type Props = {
   initialProfile?: UserProfile;
-  onEditTags?: (profile: UserProfile) => void;
 };
 
 /**
@@ -15,7 +16,6 @@ type Props = {
  */
 export default function UserProfileCard({
   initialProfile,
-  onEditTags,
 }: Props) {
   const defaultProfile: UserProfile = {
     userId: "u-0001",
@@ -31,7 +31,7 @@ export default function UserProfileCard({
   };
 
   const [profile, setProfile] = useState<UserProfile>(initialProfile ?? defaultProfile);
-  const [toast, setToast] = useState<string | null>(null);
+  const [showModifierModal, setShowModifierModal] = useState<boolean>(false);
 
   useEffect(() => {
     if (initialProfile) {
@@ -41,18 +41,23 @@ export default function UserProfileCard({
 
   function formatDate(d?: string | Date) {
     const date = d ? new Date(d) : new Date();
-    return date.toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric" });
+    return date.toLocaleDateString("en", { year: "numeric", month: "long", day: "numeric" });
   }
 
-  function handleEditTags() {
-    if (onEditTags) {
-      onEditTags(profile);
-      return;
-    }
+  function handleEditProfile() {
+    setShowModifierModal(true);
+  }
 
-    // 无回调时展示本地提示
-    setToast("编辑标签功能已触发");
-    setTimeout(() => setToast(null), 1800);
+  function handleSaveProfile(payload: SavePayload) {
+    setProfile((prev) => ({
+      ...prev,
+      nickname: payload.nickname,
+    }));
+    setShowModifierModal(false);
+  }
+
+  function handleCloseModal() {
+    setShowModifierModal(false);
   }
 
   return (
@@ -80,7 +85,7 @@ export default function UserProfileCard({
           ))}
 
           {profile.isMe ? (
-            <button className="nature-tag edit-tag-button" title="修改标签" onClick={handleEditTags}>
+            <button className="nature-tag edit-tag-button" title="修改信息" onClick={handleEditProfile}>
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
                 <path d="m15 5 4 4" />
@@ -90,12 +95,31 @@ export default function UserProfileCard({
         </div>
 
         <span className="created-at">
-          <span className="clock-icon">⏱</span>
+          <span className="clock-icon">CREATE AT</span>
           {formatDate(profile.createdAt)}
         </span>
       </div>
 
-      {toast ? <div className="local-toast">{toast}</div> : null}
+      {showModifierModal ? (
+        <div className="modal-overlay" onClick={handleCloseModal}>
+          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+            <UserProfileModifierCard
+              initialNickname={profile.nickname}
+              onSave={handleSaveProfile}
+            />
+            <button
+              className="modal-close-button"
+              onClick={handleCloseModal}
+              title="关闭"
+              aria-label="关闭"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 6l-12 12M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./UserProfileModifierCard.css";
 
-type SavePayload = {
+export type SavePayload = {
   nickname: string;
   signature: string;
 };
