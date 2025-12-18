@@ -14,9 +14,56 @@
   --border-color: #e9edea;
 }
 
+/*
+  解决页面不必要滚动条的正确方案
+
+  核心原则：使用 overflow: hidden + flex 布局来约束子组件，让子组件主动适应容器高度
+
+  1) 全局基础设置
+    - 统一盒模型：`*, *::before, *::after { box-sizing: border-box; }`
+    - 禁用页面全局滚动：`html, body, #root { height: 100%; overflow: hidden; }`
+    - 这样确保所有高度计算不被 padding/border 打破，也不会出现页面级滚动条
+
+  2) 容器约束策略
+    - .main-content 设置 `height: 100%` 和 `overflow: hidden`（硬性约束）
+    - 使用 flex 布局传递高度信息：`display: flex; flex-direction: column;`
+    - 关键：设置 `min-height: 0` 在 flex 子项上，允许 flex 项目在父容器空间不足时收缩到内容大小以下
+
+  3) 子组件自适应机制
+    - 子组件（如 VerticalAdaptiveList）不能使用固定高度，必须使用 `height: 100%`
+    - 添加 `flex: 1` 和 `min-height: 0` 确保在 flex 容器中正确拉伸和收缩
+    - 子组件内部使用 ResizeObserver 监听自身尺寸变化，当容器压缩时能感知并调整内容布局
+    - 子组件通过隐藏（display: none）超出范围的项来适应约束，而不是依赖滚动条
+
+  4) 防止滚动条出现的关键点
+    - 绝不使用 `overflow-y: auto` 或 `max-height: 100%`（这会导致溢出时出现滚动条）
+    - 必须用 `overflow: hidden` 进行硬约束
+    - 子组件必须实现高度感知机制，主动调整内容以适应约束
+    - 从父到子的整个链路都必须传递 height/flex 信息，不能中断
+
+  5) 常见错误与陷阱
+    - 错误：在中间层给子组件设置固定高度（会破坏高度响应链）
+    - 错误：使用 max-height 替代 height（不会收缩到真实需求）
+    - 错误：忘记在 flex 项上设置 min-height: 0（导致无法收缩）
+    - 错误：子组件只有 height: 100% 但没有 ResizeObserver（高度变化时无法反应）
+*/
+
+/* 统一盒模型，避免 padding 导致高度溢出产生滚动条 */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* 根元素重置，禁止 body 全局滚动，交由 main-content 内部处理溢出 */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
 .panel-view {
   display: flex;
-  min-height: 100vh;
+  align-items: flex-start;
+  height: 100%;
   background-color: var(--bg-page);
 }
 
@@ -41,6 +88,15 @@
   box-shadow: 10px 0 30px rgba(46, 60, 51, 0.03);
 }
 
+/* 当侧边栏悬停展开时，使主内容区域整体变灰以聚焦侧边栏 */
+/* 仅改变可视效果，不影响侧边栏交互 */
+.sidebar:hover ~ .main-content {
+  /* 浅灰色，降低视觉冲击 */
+  filter: grayscale(45%) brightness(0.95) saturate(0.95);
+  transition: filter 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: filter;
+  pointer-events: none;
+}
 /* Logo 区域 */
 .logo-section {
   height: 80px;
@@ -151,6 +207,12 @@
 .main-content {
   margin-left: var(--sidebar-width-collapsed);
   padding: 60px;
-  width: 100%;
+  width: calc(100% - var(--sidebar-width-collapsed));
+  height: 100%;
   transition: margin-left 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+
+  /* 强制限制子组件高度，不显示 scrollbar */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }

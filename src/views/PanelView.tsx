@@ -2,6 +2,8 @@ import { useState } from "react";
 import UserProfileCard from "../components/UserProfileCard";
 import TeamProfileCard from "../components/TeamProfileCard";
 import Icon from "../components/Icon";
+import VerticalAdaptiveList from "../components/VerticalAdaptiveList";
+import { smallHeightItems, largeHeightItems } from "../models/adaptiveList";
 import "./PanelView.css";
 
 type MenuItem = "draft-board" | "dashboard" | "messages" | "analytics" | "resources" | "settings";
@@ -33,9 +35,26 @@ export default function PanelView() {
     switch (activeItem) {
       case "draft-board":
         return (
-          <div style={{ display: "flex", justifyContent: "center", paddingTop: 18, gap: 24 }}>
-            <UserProfileCard />
-            <TeamProfileCard />
+          <div style={{ display: "flex", flexDirection: "column", gap: 24, paddingTop: 18, height: "100%", minHeight: 0 }}>
+            <div style={{ display: "flex", gap: 24, justifyContent: "center" }}>
+              <UserProfileCard />
+              <TeamProfileCard />
+            </div>
+
+            <div style={{ display: "flex", gap: 24, justifyContent: "center", paddingBottom: 20, flex: 1, minHeight: 0, overflow: "hidden" }}>
+              <VerticalAdaptiveList
+                items={smallHeightItems}
+                gap={5}
+                title="自适应列表 - 小项目 (40px)"
+                debug={true}
+              />
+              <VerticalAdaptiveList
+                items={largeHeightItems}
+                gap={5}
+                title="自适应列表 - 大项目 (80px)"
+                debug={true}
+              />
+            </div>
           </div>
         );
       case "dashboard":
