@@ -17,6 +17,9 @@ type VerticalAdaptiveListProps = {
   title?: string;
   // 调试模式：打印详细日志
   debug?: boolean;
+  // onBuilt: 在组件确认能容纳的 item 数量后通知父组件
+  // 参数为可容纳的数量（number）
+  onBuilt?: (visibleCount: number) => void;
 };
 
 /**
@@ -28,6 +31,7 @@ export default function VerticalAdaptiveList({
   gap = 5,
   title = "自适应列表",
   debug = true,
+  onBuilt,
 }: VerticalAdaptiveListProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -184,6 +188,20 @@ export default function VerticalAdaptiveList({
     const newVisibleCount = calculateVisibleItems_Simulation();
     const theoreticalHeight = calculateTheoreticalContentHeight();
 
+    // 如果父组件提供了 onBuilt 回调，则只负责计算并通知父组件
+    // 由父组件来裁剪 items，避免组件内部和父组件同时做裁剪导致竞态
+    if (typeof onBuilt === "function") {
+      setVisibleCount(newVisibleCount);
+      try {
+        onBuilt(newVisibleCount);
+      } catch (e) {
+        if (debug) console.warn("[VAL] onBuilt callback threw:", e);
+      }
+
+      return;
+    }
+
+    // 否则沿用原有行为：组件自己修改 DOM 隐藏超出的项
     setVisibleCount(newVisibleCount);
     updateVisibility(newVisibleCount, theoreticalHeight);
   };

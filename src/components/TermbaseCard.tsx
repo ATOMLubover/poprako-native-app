@@ -18,8 +18,11 @@ function formatDate(date: Date): string {
 }
 
 // 格式化数字为本地化格式
-function formatNumber(num: number): string {
-  return new Intl.NumberFormat().format(num);
+function formatNumber(num?: number): string {
+  // 若传入为空或非数字，则默认显示 0，避免出现 NaN
+  const n = typeof num === "number" && !Number.isNaN(num) ? num : 0;
+
+  return new Intl.NumberFormat().format(n);
 }
 
 // 仅显示字符串的最多前三个字符，用于紧凑展示（完整内容仍在 title 中）
@@ -66,6 +69,14 @@ export default function TermbaseCard({ data }: TermbaseCardProps) {
               <svg width="10" height="10" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M13 8H7"/><path d="M17 12H7"/></svg>
               {shortText(formatNumber(data.termNum))}
             </div>
+
+            <div className="modifier-info" title={String(formatNumber(data.likedNum))}>
+              <svg width="10" height="10" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                <path d="M14,9V5a3,3,0,0,0-3-3l-4,9v11h11.28a2,2,0,0,0,2-1.7l1.38-9a2,2,0,0,0-2-2.3zM7,22H4a2,2,0,0,1-2-2V14a2,2,0,0,1,2-2H7Z" fill="currentColor" />
+              </svg>
+
+              {shortText(formatNumber(data.likedNum))}
+            </div>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
@@ -80,7 +91,7 @@ export default function TermbaseCard({ data }: TermbaseCardProps) {
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
           <div style={{ width: 700, maxWidth: "95%", height: "85vh", maxHeight: "85vh", background: "#fff", borderRadius: 10, padding: 12, boxShadow: "0 8px 28px rgba(0,0,0,0.25)", display: "flex", flexDirection: "column" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-              <div style={{ fontWeight: 600 }}>{data.name}</div>
+              <div style={{ fontWeight: 600 }}>术语库：{data.name}</div>
             </div>
 
             <div style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>

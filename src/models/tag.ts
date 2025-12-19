@@ -2,6 +2,7 @@
 export type Tag = {
   tagId: string;
   name: string;
+  isPinned: boolean;
   picaCandidates?: string[]; // 可选的 Pica 对应 tag
   ehentaiCandidates?: string[]; // 可选的 EHentai 对应 tag
 };

@@ -7,10 +7,10 @@
 
 .termbase-page .termbase-title {
   flex-shrink: 0;
-  margin: 0;
+  margin: 10px;
   padding: 16px 0 12px 0;
   text-align: center;
-  font-size: 18px;
+  font-size: 30px;
   font-weight: 600;
   color: #1a202c;
 }
@@ -19,5 +19,6 @@
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  padding: 0 24px 24px 24px;
+  /* 移除 padding，由内部布局控制 */
+  padding: 0;
 }

@@ -5,7 +5,9 @@ export type TermBase = {
   teamBrief: TeamBrief;
   name: string;
   description: string;
+  likedNum: number;
   termNum: number;
+  relatedComicId?: string;
   createdAt: Date;
   updatedAt: Date;
 };

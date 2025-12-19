@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Icon from "../components/Icon";
 import TermbasePage from "./TermbasePage";
-import TermbaseList from "../components/TermbaseList";
+import VerticalAdaptiveList from "../components/VerticalAdaptiveList";
 import "./PanelView.css";
 
 type MenuItem = "draft-board" | "team-list" | "tag-pool" | "termbase-pool" | "font-repo" | "compressor-helper" | "settings";
@@ -62,16 +62,46 @@ export default function PanelView() {
 
   const settingsItem: NavItem = { id: "settings", icon: "settings", label: "设置" };
 
+  // Mock 数据：用于在 draft-board 中独立预览 VerticalAdaptiveList
+  const __mockVerticalAdaptiveItems = Array.from({ length: 8 }).map((_, i) => {
+    const h = 48 + i * 8;
+    return {
+      id: `val-item-${i}`,
+      height: h,
+      content: (
+        <div style={{ padding: "6px 8px" }}>
+          <div style={{ fontSize: 14, color: "#222" }}>项目 {i + 1}</div>
+          <div style={{ fontSize: 12, color: "#666" }}>高度 {h}px 的示例内容</div>
+        </div>
+      ),
+    };
+  });
+
+  // 由父组件持有的 items 列表，以便在 VerticalAdaptiveList 建构完成后按 onBuilt 裁剪
+  const [valItems, setValItems] = useState(__mockVerticalAdaptiveItems);
+
   const renderContent = () => {
     switch (activeItem) {
       case "draft-board":
         return (
-          <div style={{ display: "flex", flexDirection: "column", gap: 0, height: "100%", minHeight: 0 }}>
-            <h2 style={{ margin: 0, marginBottom: 10, flexShrink: 0 }}>Draft Board (TermbaseList Test)</h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, height: "100%", minHeight: 0 }}>
+            <div className="nb-card" style={{ padding: "16px 20px", display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+              <h3 style={{ margin: 0, marginBottom: 8, flexShrink: 0 }}>VerticalAdaptiveList (Draft)</h3>
 
-            <div className="nb-card" style={{ padding: "20px 24px", display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
               <div style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
-                <TermbaseList />
+                <VerticalAdaptiveList
+                  items={valItems}
+                  gap={6}
+                  title="VAL: Draft Preview"
+                  debug={false}
+                  onBuilt={(n) => {
+                    // 仅当数量变化时裁剪，避免不必要的 rerender
+                    setValItems((prev) => {
+                      if (prev.length === n) return prev;
+                      return prev.slice(0, Math.max(0, n));
+                    });
+                  }}
+                />
               </div>
             </div>
           </div>

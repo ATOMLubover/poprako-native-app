@@ -13,19 +13,36 @@
   margin-bottom: 8px;
 }
 
+.termbase-list-container .input-section {
+  /* 控件统一高度，便于输入框与按钮等高 */
+  --control-height: 36px;
+  margin-bottom: 18px;
+}
+
 .termbase-list-container .termbase-input {
   flex: 1;
   padding: 6px 8px;
+  height: var(--control-height);
+  box-sizing: border-box;
   border: 1px solid #d9e2ec;
   border-radius: 4px;
   font-size: 13px;
   outline: none;
   transition: all 0.12s ease;
+  margin-bottom: 0;
 }
 
 .termbase-list-container .termbase-input:focus {
   border-color: #a3b9cc;
   box-shadow: 0 0 0 1px rgba(163, 185, 204, 0.12);
+}
+
+/* 在 input-section 中的 NatureButton 使用与输入框相同的高度 */
+.termbase-list-container .input-section .nb-btn-base {
+  height: var(--control-height);
+  padding-top: 0;
+  padding-bottom: 0;
+  box-sizing: border-box;
 }
 
 .termbase-list-container .termbase-list {
@@ -36,6 +53,18 @@
   flex-wrap: wrap;
   gap: 8px;
   align-content: flex-start;
+}
+
+/* 当需要强制单列显示时，使用此限制（可在父容器限制宽度触发） */
+.termbase-list-container.single-column .termbase-list {
+  flex-wrap: nowrap;
+  flex-direction: column;
+}
+
+.termbase-list-container.single-column .termbase-list > div {
+  flex: 0 0 auto !important;
+  min-width: unset !important;
+  max-width: 100% !important;
 }
 
 .termbase-list-container .empty-state {
