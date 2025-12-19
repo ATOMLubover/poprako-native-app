@@ -1,5 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
-
 :root {
   --card-bg: #ffffff;
   --primary-text: #2c3e50;
@@ -19,8 +17,10 @@
 }
 
 .termbase-card {
-  max-width: 250px;
-  min-width: 250px;
+  max-width: 280px;
+  min-width: 280px;
+  margin-left: 3px;
+  margin-right: 3px;
   background-color: var(--card-bg);
   border-radius: 12px;
   padding: 12px;
@@ -28,13 +28,30 @@
   position: relative;
   overflow: hidden;
   transition: var(--transition);
+  cursor: pointer;
   animation: slideUp 0.36s ease-out;
-  font-family: "Inter", -apple-system, "SF Pro SC", "HanHei SC", "PingFang SC", sans-serif;
+  font-family: inherit;
 }
 
 .termbase-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-2px) rotate(-1deg);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.07);
+  /* 颜色略微变浅（比 #436d58 亮一些，阅读上更舒适） */
+  background-color: #ecfae5;
+  /* 默认文本色为非日期的柔和深灰绿 */
+  color: #3d403d;
+}
+
+/* Hover 时：非日期元素使用 #3d403d，日期使用更沉稳的 #636e72 */
+.termbase-card:hover .term-name,
+.termbase-card:hover .term-description,
+.termbase-card:hover .modifier-info,
+.termbase-card:hover .tag {
+  color: #3d403d;
+}
+
+.termbase-card:hover .time-range {
+  color: #636e72;
 }
 
 @keyframes slideUp {

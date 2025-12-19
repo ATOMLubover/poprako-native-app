@@ -92,7 +92,7 @@ html, body, #root {
 /* 仅改变可视效果，不影响侧边栏交互 */
 .sidebar:hover ~ .main-content {
   /* 浅灰色，降低视觉冲击 */
-  filter: grayscale(45%) brightness(0.95) saturate(0.95);
+  filter: grayscale(40%) brightness(0.95) saturate(0.95);
   transition: filter 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
   will-change: filter;
   pointer-events: none;
@@ -206,7 +206,8 @@ html, body, #root {
 /* 主要内容区域 */
 .main-content {
   margin-left: var(--sidebar-width-collapsed);
-  padding: 60px;
+  /* 减小整体内边距以使页面内容靠近窗口上边缘 */
+  padding: 0px;
   width: calc(100% - var(--sidebar-width-collapsed));
   height: 100%;
   transition: margin-left 0.4s cubic-bezier(0.25, 1, 0.5, 1);

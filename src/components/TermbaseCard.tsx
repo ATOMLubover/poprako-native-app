@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { TermBase } from "../models/term";
 import "./TermbaseCard.css";
-import NatureButton from "./NatureButton";
+// NatureButton removed: open-on-click behavior moved to the whole card
 import TermList from "./TermList";
 // 使用与 TermCard 相同的 modifier-info 样式替代原有 RectNatureTag
 
@@ -25,7 +25,7 @@ function formatNumber(num?: number): string {
   return new Intl.NumberFormat().format(n);
 }
 
-// 仅显示字符串的最多前三个字符，用于紧凑展示（完整内容仍在 title 中）
+// 仅显示字符串的最多前 4 个字符，用于紧凑展示（完整内容仍在 title 中）
 function shortText(s: string): string {
   if (s === undefined || s === null) return "-";
 
@@ -35,7 +35,7 @@ function shortText(s: string): string {
     return str;
   }
 
-  return str.slice(0, 4) + "..";
+  return str.trim().slice(0, 4) + "..";
 }
 
 export default function TermbaseCard({ data }: TermbaseCardProps) {
@@ -46,7 +46,17 @@ export default function TermbaseCard({ data }: TermbaseCardProps) {
 
   return (
     <>
-      <div className="termbase-card">
+      <div
+        className="termbase-card"
+        role="button"
+        tabIndex={0}
+        onClick={() => setOpen(true)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            setOpen(true);
+          }
+        }}
+      >
         <div className="header">
           <h2 className="term-name" title={data.name}>
             {data.name}
@@ -74,15 +84,8 @@ export default function TermbaseCard({ data }: TermbaseCardProps) {
               <svg width="10" height="10" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden>
                 <path d="M14,9V5a3,3,0,0,0-3-3l-4,9v11h11.28a2,2,0,0,0,2-1.7l1.38-9a2,2,0,0,0-2-2.3zM7,22H4a2,2,0,0,1-2-2V14a2,2,0,0,1,2-2H7Z" fill="currentColor" />
               </svg>
-
               {shortText(formatNumber(data.likedNum))}
             </div>
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
-            <NatureButton variant="mist" onClick={() => setOpen(true)} fontSize={11}>
-              查看
-            </NatureButton>
           </div>
         </div>
       </div>

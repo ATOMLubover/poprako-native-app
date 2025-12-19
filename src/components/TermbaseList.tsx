@@ -184,18 +184,12 @@ export default function TermbaseList({ initial, onExit, showInput = true, limit,
           />
 
           <div style={{ display: "flex", gap: 8 }}>
-            <NatureButton variant="mist" onClick={handleAdd} minWidth={50} aria-label="添加">
-              <svg
-                className="plus-icon"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
-              >
-                <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+            <NatureButton variant="mist" onClick={handleAdd} minWidth={50} aria-label="创建">
+              创建
+            </NatureButton>
+
+            <NatureButton variant="mist" minWidth={50} aria-label="我的">
+              我的
             </NatureButton>
 
             {onExit ? (

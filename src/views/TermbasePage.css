@@ -7,10 +7,9 @@
 
 .termbase-page .termbase-title {
   flex-shrink: 0;
-  margin: 10px;
-  padding: 16px 0 12px 0;
+  padding-top: 10px;
   text-align: center;
-  font-size: 30px;
+  font-size: 26px;
   font-weight: 600;
   color: #1a202c;
 }
