@@ -1,0 +1,128 @@
+import { useState, useRef, useEffect, KeyboardEvent, ReactNode } from "react";
+import VerticalAdaptiveList from "./VerticalAdaptiveList";
+import SimpleComicItem from "./SimpleComicItem";
+import NatureButton from "./NatureButton";
+import "./ComicSelector.css";
+import type { SimpleComicInfo } from "../models/comic";
+
+type ComicSelectorProps = {
+  onSearchComics?: (query: string) => Promise<SimpleComicInfo[]>;
+  placeholder?: string;
+};
+
+/**
+ * ComicSelector 组件
+ * - 使用 `SimpleComicInfo` 作为数据模型
+ * - 提供内部 mock 数据生成函数 `__mockSearchComics`
+ */
+export default function ComicSelector({
+  onSearchComics,
+  placeholder = "搜索漫画...",
+}: ComicSelectorProps) {
+  const [query, setQuery] = useState<string>("");
+  const [results, setResults] = useState<SimpleComicInfo[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  // 内部 mock：生成符合 SimpleComicInfo 类型的示例数据
+  async function __mockSearchComics(q: string): Promise<SimpleComicInfo[]> {
+    await new Promise((res) => setTimeout(res, 300));
+
+    // 如果查询为空，使用默认演示词以保证能看到示例数据
+    const displayQ = q.trim() || "Demo";
+
+    const teams = [
+      { teamId: "t1", name: "A" },
+      { teamId: "t2", name: "汉化组" },
+      { teamId: "t3", name: "非常长的汉化组名称组织机构" },
+      { teamId: "t4", name: "Team Long Long" },
+      { teamId: "t5", name: "短" },
+    ];
+
+    const authors = [
+      "A",
+      "张三",
+      "非常非常长的作者名字很难放下来啊",
+      "Author Long Name",
+    ];
+
+    const list: SimpleComicInfo[] = Array.from({ length: 12 }).map((_, i) => ({
+      id: `c_${i + 1}`,
+      author: authors[i % authors.length],
+      title: i % 4 === 0 
+        ? `${displayQ}` 
+        : i % 4 === 1 
+        ? `${displayQ} — 这是一个很长很长的漫画标题我们需要看看怎么处理这种情况呢`
+        : i % 4 === 2
+        ? `${displayQ} — Comic ${i + 1}`
+        : `${displayQ} — 短`,
+      team: teams[i % teams.length],
+    }));
+
+    return list;
+  }
+
+  const doSearch = async (q: string) => {
+    setError(null);
+    setLoading(true);
+    try {
+      const fn = onSearchComics ?? __mockSearchComics;
+      const res = await fn(q);
+      setResults(res);
+    } catch (e) {
+      setError("Search failed");
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") void doSearch(query);
+  };
+
+  // 初始自动展示 mock 数据，便于 draft-board 预览
+  useEffect(() => {
+    void doSearch("Demo");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const listItems: { id: string; height: number; content: ReactNode }[] = results.map((c) => ({
+    id: c.id,
+    height: 80,
+    content: <SimpleComicItem data={c} />,
+  }));
+
+  return (
+    <div className="project-selector">
+      <div className="ps-input-row">
+        <input
+          ref={inputRef}
+          className="ps-input"
+          value={query}
+          placeholder={placeholder}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
+        />
+        <NatureButton
+          variant="mist"
+          onClick={() => {
+            return doSearch(query);
+          }}
+          loadingText="搜索中..."
+          minWidth={80}
+        >
+          搜索
+        </NatureButton>
+      </div>
+
+      {error ? <div className="ps-error">{error}</div> : null}
+
+      <div className="ps-results">
+        <VerticalAdaptiveList items={listItems} gap={6} debug={false} />
+      </div>
+    </div>
+  );
+}

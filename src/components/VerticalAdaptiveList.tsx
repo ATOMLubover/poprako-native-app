@@ -29,7 +29,7 @@ type VerticalAdaptiveListProps = {
 export default function VerticalAdaptiveList({
   items,
   gap = 5,
-  title = "自适应列表",
+  title,
   debug = true,
   onBuilt,
 }: VerticalAdaptiveListProps) {
@@ -47,13 +47,15 @@ export default function VerticalAdaptiveList({
    * 计算理论的纯内容高度（用于调试）
    */
   const calculateTheoreticalContentHeight = (): number => {
-    if (!wrapperRef.current || !titleRef.current) {
-      if (debug) console.warn("[VAL Debug] Wrapper or Title ref not available");
+    if (!wrapperRef.current) {
+      if (debug) console.warn("[VAL Debug] Wrapper ref not available");
       return 0;
     }
 
     const wrapperClientHeight = wrapperRef.current.clientHeight;
-    const titleOccupancy = titleRef.current.offsetHeight;
+
+    // 如果没有 title 或 titleRef 尚不可用，则标题占用高度为 0
+    const titleOccupancy = title && titleRef.current ? titleRef.current.offsetHeight : 0;
 
     const spaceForContainerIncludingOverhead = wrapperClientHeight - titleOccupancy;
 
@@ -268,9 +270,11 @@ export default function VerticalAdaptiveList({
       className="vertical-adaptive-list-wrapper"
       data-visible-count={visibleCount}
     >
-      <h2 ref={titleRef} className="adaptive-list-title">
-        {title}
-      </h2>
+      {title ? (
+        <h2 ref={titleRef} className="adaptive-list-title">
+          {title}
+        </h2>
+      ) : null}
       <div ref={containerRef} className="vertical-adaptive-item-container">
         {items.map((itemConfig, index) => (
           <div

@@ -1,0 +1,127 @@
+.project-selector {
+  /* 允许在父级 flex 容器中垂直拉伸 */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  /* 减少整体内边距，使选择器更紧凑 */
+  padding: 8px;
+}
+
+.ps-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch; /* 使子元素可拉伸到行高 */
+  margin-bottom: 4px;
+  height: 32px; /* 设定行高，输入与按钮填充此高度 */
+}
+
+.ps-input {
+  flex: 1 1 auto;
+  height: 100%;
+  padding: 0 12px; /* 竖向内边距交由高度控制，横向适当留白 */
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+}
+
+.ps-search-btn {
+  padding: 0 12px;
+  background: #2e7d32;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ps-search-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.ps-item {
+  padding: 6px 8px;
+}
+
+.ps-item-title {
+  font-weight: 600;
+}
+
+.ps-item-sub {
+  font-size: 12px;
+  color: #666;
+}
+
+.ps-error {
+  color: #c62828;
+  margin-bottom: 6px;
+}
+
+/* 结果区域占据剩余高度，允许内部列表滚动或测量 */
+.ps-results {
+  flex: 1 1 auto;
+  min-height: 0; /* 关键：允许在 flex 容器中收缩 */
+  overflow: hidden;
+}
+
+/* 保持兼容原有选择器类名 */
+.comic-selector {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+/* Card-like item styles, inspired by TermbaseCard's compact look */
+.ps-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 8px 10px;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ps-item-line1 {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ps-item-tags {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.tag-team {
+  background-color: #e3f2fd;
+  border-color: #bbdefb;
+  color: #54759e;
+}
+
+/* 在输入行中覆盖 NatureButton 高度，使其与输入框等高 */
+.ps-input-row .nb-btn-base {
+  height: 100%;
+  padding: 0 12px;
+  border-radius: 6px;
+}

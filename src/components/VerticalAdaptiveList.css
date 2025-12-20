@@ -57,10 +57,8 @@
   flex-wrap: nowrap;
   overflow: hidden;
   /* 容器内部内边距 */
-  padding: 10px;
-  border: 2px dashed #e0e0e0;
-  border-radius: 8px;
-  background-color: #fafafa;
+  padding: 6px;
+  border: none;
   /* 占据剩余空间 */
   flex-grow: 1;
   flex-basis: 0;
@@ -69,18 +67,22 @@
 
 /* 列表项基础样式 */
 .vertical-adaptive-item {
+  /* 让 item 本身保持中性，不强制背景/颜色/居中布局
+     这样内部传入的内容（比如 .ps-card）可以决定样式 */
   width: 100%;
-  background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
+  background: transparent;
+  color: inherit;
+  display: block;
+  border-radius: 0;
+  font-size: inherit;
+  font-weight: inherit;
   flex-shrink: 0;
-  transition: opacity 0.3s, background-color 0.3s;
-  box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);
+  transition: opacity 0.18s, transform 0.18s ease;
+  transform-origin: center;
+  will-change: transform, opacity;
+  box-shadow: none;
+  padding: 0;
+  margin-bottom: 4px;
 }
 
 /* 移除最后一个项的底部边距，防止被 overflow:hidden 裁剪 */
@@ -93,4 +95,9 @@
   display: none;
   opacity: 0;
   pointer-events: none;
+}
+
+/* Hover 时轻微旋转，增加交互反馈 */
+.vertical-adaptive-item:hover {
+  transform: rotate(-1deg);
 }

@@ -22,6 +22,8 @@
 
 - TAG： /src/components/NatureTag.tsx
 
+- 错误提示（所有不可恢复错误均使用这个进行报错）： /src/components/NotificationToast.tsx（注意这是全局的，详情参考其 export 的函数）
+
 ## 注释相关要求
 
 - 所有注释均使用中文。
