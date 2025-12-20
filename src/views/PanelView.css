@@ -3,7 +3,7 @@
   --sidebar-width-expanded: 240px;
   
   /* 自然配色方案 */
-  --bg-page: #f8f9f8;
+  --bg-page: #f6f6f6;
   --bg-sidebar: #ffffff;
   --text-main: #2e3c33;
   --text-muted: #7a8c80;
@@ -217,3 +217,4 @@ html, body, #root {
   display: flex;
   flex-direction: column;
 }
+  /* entrance animation removed here — use per-page animations instead */

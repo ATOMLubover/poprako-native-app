@@ -1,8 +1,10 @@
 import { useState } from "react";
 import Icon from "../components/Icon";
 import TermbasePage from "./TermbasePage";
+import TagPoolPage from "./TagPoolPage";
+import TagDetailSwitch from "../components/TagDetailSwitch";
+import ProjectSelector from "../components/ProjectSelector";
 import "./PanelView.css";
-import { useToast } from "../components/NotificationToast";
 
 type MenuItem = "draft-board" | "team-list" | "tag-pool" | "termbase-pool" | "font-repo" | "compressor-helper" | "settings";
 
@@ -53,8 +55,8 @@ export default function PanelView() {
 
   const navItems: NavItem[] = [
     { id: "draft-board", icon: "pencil", label: "草稿板" },
-    { id: "team-list", icon: "users", label: "汉化组列表" },
-    { id: "tag-pool", icon: "tag", label: "漫画标签池" },
+    { id: "team-list", icon: "users", label: "汉化组" },
+    { id: "tag-pool", icon: "tag", label: "标签池" },
     { id: "termbase-pool", icon: "database", label: "术语库" },
     { id: "font-repo", icon: "font", label: "字体仓库" },
     { id: "compressor-helper", icon: "image", label: "压图工具" },
@@ -71,7 +73,7 @@ export default function PanelView() {
       case "team-list":
         return <div>汉化组列表页面开发中</div>;
       case "tag-pool":
-        return <div>漫画标签池页面开发中</div>;
+        return <TagPoolPage />;
       case "termbase-pool":
         return <TermbasePage />;
       case "font-repo":
@@ -140,25 +142,19 @@ export default function PanelView() {
 }
 
 function DraftBoard() {
-  const { showToast } = useToast();
-
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12, height: "100%", minHeight: 0 }}>
       <div className="nb-card" style={{ padding: "16px 20px", display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
-        <h2 style={{ margin: 0, marginBottom: 12 }}>Draft Board 测试</h2>
+        {/* 保证内部测试区高度约束正确 */}
+        <div style={{ width: "100%", display: "flex", gap: 12 }}>
+          <div style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
+            <TagDetailSwitch />
+          </div>
 
-        <div style={{ display: "flex", gap: 12 }}>
-          <button
-            onClick={() => showToast("success", "操作成功！测试成功弹窗。", 3000)}
-          >
-            测试成功弹窗
-          </button>
-
-          <button
-            onClick={() => showToast("error", "操作失败。测试失败弹窗。", 4000)}
-          >
-            测试失败弹窗
-          </button>
+          <div style={{ width: 360, flexShrink: 0, minHeight: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            {/* ProjectSelector 放在 draft-board 中供预览 */}
+            <ProjectSelector />
+          </div>
         </div>
       </div>
     </div>

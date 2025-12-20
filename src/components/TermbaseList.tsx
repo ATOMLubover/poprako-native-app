@@ -184,11 +184,11 @@ export default function TermbaseList({ initial, onExit, showInput = true, limit,
           />
 
           <div style={{ display: "flex", gap: 8 }}>
-            <NatureButton variant="mist" onClick={handleAdd} minWidth={50} aria-label="创建">
+            <NatureButton variant="mist" fontSize={18} onClick={handleAdd} minWidth={50} aria-label="创建">
               创建
             </NatureButton>
 
-            <NatureButton variant="mist" minWidth={50} aria-label="我的">
+            <NatureButton variant="mist" fontSize={18} minWidth={50} aria-label="我的">
               我的
             </NatureButton>
 

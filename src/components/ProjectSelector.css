@@ -1,0 +1,50 @@
+.project-selector {
+  display: block;
+  width: 100%;
+}
+
+.ps-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.ps-input {
+  flex: 1 1 auto;
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.ps-search-btn {
+  padding: 8px 12px;
+  background: #2e7d32;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.ps-search-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.ps-item {
+  padding: 8px 10px;
+}
+
+.ps-item-title {
+  font-weight: 600;
+}
+
+.ps-item-sub {
+  font-size: 12px;
+  color: #666;
+}
+
+.ps-error {
+  color: #c62828;
+  margin-bottom: 6px;
+}

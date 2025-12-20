@@ -1,4 +1,5 @@
 import TermbaseList from "../components/TermbaseList";
+import Icon from "../components/Icon";
 import "./TermbasePage.css";
 
 /*
@@ -28,39 +29,28 @@ export default function TermbasePage() {
         <div style={{ display: "flex", height: "100%", minHeight: 0 }}>
           {/* 左列：主内容区 */}
           <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", padding: "0 24px 24px 24px", position: "relative" }}>
-            {/* 背景装饰图标：右下角，z-index 0 */}
-            <svg
+            {/* 背景装饰图标：使用统一的 Icon（与侧栏一致）放右下角，z-index 0 */}
+            <div
               style={{
                 position: "absolute",
-                right: "-5px",
-                bottom: "-10px",
-                width: "200px",
-                height: "200px",
+                right: "-20px",
+                bottom: "-40px",
+                width: 280,
+                height: 280,
                 color: "#3d403d",
                 opacity: 0.06,
                 transform: "rotate(-15deg)",
                 zIndex: 0,
                 pointerEvents: "none",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="1.5"
-                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.168.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.168.477-4.5 1.253M14 10l2 2m0 0l2 2m-2-2l-2 2m2-2l2-2"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M9 10h.01M9 13h.01M9 16h.01M15 10h.01M15 13h.01M15 16h.01"
-              />
-            </svg>
+              <Icon name="database" size={280} />
+            </div>
 
-            <h1 className="termbase-title" style={{ textAlign: "left", paddingLeft: 0, margin: "2px 0 20px 0", position: "relative", zIndex: 1 }}>
+            <h1 className="termbase-title" style={{ margin: "2px 0 20px 0", position: "relative", zIndex: 1 }}>
               术语库一览
             </h1>
             <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", position: "relative", zIndex: 1 }}>

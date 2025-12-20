@@ -7,6 +7,7 @@ type Props = {
   initialLikes?: number;
   theme?: "theme-mist" | "theme-glacier" | "theme-sand" | string;
   onToggle?: (liked: boolean) => void;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
 };
 
 /**
@@ -19,13 +20,35 @@ export default function NatureTagLikesButton({
   initialLikes = 0,
   theme = "theme-mist",
   onToggle,
+  onClick,
 }: Props) {
   const [liked, setLiked] = useState<boolean>(false);
   const [likes, setLikes] = useState<number>(initialLikes);
 
+  // 仅显示字符串的最多前 4 个字符，用于紧凑展示（完整内容仍在 title 中）
+  function shortText(s: string): string {
+    if (s === undefined || s === null) return "-";
+
+    const str = String(s);
+
+    if (str.length <= 4) {
+      return str;
+    }
+
+    return str.trim().slice(0, 4) + "..";
+  }
+
   function handleClick(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
 
+    // If parent provided onClick, treat this as an action to open/detail
+    // and avoid toggling like count here.
+    if (onClick) {
+      onClick(e);
+      return;
+    }
+
+    // Fallback: original toggle behaviour if no onClick injected
     setLiked((prev) => {
       const next = !prev;
 
@@ -46,7 +69,7 @@ export default function NatureTagLikesButton({
       onClick={handleClick}
       aria-pressed={liked}
     >
-      <span className="tag-label">{tag.name}</span>
+      <span className="tag-label">{shortText(tag.name)}</span>
 
       <span className="tag-divider" aria-hidden />
 

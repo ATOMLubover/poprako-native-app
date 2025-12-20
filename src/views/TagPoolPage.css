@@ -1,0 +1,192 @@
+.tag-pool-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  /* page-level subtle entrance animation */
+  animation: pageSlideUp 0.28s ease-out both;
+  will-change: transform, opacity;
+}
+
+.tag-pool-content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+.tag-pool-main {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  padding: 18px 24px 24px 24px;
+  /* 设为透明以显示底层 PanelView 的灰色背景，保留内部白色卡片感 */
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.tag-pool-decoration {
+  position: absolute;
+  right: -12px;
+  bottom: -18px;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle at 30% 40%, rgba(46, 92, 51, 0.08), transparent 60%);
+  filter: blur(8px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.tag-main-header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.tag-pool-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 650;
+  color: #0f172a;
+}
+
+.tag-input-section {
+  --control-height: 36px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.tag-search-input {
+  flex: 1;
+  height: var(--control-height);
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.tag-search-input:focus {
+  border-color: #94a3b8;
+  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.24);
+  background: #ffffff;
+}
+
+.tag-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.tag-input-section .nb-btn-base {
+  height: var(--control-height);
+  padding-top: 0;
+  padding-bottom: 0;
+  box-sizing: border-box;
+}
+
+.tag-grid {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-content: flex-start;
+  padding: 0;
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.tag-item {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.tag-empty {
+  width: 100%;
+  padding: 16px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 14px;
+  border: 1px dashed #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.tag-divider {
+  width: 2px;
+  background: #e2e8f0;
+  align-self: stretch;
+}
+
+.tag-pool-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px;
+  background: #f9fbfbff;
+  min-height: 0;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-bottom: 12px;
+}
+
+.sidebar-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.sidebar-list {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: auto;
+}
+
+@media (max-width: 1080px) {
+  .tag-pool-content {
+    flex-direction: column;
+  }
+
+  .tag-divider {
+    width: 100%;
+    height: 2px;
+  }
+
+  .tag-pool-sidebar {
+    width: 100%;
+  }
+}
+
+@keyframes pageSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

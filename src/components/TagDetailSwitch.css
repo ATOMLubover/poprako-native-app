@@ -1,0 +1,18 @@
+.tag-detail-switch {
+  display: inline-block;
+  border-radius: 12px;
+  background-clip: padding-box;
+  background-color: #ffffff;
+  border: 1px solid rgba(16, 24, 40, 0.06);
+  padding: 8px;
+  box-shadow: 0 8px 20px rgba(2,6,23,0.04);
+}
+
+/* 当在窄视口内居中显示时提供更好的外观 */
+@media (max-width: 520px) {
+  .tag-detail-switch {
+    width: calc(100% - 32px);
+    margin: 0 auto;
+    padding: 6px;
+  }
+}

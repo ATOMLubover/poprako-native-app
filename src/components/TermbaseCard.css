@@ -29,7 +29,6 @@
   overflow: hidden;
   transition: var(--transition);
   cursor: pointer;
-  animation: slideUp 0.36s ease-out;
   font-family: inherit;
 }
 
@@ -64,6 +63,8 @@
     transform: translateY(0);
   }
 }
+
+/* entrance animation removed to match global design (no initial animations) */
 
 /* 顶部标题行布局 */
 .termbase-card .header {
