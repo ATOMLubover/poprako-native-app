@@ -55,5 +55,13 @@
     display: inline-block;
 }
 
+/* 强制横向不换行显示，超出以省略号处理 */
+.nsb-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
 /* 辅助类，避免样式缺失 */
 .mr-2 { margin-right: 8px; }

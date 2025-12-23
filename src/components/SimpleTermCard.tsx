@@ -20,8 +20,8 @@ export default function SimpleTermCard({ data, onClick }: SimpleTermCardProps) {
   return (
     <div className="term-card-simple" onClick={handleClick}>
       <div className="term-content">
-        <span className="term-original">{data.original}</span>
-        <span className="term-definition">{data.definition}</span>
+        <span className="term-original">{data.originalText}</span>
+        <span className="term-definition">{data.targetText}</span>
       </div>
     </div>
   );

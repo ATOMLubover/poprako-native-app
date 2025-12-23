@@ -13,6 +13,8 @@ pub enum Environment {
 }
 
 // Use conditional compilation to set the environment.
+// 此静态变量可能暂时未被使用，允许 dead_code 以避免未使用警告
+#[allow(dead_code)]
 static ENVIRONMENT: Environment = {
     #[cfg(debug_assertions)]
     {

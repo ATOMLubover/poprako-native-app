@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { TermBase } from "../models/term";
+import { Termbase } from "../models/term";
 import "./TermbaseCard.css";
 // NatureButton removed: open-on-click behavior moved to the whole card
 import TermList from "./TermList";
 // 使用与 TermCard 相同的 modifier-info 样式替代原有 RectNatureTag
 
 type TermbaseCardProps = {
-  data: TermBase;
+  data: Termbase;
 };
 
 // 格式化日期为 YYYY.MM.DD 格式

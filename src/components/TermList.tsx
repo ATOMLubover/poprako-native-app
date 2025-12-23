@@ -3,6 +3,7 @@ import NatureButton from "./NatureButton";
 import TermCard from "./TermCard";
 import "./TermList.css";
 import type { Term } from "../models/term";
+import TermCreator from "./TermCreator";
 
 type TermListProps = {
   initial?: Term[];
@@ -17,51 +18,36 @@ type TermListProps = {
  */
 export default function TermList({ initial, onExit }: TermListProps) {
   const __mockTerms: Term[] = [
-    { termBaseId: "1", original: "ふわふわ", definition: "柔软且轻盈的状态，常形容云朵或蛋糕", modifierId: "u1", modifierNickname: "Hatsu1ki", createdAt: new Date("2024-01-10"), updatedAt: new Date("2024-01-10") },
-    { termBaseId: "2", original: "Typography", definition: "排版艺术，研究字体的视觉呈现", modifierId: "u2", modifierNickname: "DesignBot", createdAt: new Date("2024-02-15"), updatedAt: new Date("2024-02-15") },
-    { termBaseId: "3", original: "Debounce", definition: "防抖函数，用于限制高频率执行的函数", modifierId: "u3", modifierNickname: "DevExpert", createdAt: new Date("2024-03-20"), updatedAt: new Date("2024-03-20") },
-    { termBaseId: "4", original: "ぽかぽか", definition: "形容温暖舒适的感觉，常用于天气或环境描述。", modifierId: "u4", modifierNickname: "Yuki", createdAt: new Date("2024-02-14"), updatedAt: new Date("2024-02-14") },
-    { termBaseId: "5", original: "Komorebi", definition: "木漏れ日：指阳光穿过树叶缝隙照射下来的景象。", modifierId: "u5", modifierNickname: "NihonGo", createdAt: new Date("2024-03-20"), updatedAt: new Date("2024-03-20") },
-    { termBaseId: "6", original: "Accessibility", definition: "可访问性，确保产品对各种用户都友好可用", modifierId: "u6", modifierNickname: "A11yTeam", createdAt: new Date("2024-04-01"), updatedAt: new Date("2024-04-01") },
-    { termBaseId: "7", original: "i18n", definition: "国际化（internationalization）的缩写，支持多语言的实践", modifierId: "u7", modifierNickname: "IntlBot", createdAt: new Date("2024-05-05"), updatedAt: new Date("2024-05-05") },
-    { termBaseId: "8", original: "Localization", definition: "本地化：将内容适配特定地区/语言的过程", modifierId: "u8", modifierNickname: "LocTeam", createdAt: new Date("2024-06-10"), updatedAt: new Date("2024-06-10") },
-    { termBaseId: "9", original: "Debounce (advanced)", definition: "带有立即执行选项和取消能力的防抖实现", modifierId: "u9", modifierNickname: "DevExpert", createdAt: new Date("2024-06-12"), updatedAt: new Date("2024-06-12") },
-    { termBaseId: "10", original: "Throttle", definition: "节流，用于限制函数在单位时间内的执行频率", modifierId: "u10", modifierNickname: "PerfEng", createdAt: new Date("2024-06-13"), updatedAt: new Date("2024-06-13") },
-    { termBaseId: "11", original: "Memoization", definition: "缓存函数结果以加速重复计算的优化技术", modifierId: "u11", modifierNickname: "AlgoDept", createdAt: new Date("2024-06-14"), updatedAt: new Date("2024-06-14") },
-    { termBaseId: "12", original: "Refactor", definition: "重构：在不改变外部行为的前提下改善代码结构", modifierId: "u12", modifierNickname: "RefactorBot", createdAt: new Date("2024-06-15"), updatedAt: new Date("2024-06-15") },
-    { termBaseId: "13", original: "CI/CD", definition: "持续集成与持续交付/部署的实践与工具链", modifierId: "u13", modifierNickname: "CITeam", createdAt: new Date("2024-07-01"), updatedAt: new Date("2024-07-01") },
+    { termBaseId: "1", originalText: "ふわふわ", targetText: "柔软且轻盈的状态，常形容云朵或蛋糕", modifierId: "u1", modifierNickname: "Hatsu1ki", createdAt: new Date("2024-01-10"), updatedAt: new Date("2024-01-10") },
+    { termBaseId: "2", originalText: "Typography", targetText: "排版艺术，研究字体的视觉呈现", modifierId: "u2", modifierNickname: "DesignBot", createdAt: new Date("2024-02-15"), updatedAt: new Date("2024-02-15") },
+    { termBaseId: "3", originalText: "Debounce", targetText: "防抖函数，用于限制高频率执行的函数", modifierId: "u3", modifierNickname: "DevExpert", createdAt: new Date("2024-03-20"), updatedAt: new Date("2024-03-20") },
+    { termBaseId: "4", originalText: "ぽかぽか", targetText: "形容温暖舒适的感觉，常用于天气或环境描述。", modifierId: "u4", modifierNickname: "Yuki", createdAt: new Date("2024-02-14"), updatedAt: new Date("2024-02-14") },
+    { termBaseId: "5", originalText: "Komorebi", targetText: "木漏れ日：指阳光穿过树叶缝隙照射下来的景象。", modifierId: "u5", modifierNickname: "NihonGo", createdAt: new Date("2024-03-20"), updatedAt: new Date("2024-03-20") },
+    { termBaseId: "6", originalText: "Accessibility", targetText: "可访问性，确保产品对各种用户都友好可用", modifierId: "u6", modifierNickname: "A11yTeam", createdAt: new Date("2024-04-01"), updatedAt: new Date("2024-04-01") },
+    { termBaseId: "7", originalText: "i18n", targetText: "国际化（internationalization）的缩写，支持多语言的实践", modifierId: "u7", modifierNickname: "IntlBot", createdAt: new Date("2024-05-05"), updatedAt: new Date("2024-05-05") },
+    { termBaseId: "8", originalText: "Localization", targetText: "本地化：将内容适配特定地区/语言的过程", modifierId: "u8", modifierNickname: "LocTeam", createdAt: new Date("2024-06-10"), updatedAt: new Date("2024-06-10") },
+    { termBaseId: "9", originalText: "Debounce (advanced)", targetText: "带有立即执行选项和取消能力的防抖实现", modifierId: "u9", modifierNickname: "DevExpert", createdAt: new Date("2024-06-12"), updatedAt: new Date("2024-06-12") },
+    { termBaseId: "10", originalText: "Throttle", targetText: "节流，用于限制函数在单位时间内的执行频率", modifierId: "u10", modifierNickname: "PerfEng", createdAt: new Date("2024-06-13"), updatedAt: new Date("2024-06-13") },
+    { termBaseId: "11", originalText: "Memoization", targetText: "缓存函数结果以加速重复计算的优化技术", modifierId: "u11", modifierNickname: "AlgoDept", createdAt: new Date("2024-06-14"), updatedAt: new Date("2024-06-14") },
+    { termBaseId: "12", originalText: "Refactor", targetText: "重构：在不改变外部行为的前提下改善代码结构", modifierId: "u12", modifierNickname: "RefactorBot", createdAt: new Date("2024-06-15"), updatedAt: new Date("2024-06-15") },
+    { termBaseId: "13", originalText: "CI/CD", targetText: "持续集成与持续交付/部署的实践与工具链", modifierId: "u13", modifierNickname: "CITeam", createdAt: new Date("2024-07-01"), updatedAt: new Date("2024-07-01") },
   ];
 
   const defaultTerms: Term[] = initial ?? __mockTerms;
 
   const [terms, setTerms] = useState<Term[]>(defaultTerms);
   const [query, setQuery] = useState<string>("");
+  const [showCreator, setShowCreator] = useState<boolean>(false);
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase().trim();
     if (!q) return terms;
-    return terms.filter((t) => t.original.toLowerCase().includes(q) || t.definition.toLowerCase().includes(q));
+    return terms.filter((t) => t.originalText.toLowerCase().includes(q) || t.targetText.toLowerCase().includes(q));
   }, [terms, query]);
 
   const handleAdd = () => {
-    const trimmed = query.trim();
-    if (!trimmed) {
-      console.log("请输入内容后再添加");
-      return;
-    }
-
-    const next: Term = {
-      termBaseId: `${Date.now()}`,
-      original: trimmed,
-      definition: "",
-      modifierId: "local",
-      modifierNickname: "You",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    setTerms((s) => [next, ...s]);
-    setQuery("");
+    // 打开 TermCreator 悬浮窗，由用户输入完整术语
+    setShowCreator(true);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -118,6 +104,30 @@ export default function TermList({ initial, onExit }: TermListProps) {
           ))
         )}
       </div>
+
+      {showCreator ? (
+        <div className="floating-overlay" onClick={() => setShowCreator(false)}>
+          <div className="floating-card" onClick={(e) => e.stopPropagation()}>
+            <TermCreator
+              onCreate={(t) => {
+                const next: Term = {
+                  termBaseId: `${Date.now()}`,
+                  originalText: t.original,
+                  targetText: t.definition,
+                  modifierId: "local",
+                  modifierNickname: "You",
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                };
+
+                setTerms((s) => [next, ...s]);
+                setShowCreator(false);
+              }}
+              onExit={() => setShowCreator(false)}
+            />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

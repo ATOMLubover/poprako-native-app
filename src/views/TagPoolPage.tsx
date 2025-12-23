@@ -183,7 +183,7 @@ export default function TagPoolPage() {
             <div className="tag-input-section">
               <input
                 className="tag-search-input"
-                placeholder="输入标签并按 Enter 筛选或创建"
+                placeholder="输入搜索词并按 Enter 筛选"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={handleKeyDown}

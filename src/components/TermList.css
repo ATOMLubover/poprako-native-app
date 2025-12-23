@@ -37,7 +37,7 @@
   flex-wrap: wrap;
   gap: 12px;
   align-content: flex-start;
-  border: 2px dashed #cbd5e1;
+  border: none;
   padding: 16px;
   border-radius: 12px;
   background-color: rgba(226, 232, 240, 0.2);
@@ -47,6 +47,27 @@
   box-sizing: border-box;
   flex: 1;
   min-height: 0;
+}
+
+/* 悬浮窗覆盖层，用于显示 TermCreator */
+.term-list-container {
+  position: relative; /* 使浮层基于容器定位 */
+}
+
+.floating-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.12);
+  z-index: 60;
+}
+
+.floating-card {
+  width: 360px;
+  max-width: calc(100% - 24px);
+  box-sizing: border-box;
 }
 
 .empty-state {

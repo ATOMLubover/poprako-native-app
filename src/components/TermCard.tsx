@@ -31,8 +31,8 @@ export default function TermCard({ data, onEdit, onDelete, onClick }: TermCardPr
   return (
     <div className="term-card" onClick={handleClick}>
       <div className="term-content">
-        <span className="term-original">{data.original}</span>
-        <span className="term-definition">{data.definition}</span>
+        <span className="term-original">{data.originalText}</span>
+        <span className="term-definition">{data.targetText}</span>
       </div>
 
       <div className="term-footer">

@@ -1,5 +1,4 @@
-import { useState, useRef, useEffect, KeyboardEvent, ReactNode } from "react";
-import VerticalAdaptiveList from "./VerticalAdaptiveList";
+import { useState, useRef, useEffect, KeyboardEvent } from "react";
 import SimpleComicItem from "./SimpleComicItem";
 import NatureButton from "./NatureButton";
 import "./ComicSelector.css";
@@ -8,6 +7,8 @@ import type { SimpleComicInfo } from "../models/comic";
 type ComicSelectorProps = {
   onSearchComics?: (query: string) => Promise<SimpleComicInfo[]>;
   placeholder?: string;
+  onSelect?: (comic: SimpleComicInfo) => void;
+  onExit?: () => void;
 };
 
 /**
@@ -18,6 +19,8 @@ type ComicSelectorProps = {
 export default function ComicSelector({
   onSearchComics,
   placeholder = "搜索漫画...",
+  onSelect,
+  onExit,
 }: ComicSelectorProps) {
   const [query, setQuery] = useState<string>("");
   const [results, setResults] = useState<SimpleComicInfo[]>([]);
@@ -89,11 +92,7 @@ export default function ComicSelector({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const listItems: { id: string; height: number; content: ReactNode }[] = results.map((c) => ({
-    id: c.id,
-    height: 80,
-    content: <SimpleComicItem data={c} />,
-  }));
+  const visibleResults = results.slice(0, 3);
 
   return (
     <div className="project-selector">
@@ -116,12 +115,31 @@ export default function ComicSelector({
         >
           搜索
         </NatureButton>
+        <NatureButton variant="cloud" onClick={() => { if (onExit) onExit(); }}>
+          返回
+        </NatureButton>
       </div>
 
       {error ? <div className="ps-error">{error}</div> : null}
 
+      {loading ? <div className="ps-loading">搜索中...</div> : null}
+
       <div className="ps-results">
-        <VerticalAdaptiveList items={listItems} gap={6} debug={false} />
+        {visibleResults.length === 0 ? null : (
+          <div className="ps-list">
+            {visibleResults.map((c) => (
+              <div key={c.id} style={{ marginBottom: 6 }}>
+                <SimpleComicItem
+                  data={c}
+                  onSelect={(id) => {
+                    const selected = results.find((r) => r.id === id);
+                    if (selected && onSelect) onSelect(selected);
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import { TeamBrief } from "./team";
 
 // 术语库基础类型
-export type TermBase = {
+export type Termbase = {
   teamBrief: TeamBrief;
   name: string;
   description: string;
@@ -13,18 +13,19 @@ export type TermBase = {
 };
 
 // 新建术语库时使用的类型
-export type NewTermBase = {
+export type NewTermbase = {
   name: string;
   teamId: string; // 所属汉化组 ID
   description: string;
+  isPrivate: boolean;
   relatedComicId?: string; // 可选的关联漫画 ID
 };
 
 // 术语类型定义
 export type Term = {
   termBaseId: string;
-  original: string;
-  definition: string;
+  originalText: string;
+  targetText: string;
   modifierId: string;
   modifierNickname: string;
   createdAt: Date;

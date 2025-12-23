@@ -2,8 +2,7 @@ import { useState } from "react";
 import Icon from "../components/Icon";
 import TermbasePage from "./TermbasePage";
 import TagPoolPage from "./TagPoolPage";
-import TagDetailSwitch from "../components/TagDetailSwitch";
-import ComicSelector from "../components/ComicSelector";
+import TermbaseCreator from "../components/TermbaseCreator";
 import "./PanelView.css";
 
 type MenuItem = "draft-board" | "team-list" | "tag-pool" | "termbase-pool" | "font-repo" | "compressor-helper" | "settings";
@@ -147,10 +146,11 @@ function DraftBoard() {
       <div className="nb-card" style={{ padding: "16px 20px", display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
         {/* 保证内部测试区高度约束正确 */}
         <div style={{ width: "100%", display: "flex", justifyContent: "center", gap: 12, height: "100%", minHeight: 0 }}>
-          {/* 移除左侧测试区域，右侧作为单列预览，确保垂直填充 */}
-          <div style={{ width: 360, flexShrink: 0, minHeight: 0, display: "flex", flexDirection: "column", overflow: "hidden", height: "100%" }}>
+
+
+          <div style={{ width: 520, flexShrink: 0, minHeight: 0, display: "flex", flexDirection: "column", overflow: "hidden", height: "100%" }}>
             <div style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
-              <ComicSelector />
+              <TermbaseCreator />
             </div>
           </div>
         </div>

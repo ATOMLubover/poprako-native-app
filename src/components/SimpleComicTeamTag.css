@@ -1,0 +1,23 @@
+.simple-comic-team-tag {
+  display: inline-block;
+  max-width: 10rem;
+  padding: 0.12rem 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1;
+  color: #2b2f33;
+  background: #eaf3ff;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+.simple-comic-team-tag:hover {
+  /* 淡绿色边框与轻微阴影，视觉上更柔和 */
+  border-color: #cfefd0; /* pale green */
+  box-shadow: 0 2px 6px rgba(83, 201, 111, 0.12);
+  background-color: #f6fff6;
+}

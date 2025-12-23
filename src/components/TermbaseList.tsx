@@ -1,11 +1,12 @@
 import React, { useMemo, useState } from "react";
 import NatureButton from "./NatureButton";
 import TermbaseCard from "./TermbaseCard";
+import TermbaseCreator from "./TermbaseCreator";
 import "./TermbaseList.css";
-import type { TermBase } from "../models/term";
+import type { Termbase } from "../models/term";
 
 type TermbaseListProps = {
-  initial?: TermBase[];
+  initial?: Termbase[];
   onExit?: () => void;
   /** 是否显示顶部的搜索输入与操作按钮，默认为 true */
   showInput?: boolean;
@@ -24,7 +25,7 @@ type TermbaseListProps = {
  * - 支持滚动，按行密堆积可换行
  */
 export default function TermbaseList({ initial, onExit, showInput = true, limit, singleColumn = false }: TermbaseListProps) {
-  const __mockTermbases: TermBase[] = [
+  const __mockTermbases: Termbase[] = [
     {
       teamBrief: { teamId: "t-1", name: "白杨汉化组" },
       name: "日语流行词汇",
@@ -118,9 +119,9 @@ export default function TermbaseList({ initial, onExit, showInput = true, limit,
   ];
 
   // 确保传入的 initial（若有）中每一项都包含 `likedNum` 字段，避免在下游显示为 undefined
-  const defaultTermbases: TermBase[] = (initial ?? __mockTermbases).map((tb) => ({ ...tb, likedNum: (tb as any).likedNum ?? 0 })) as TermBase[];
+  const defaultTermbases: Termbase[] = (initial ?? __mockTermbases).map((tb) => ({ ...tb, likedNum: (tb as any).likedNum ?? 0 })) as Termbase[];
 
-  const [termbases, setTermbases] = useState<TermBase[]>(defaultTermbases);
+  const [termbases, setTermbases] = useState<Termbase[]>(defaultTermbases);
   const [query, setQuery] = useState<string>("");
 
   const filtered = useMemo(() => {
@@ -144,16 +145,19 @@ export default function TermbaseList({ initial, onExit, showInput = true, limit,
   }, [filtered, limit]);
 
   const handleAdd = () => {
-    const trimmed = query.trim();
-    if (!trimmed) {
-      console.log("请输入内容后再添加");
-      return;
-    }
+    // Open creator modal instead of immediate add
+    setShowCreator(true);
+  };
 
-    const next: TermBase = {
-      teamBrief: { teamId: "local", name: "本地团队" },
-      name: trimmed,
-      description: "",
+  const [showCreator, setShowCreator] = useState<boolean>(false);
+
+  function handleCreateSave(payload: { name: string; teamId: string; description: string; isPrivate: boolean; relatedComicId?: string }) {
+    const teamName = displayList.find((tb) => tb.teamBrief.teamId === payload.teamId)?.teamBrief.name ?? payload.teamId ?? "";
+
+    const next: Termbase = {
+      teamBrief: { teamId: payload.teamId, name: teamName },
+      name: payload.name,
+      description: payload.description ?? "",
       likedNum: 0,
       termNum: 0,
       createdAt: new Date(),
@@ -161,8 +165,8 @@ export default function TermbaseList({ initial, onExit, showInput = true, limit,
     };
 
     setTermbases((s) => [next, ...s]);
-    setQuery("");
-  };
+    setShowCreator(false);
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
@@ -185,12 +189,12 @@ export default function TermbaseList({ initial, onExit, showInput = true, limit,
 
           <div style={{ display: "flex", gap: 8 }}>
             <NatureButton variant="mist" fontSize={18} onClick={handleAdd} minWidth={50} aria-label="创建">
-              创建
+              添加
             </NatureButton>
 
-            <NatureButton variant="mist" fontSize={18} minWidth={50} aria-label="我的">
+            {/* <NatureButton variant="mist" fontSize={18} minWidth={50} aria-label="我的">
               我的
-            </NatureButton>
+            </NatureButton> */}
 
             {onExit ? (
               <NatureButton variant="rose" onClick={onExit} minWidth={40} aria-label="退出">
@@ -214,6 +218,16 @@ export default function TermbaseList({ initial, onExit, showInput = true, limit,
           ))
         )}
       </div>
+      {showCreator ? (
+        <div className="modal-overlay" onClick={() => setShowCreator(false)}>
+          <div onClick={(e) => e.stopPropagation()}>
+            <TermbaseCreator
+              onCancel={() => setShowCreator(false)}
+              onSave={(p) => handleCreateSave(p)}
+            />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

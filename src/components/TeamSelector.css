@@ -1,0 +1,78 @@
+/* TeamSelector 样式（基于 TextSelector 视觉语言）
+	 - 提供输入行、结果列表、错误与加载提示
+*/
+
+.project-selector {
+	box-sizing: border-box;
+	width: 100%;
+	background: #fff;
+	border-radius: 10px;
+	border: 1px solid #f0f3f5;
+	padding: 10px;
+	display: flex;
+	flex-direction: column;
+}
+
+/* 确保输入行和结果列表适应容器宽度 */
+.ps-input-row {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	margin-bottom: 8px;
+	width: 100%;
+}
+
+.ps-input {
+	flex: 1;
+	padding: 8px 10px;
+	border: 1px solid #e6e9ee;
+	border-radius: 6px;
+	font-size: 14px;
+	background: #fbfcfe;
+	width: 100%;
+}
+
+.ps-error {
+	color: #b00020;
+	font-size: 13px;
+	margin-bottom: 8px;
+}
+
+.ps-loading {
+	color: #666;
+	font-size: 13px;
+	margin-bottom: 8px;
+}
+
+.ps-results {
+	margin-top: 6px;
+	flex: 1;
+	width: 100%;
+}
+
+.ps-list {
+	display: flex;
+	flex-direction: column;
+}
+
+.ps-card {
+	padding: 8px 10px;
+	border-radius: 6px;
+	background: #fafbfd;
+	border: 1px solid #f4f5f7;
+	cursor: pointer;
+	transition: background-color 120ms ease, transform 120ms ease;
+}
+
+.ps-card:hover {
+	background: #eef6ff;
+	transform: translateY(-1px);
+}
+
+.ps-item-line1 {
+	font-size: 14px;
+	font-weight: 500;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}

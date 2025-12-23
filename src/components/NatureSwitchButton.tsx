@@ -8,6 +8,10 @@ type NatureSwitchButtonProps = {
   onToggle?: (newState: "on" | "off") => void | Promise<void>;
   disabled?: boolean;
   className?: string;
+  width?: number | string;
+  height?: number | string;
+  onText?: string;
+  offText?: string;
 };
 
 /**
@@ -17,7 +21,7 @@ type NatureSwitchButtonProps = {
  * - 保持原始样式类名以便复用样式表
  */
 export default function NatureSwitchButton(props: NatureSwitchButtonProps) {
-  const { initialState = "off", onToggle, disabled = false, className = "" } = props;
+  const { initialState = "off", onToggle, disabled = false, className = "", width, height, onText = "已开启", offText = "已关闭" } = props;
 
   const [state, setState] = useState<"on" | "off">(initialState);
   const [loading, setLoading] = useState<boolean>(false);
@@ -64,12 +68,13 @@ export default function NatureSwitchButton(props: NatureSwitchButtonProps) {
       aria-pressed={isOn}
       aria-busy={loading}
       disabled={disabled}
+      style={{ width: width as any, height: height as any }}
     >
       <span className="nsb-icon mr-2">
         {loading ? <DotLoadSpinner /> : isOn ? "●" : "○"}
       </span>
 
-      <span className="nsb-text">{loading ? "处理中..." : isOn ? "已开启" : "已关闭"}</span>
+      <span className="nsb-text">{loading ? "处理中..." : isOn ? onText : offText}</span>
     </button>
   );
 }
