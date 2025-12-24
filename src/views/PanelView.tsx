@@ -2,10 +2,11 @@ import { useState } from "react";
 import Icon from "../components/Icon";
 import TermbasePage from "./TermbasePage";
 import TagPoolPage from "./TagPoolPage";
-import { CompressorView } from "./CompressorView";
+import { CompressorPage } from "./CompressorPage";
+import SpecialSymbolPage from "./SpecialSymbolPage";
 import "./PanelView.css";
 
-type MenuItem = "draft-board" | "team-list" | "tag-pool" | "termbase-pool" | "font-repo" | "compressor-helper" | "settings";
+type MenuItem = "draft-board" | "team-list" | "tag-pool" | "termbase-pool" | "font-repo" | "compressor-helper" | "special-symbols" | "settings";
 
 type NavItem = {
   id: MenuItem;
@@ -58,6 +59,7 @@ export default function PanelView() {
     { id: "tag-pool", icon: "tag", label: "标签池" },
     { id: "termbase-pool", icon: "database", label: "术语库" },
     { id: "font-repo", icon: "font", label: "字体仓库" },
+    { id: "special-symbols", icon: "star", label: "特殊符号" },
     { id: "compressor-helper", icon: "image", label: "压图工具" },
   ];
 
@@ -77,8 +79,10 @@ export default function PanelView() {
         return <TermbasePage />;
       case "font-repo":
         return <div>字体仓库页面开发中</div>;
+      case "special-symbols":
+        return <SpecialSymbolPage />;
       case "compressor-helper":
-        return <CompressorView />;
+        return <CompressorPage />;
       case "settings":
         return <div>设置页面开发中</div>;
       default:

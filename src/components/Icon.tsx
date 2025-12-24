@@ -1,6 +1,6 @@
 import React from "react";
 import type { SVGProps } from "react";
-import { Settings as LucideSettings, TreePine as LucideTreePine, Clock as LucideClock, Users as LucideUsers, Tag as LucideTag, Database as LucideDatabase, Image as LucideImage, Type as LucideType } from "lucide-react";
+import { Settings as LucideSettings, TreePine as LucideTreePine, Clock as LucideClock, Users as LucideUsers, Tag as LucideTag, Database as LucideDatabase, Image as LucideImage, Type as LucideType, Star as LucideStar } from "lucide-react";
 
 type IconProps = {
   name: string;
@@ -49,6 +49,10 @@ export default function Icon({ name, size = 19, className }: IconProps) {
 
   if (name === "image") {
     return <LucideImage size={size} className={className} />;
+  }
+
+  if (name === "star") {
+    return <LucideStar size={size} className={className} />;
   }
 
   if (name === "font" || name === "type") {

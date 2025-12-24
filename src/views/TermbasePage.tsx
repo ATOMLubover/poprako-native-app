@@ -51,7 +51,7 @@ export default function TermbasePage() {
             </div>
 
             <h1 className="termbase-title" style={{ margin: "2px 0 20px 0", position: "relative", zIndex: 1 }}>
-              术语库一览
+              术语库
             </h1>
             <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", position: "relative", zIndex: 1 }}>
               <TermbaseList />

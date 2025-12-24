@@ -7,6 +7,9 @@
   padding: 32px;
   box-sizing: border-box;
   background: #fafafa;
+  /* page-level entrance animation, similar to TagPoolPage */
+  animation: pageSlideUp 0.28s ease-out both;
+  will-change: transform, opacity;
 }
 
 .compressor-title {
@@ -87,9 +90,23 @@
 .list-panel-header {
   padding: 20px 24px;
   border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.list-panel-title {
   font-size: 16px;
   font-weight: 500;
   color: #37474f;
+}
+
+.status-tag-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
 }
 
 .list-panel-content {
@@ -129,6 +146,12 @@
   font-weight: 500;
 }
 
+.image-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .status-pending {
   background: #fff9c4;
   color: #f57f17;
@@ -149,6 +172,26 @@
   color: #d32f2f;
 }
 
+.retry-button {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #ffcdd2;
+  background: #ffecec;
+  color: #c62828;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.retry-button:hover {
+  background: #ffdada;
+}
+
+.retry-button:active {
+  transform: scale(0.98);
+}
+
 .list-panel-footer {
   padding: 16px 24px;
   border-top: 1px solid #e0e0e0;
@@ -159,6 +202,37 @@
 /* Button wrappers inside footer: only add gap between adjacent wrappers */
 .list-panel-footer .button-wrapper + .button-wrapper {
   margin-left: 8px;
+}
+
+.compressor-page-footer {
+  width: 100%;
+  max-width: 1400px;
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.compressor-page-footer .footer-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.compressor-page-footer .footer-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.compressor-page-footer .footer-label {
+  font-size: 13px;
+  color: var(--text-muted, #7a8c80);
 }
 
 .empty-list {
@@ -202,8 +276,45 @@
   border: 1px solid var(--accent-border, #c8e6c9);
   outline: none;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .max-bytes-select:active {
   transform: scale(0.98);
+}
+
+.max-bytes-select:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Threads select should match max-bytes select visually */
+.threads-select {
+  padding: 6px 10px;
+  border-radius: 7px;
+  font-size: 15px;
+  font-weight: 500;
+  border: 2px solid;
+  border-color: var(--accent-bg, #e3f2e5);
+  color: var(--accent-text, #2e5c33);
+  border: 1px solid var(--accent-border, #c8e6c9);
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.threads-select:active {
+  transform: scale(0.98);
+}
+
+@keyframes pageSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

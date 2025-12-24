@@ -21,6 +21,7 @@
   -webkit-user-select: none;
   background-color: transparent;
   box-shadow: none;
+  outline: none;
 }
 
 /* 文本部分，保持不换行 */
@@ -32,6 +33,9 @@
 .nature-tag:hover {
   transform: translateY(-1px);
   box-shadow: none;
+  /* 防止浏览器聚焦样式（蓝色轮廓）影响视觉，始终使用主题边框 */
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .nature-tag:active {
@@ -48,6 +52,7 @@
 
 .theme-mist:hover {
   background-color: #D1E8D5;
+  border-color: #C8E6C9;
 }
 
 .theme-glacier {
@@ -58,6 +63,7 @@
 
 .theme-glacier:hover {
   background-color: #d0e9fc;
+  border-color: #BBDEFB;
 }
 
 .theme-sand {
@@ -68,4 +74,27 @@
 
 .theme-sand:hover {
   background-color: #e6e2db;
+  border-color: #E0DBCF;
+}
+
+.theme-amber {
+  background-color: #FFF4E5;
+  border-color: #FFD7B3;
+  color: #D26A00;
+}
+
+.theme-amber:hover {
+  background-color: #FFE8CC;
+  border-color: #FFD7B3;
+}
+
+.theme-rose {
+  background-color: #FFECEC;
+  border-color: #FFCdd2;
+  color: #C62828;
+}
+
+.theme-rose:hover {
+  background-color: #FFDADA;
+  border-color: #FFCdd2;
 }

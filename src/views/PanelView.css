@@ -143,7 +143,7 @@ html, body, #root {
   align-items: center;
   height: 48px;
   margin: 4px 10px;
-  border-radius: 999px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
   color: var(--text-muted);
@@ -181,6 +181,28 @@ html, body, #root {
 
 .nav-item:hover .nav-icon {
   transform: scale(1.15) rotate(-5deg);
+}
+
+/* Special icon (ღ) styling */
+.special-icon {
+  font-size: 18px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #d26a00;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.15s ease;
+}
+
+.nav-item:hover .special-icon {
+  transform: scale(1.15) rotate(-6deg);
+  color: var(--accent-text);
+}
+
+.special-icon svg {
+  width: 20px;
+  height: 20px;
+  display: block;
 }
 
 .nav-text {
