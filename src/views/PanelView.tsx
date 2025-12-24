@@ -2,7 +2,7 @@ import { useState } from "react";
 import Icon from "../components/Icon";
 import TermbasePage from "./TermbasePage";
 import TagPoolPage from "./TagPoolPage";
-import TermbaseCreator from "../components/TermbaseCreator";
+import { CompressorView } from "./CompressorView";
 import "./PanelView.css";
 
 type MenuItem = "draft-board" | "team-list" | "tag-pool" | "termbase-pool" | "font-repo" | "compressor-helper" | "settings";
@@ -78,7 +78,7 @@ export default function PanelView() {
       case "font-repo":
         return <div>字体仓库页面开发中</div>;
       case "compressor-helper":
-        return <div>压图工具页面开发中</div>;
+        return <CompressorView />;
       case "settings":
         return <div>设置页面开发中</div>;
       default:
@@ -144,16 +144,7 @@ function DraftBoard() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12, height: "100%", minHeight: 0 }}>
       <div className="nb-card" style={{ padding: "16px 20px", display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
-        {/* 保证内部测试区高度约束正确 */}
-        <div style={{ width: "100%", display: "flex", justifyContent: "center", gap: 12, height: "100%", minHeight: 0 }}>
-
-
-          <div style={{ width: 520, flexShrink: 0, minHeight: 0, display: "flex", flexDirection: "column", overflow: "hidden", height: "100%" }}>
-            <div style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
-              <TermbaseCreator />
-            </div>
-          </div>
-        </div>
+        
       </div>
     </div>
   );

@@ -102,13 +102,34 @@ export default function TeamSelector({
             return doSearch(query);
           }}
           loadingText="搜索中..."
-          minWidth={80}
+          minWidth={40}
         >
-          搜索
+          <svg
+            className="search-icon"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="11" cy="11" r="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
         </NatureButton>
 
-        <NatureButton variant="cloud" minWidth={80} onClick={() => { if (onExit) onExit(); }}>
-          返回
+        <NatureButton variant="cloud" minWidth={40} onClick={() => { if (onExit) onExit(); }}>
+          <svg
+            className="close-icon"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path d="M6 6l12 12M6 18L18 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
         </NatureButton>
       </div>
 
