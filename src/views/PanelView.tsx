@@ -4,6 +4,8 @@ import TermbasePage from "./TermbasePage";
 import TagPoolPage from "./TagPoolPage";
 import { CompressorPage } from "./CompressorPage";
 import SpecialSymbolPage from "./SpecialSymbolPage";
+import { Translator } from "../components/translator/Translator";
+import type { Page, Project, Unit } from "../models/translator";
 import "./PanelView.css";
 
 type MenuItem = "draft-board" | "team-list" | "tag-pool" | "termbase-pool" | "font-repo" | "compressor-helper" | "special-symbols" | "settings";
@@ -145,11 +147,93 @@ export default function PanelView() {
 }
 
 function DraftBoard() {
+  const mockProject: Project = {
+    id: "proj-001",
+    author: "白杨汉化组",
+    title: "某某漫画第一话",
+    pageCount: 25,
+    unitCount: 120,
+    translatedUnitCount: 85,
+    proovedUnitCount: 42,
+  };
+
+  const [page, setPage] = useState<Page>({
+    id: "PG-882104",
+    translatedUnitCount: 3,
+    proovedUnitCount: 1,
+    inboxUnitCount: 8,
+    outboxUnitCount: 7,
+    units: [
+      {
+        id: "u1",
+        x: 0.1,
+        y: 0.05,
+        indexInPage: 0,
+        translatedText: "第一句翻译",
+        isProoved: true,
+        isInbox: true,
+      },
+      {
+        id: "u2",
+        x: 0.15,
+        y: 0.12,
+        indexInPage: 1,
+        translatedText: "正在等待校对的长文本示例",
+        isProoved: false,
+        isInbox: false,
+      },
+      {
+        id: "u3",
+        x: 0.2,
+        y: 0.25,
+        indexInPage: 2,
+        translatedText: "已翻译完成的对话",
+        proovedText: "校对后的终稿文本",
+        isProoved: true,
+        isInbox: false,
+      },
+    ],
+  });
+
+  const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
+
+  const handleUnitSelect = (unitId: string | null) => {
+    setSelectedUnitId(unitId);
+  };
+
+  const handleUnitSave = (unit: Partial<Unit> & { id: string }) => {
+    console.log("[PanelView] handleUnitSave called with:", unit);
+
+    setPage((prevPage) => {
+      const updatedUnits = prevPage.units.map((u) =>
+        u.id === unit.id ? { ...u, ...unit } : u
+      );
+
+      const newPage = {
+        ...prevPage,
+        units: updatedUnits,
+      };
+
+      console.log("[PanelView] Updated page:", newPage);
+      return newPage;
+    });
+  };
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12, height: "100%", minHeight: 0 }}>
-      <div className="nb-card" style={{ padding: "16px 20px", display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
-        
-      </div>
+    <div style={{ height: "100%", width: "100%", overflow: "hidden" }}>
+      <Translator
+        project={mockProject}
+        currentPage={page}
+        isLoading={false}
+        mode="proofread"
+        isOffline={false}
+        currentPageIndex={0}
+        selectedUnitId={selectedUnitId}
+        onRequestPage={(idx) => console.log("Request page:", idx)}
+        onUnitSave={handleUnitSave}
+        onUnitRemove={(id) => console.log("Remove unit:", id)}
+        onUnitSelect={handleUnitSelect}
+      />
     </div>
   );
 }

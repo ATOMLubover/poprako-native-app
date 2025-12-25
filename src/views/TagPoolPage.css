@@ -107,6 +107,15 @@
   min-height: 0;
 }
 
+.tag-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tag-grid::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 10px;
+}
+
 .tag-item {
   display: flex;
   flex-wrap: wrap;

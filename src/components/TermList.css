@@ -49,6 +49,15 @@
   min-height: 0;
 }
 
+.term-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.term-list::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 10px;
+}
+
 /* 悬浮窗覆盖层，用于显示 TermCreator */
 .term-list-container {
   position: relative; /* 使浮层基于容器定位 */

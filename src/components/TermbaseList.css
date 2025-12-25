@@ -55,6 +55,15 @@
   align-content: flex-start;
 }
 
+.termbase-list-container .termbase-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.termbase-list-container .termbase-list::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 10px;
+}
+
 /* 当需要强制单列显示时，使用此限制（可在父容器限制宽度触发） */
 .termbase-list-container.single-column .termbase-list {
   flex-wrap: nowrap;

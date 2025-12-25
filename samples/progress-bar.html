@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>纯净静态进度条</title>
+    <!-- 加载 Tailwind CSS 用于美化和布局 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 进度条容器样式 */
+        .progress-outer {
+            /* 样式可调 1: 边框颜色及粗细 */
+            border: 1px solid #a0a0a0;
+            /* 样式可调 2: 未填充部分背景颜色 (淡灰色) */
+            background-color: #e5e7eb; 
+        }
+        .progress-inner {
+            /* 样式可调 3: 填充部分背景颜色 (粉色) */
+            background-color: #f87171;
+            /* 静态展示，移除动画 */
+            /* transition: width 0.3s ease-in-out; */
+        }
+    </style>
+</head>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen p-4">
+
+    <!-- 主容器确保进度条居中 -->
+    <div class="w-full max-w-lg">
+        
+        <h1 class="text-xl font-bold text-gray-700 text-center mb-6">纯净进度条示例</h1>
+
+        <!-- 进度条 HTML 结构 -->
+        <!-- 样式可调 4: 进度条的整体高度（h-3） -->
+        <!-- 样式可调 5: 进度条的整体宽度（w-full 或 w-96 等） -->
+        <!-- 样式可调 6: 整体圆润程度（rounded-full） -->
+        <div class="progress-outer h-3 w-full rounded-full overflow-hidden relative mx-auto shadow-inner">
+            <!-- 进度填充部分 -->
+            <div id="myProgressBar" class="progress-inner h-full rounded-full" style="width: 40%;"> 
+                <!-- 进度值：当前写死为40%。如需动态调整，请修改此处的百分比数值 -->
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

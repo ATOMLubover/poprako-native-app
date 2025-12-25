@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UnitList - 简约翻译校对列表</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --color-empty: #f3f4f6; 
+            --color-pending: #fff7ed; 
+            --color-prooved: #f0fdf4; 
+            --stroke-inbox: #f9a8d4; 
+            --stroke-outbox: #fde047; 
+            --border-item: #e5e7eb; 
+            --text-index: #4b5563;
+            --hover-blue-light: rgba(59, 130, 246, 0.4); 
+            --bg-list: #ffffff;
+        }
+
+        body {
+            background-color: #f6f8fa;
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        .unit-list {
+            width: 400px;
+            background-color: var(--bg-list);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03), 0 4px 10px rgba(0, 0, 0, 0.02);
+            border: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            max-height: 85vh;
+            overflow: hidden; /* 确保圆角切边 */
+        }
+
+        .list-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            background: #fff;
+            z-index: 20;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* 左侧计数信息 */
+        .box-stats {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 400;
+        }
+
+        .box-stats .divider {
+            color: #e5e7eb;
+            font-size: 0.65rem;
+        }
+
+        /* Tags 容器 */
+        .status-tags {
+            display: flex;
+            gap: 6px;
+        }
+
+        /* Tag 基础样式 */
+        .tag {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+
+        .tag-gray { background-color: #f3f4f6; color: #6b7280; border-color: #e5e7eb; }
+        .tag-orange { background-color: #fff7ed; color: #c2410c; border-color: #ffedd5; }
+        .tag-green { background-color: #f0fdf4; color: #15803d; border-color: #dcfce7; }
+
+        .list-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .list-content::-webkit-scrollbar { width: 6px; }
+        .list-content::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 10px; }
+
+        .unit-item {
+            display: flex;
+            align-items: stretch;
+            width: 100%; 
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid var(--border-item);
+            flex-shrink: 0;
+            cursor: pointer;
+            position: relative;
+            background-color: #fff;
+        }
+
+        .unit-item:hover {
+            transform: translateY(-1px);
+            border-color: transparent;
+            box-shadow: 0 0 0 1px var(--hover-blue-light), 0 4px 12px rgba(0,0,0,0.06);
+            z-index: 10;
+        }
+
+        .unit-index {
+            width: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-index);
+            flex-shrink: 0;
+            background-color: #ffffff;
+            border-right: 1px solid rgba(0,0,0,0.04);
+        }
+
+        .index-inbox { box-shadow: inset 4px 0 0 0 var(--stroke-inbox); }
+        .index-outbox { box-shadow: inset 4px 0 0 0 var(--stroke-outbox); }
+
+        .unit-content {
+            flex-grow: 1;
+            padding: 12px; 
+            display: flex;
+            align-items: center; 
+        }
+
+        .unit-textarea {
+            width: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            resize: none;
+            font-size: 0.875rem;
+            line-height: 1.45;
+            color: #374151;
+            padding: 0;
+            margin: 0;
+            font-family: inherit;
+            display: block;
+            pointer-events: none;
+            overflow: hidden;
+            min-height: 1.25rem; 
+        }
+
+        .status-empty { background-color: var(--color-empty); }
+        .status-pending { background-color: var(--color-pending); }
+        .status-prooved { background-color: var(--color-prooved); }
+    </style>
+</head>
+<body>
+
+    <div class="unit-list">
+        <div class="list-header">
+            <div class="header-content">
+                <!-- 左侧框计数 -->
+                <div class="box-stats" id="box-info">
+                    <span>框内 0</span>
+                    <span class="divider">|</span>
+                    <span>框外 0</span>
+                </div>
+                <!-- 右侧统计标签 -->
+                <div class="status-tags" id="tags-container">
+                    <!-- 动态渲染标签 -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="list-content" id="unit-container"></div>
+    </div>
+
+    <script>
+        const mockPage = {
+            id: "PG-882104",
+            width: 1280,
+            height: 1850,
+            translatedUnitCount: 4,
+            proovedUnitCount: 2,
+            inboxUnitCount: 3,
+            outboxUnitCount: 4,
+            units: [
+                { id: "u1", indexInPage: 0, translatedText: "第一句翻译", isProoved: true, isInbox: true },
+                { id: "u2", indexInPage: 1, translatedText: "正在等待校对的长文本示例，测试高度自适应效果。如果文字很多，这个 item 会变高，文字少则会变低。", isProoved: false, isInbox: false },
+                { id: "u3", indexInPage: 2, translatedText: "已翻译完成的对话", proovedText: "校对后的终稿文本。", isProoved: true, isInbox: false },
+                { id: "u4", indexInPage: 3, translatedText: "这一句也已经翻译过啦", isProoved: false, isInbox: true },
+                { id: "u5", indexInPage: 4, isProoved: false, isInbox: true },
+                { id: "u6", indexInPage: 5, isProoved: false, isInbox: false },
+                { id: "u7", indexInPage: 6, isProoved: false, isInbox: false }
+            ]
+        };
+
+        function autoResize(textarea) {
+            textarea.style.height = '0px'; 
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }
+
+        function renderPage(page) {
+            // 更新框计数
+            document.getElementById('box-info').innerHTML = `
+                <span>框内 ${page.inboxUnitCount}</span>
+                <span class="divider">|</span>
+                <span>框外 ${page.outboxUnitCount}</span>
+            `;
+
+            // 渲染统计 Tags
+            const total = page.units.length;
+            const unTranslated = total - page.translatedUnitCount;
+            const unProoved = page.translatedUnitCount - page.proovedUnitCount;
+            const prooved = page.proovedUnitCount;
+
+            const tagsContainer = document.getElementById('tags-container');
+            tagsContainer.innerHTML = `
+                <span class="tag tag-gray">未翻译 ${unTranslated}</span>
+                <span class="tag tag-orange">待校对 ${unProoved}</span>
+                <span class="tag tag-green">已完成 ${prooved}</span>
+            `;
+
+            // 渲染列表项
+            const container = document.getElementById('unit-container');
+            container.innerHTML = '';
+
+            page.units.forEach(unit => {
+                const item = document.createElement('div');
+                const displayText = unit.proovedText || unit.translatedText || "-";
+                const hasText = !!(unit.proovedText || unit.translatedText);
+
+                let statusClass = 'status-empty';
+                if (unit.isProoved) {
+                    statusClass = 'status-prooved';
+                } else if (hasText) {
+                    statusClass = 'status-pending';
+                }
+
+                const indexClass = unit.isInbox ? 'index-inbox' : 'index-outbox';
+
+                item.className = `unit-item ${statusClass}`;
+                item.innerHTML = `
+                    <div class="unit-index ${indexClass}">${unit.indexInPage + 1}</div>
+                    <div class="unit-content">
+                        <textarea class="unit-textarea" readonly>${displayText}</textarea>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+
+            requestAnimationFrame(() => {
+                const textareas = document.querySelectorAll('.unit-textarea');
+                textareas.forEach(autoResize);
+            });
+        }
+
+        window.onload = () => {
+            renderPage(mockPage);
+        };
+    </script>
+</body>
+</html>

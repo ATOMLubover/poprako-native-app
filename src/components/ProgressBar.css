@@ -1,0 +1,21 @@
+.progress-bar-wrapper {
+  width: 100%;
+}
+
+.progress-outer {
+  position: relative;
+  border: 1px solid #a0a0a0;
+  background-color: #e5e7eb;
+  border-radius: 9999px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.progress-inner {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.3s ease-in-out;
+}
