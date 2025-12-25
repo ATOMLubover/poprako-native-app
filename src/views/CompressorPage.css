@@ -3,37 +3,72 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 32px;
+  align-items: stretch;
+  padding: 0;
   box-sizing: border-box;
-  background: #fafafa;
+  background: transparent;
   /* page-level entrance animation, similar to TagPoolPage */
   animation: pageSlideUp 0.28s ease-out both;
   will-change: transform, opacity;
 }
 
 .compressor-title {
-  font-size: 28px;
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 40px;
-  letter-spacing: 0.5px;
+  font-size: 24px;
+  font-weight: 650;
+  color: #0f172a;
+  margin: 0;
+}
+
+.compressor-header {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 18px 20px 12px 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.compressor-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.52);
+  border: 1px solid rgba(120, 134, 124, 0.14);
+  box-shadow: none;
+  backdrop-filter: blur(4px);
+}
+
+.toolbar-left,
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .compressor-content {
   width: 100%;
   max-width: 1400px;
-  height: 80%;
+  flex: 1;
+  min-height: 0;
+  margin: 0 auto;
+  padding: 0 20px 20px 20px;
+  box-sizing: border-box;
   display: flex;
-  gap: 32px;
+  gap: 18px;
 }
 
 .compressor-drop-zone {
   flex: 1;
   height: 100%;
-  border: 3px dashed #b0bec5;
-  border-radius: 16px;
-  background: #ffffff;
+  border: 2px dashed rgba(134, 150, 141, 0.35);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.55);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -44,8 +79,8 @@
 }
 
 .compressor-drop-zone:hover {
-  border-color: #78909c;
-  background: #f5f5f5;
+  border-color: rgba(120, 144, 156, 0.6);
+  background: rgba(255, 255, 255, 0.72);
 }
 
 .compressor-drop-zone.drag-over {
@@ -61,26 +96,27 @@
 .drop-zone-icon svg {
   width: 72px;
   height: 72px;
-  stroke: #90a4ae;
+  stroke: #7f9187;
 }
 
 .drop-zone-text {
   font-size: 18px;
-  color: #546e7a;
+  color: #46554d;
   margin-bottom: 8px;
 }
 
 .drop-zone-hint {
   font-size: 14px;
-  color: #90a4ae;
+  color: #7f9187;
 }
 
 .compressor-list-panel {
   flex: 1;
   height: 100%;
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 14px;
+  box-shadow: none;
+  border: 1px solid rgba(120, 134, 124, 0.14);
   display: flex;
   flex-direction: column;
   position: relative;
@@ -88,8 +124,8 @@
 }
 
 .list-panel-header {
-  padding: 20px 24px;
-  border-bottom: 1px solid #e0e0e0;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(120, 134, 124, 0.14);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -98,8 +134,8 @@
 
 .list-panel-title {
   font-size: 16px;
-  font-weight: 500;
-  color: #37474f;
+  font-weight: 600;
+  color: #2f3d35;
 }
 
 .status-tag-group {
@@ -112,21 +148,25 @@
 .list-panel-content {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 12px 14px 16px 14px;
 }
 
 .image-item {
   display: flex;
   align-items: center;
-  padding: 12px 16px;
+  padding: 10px 12px;
   margin-bottom: 8px;
-  background: #fafafa;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 10px;
   transition: all 0.2s ease;
 }
 
 .image-item:hover {
-  background: #f0f0f0;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.image-item-status {
+  border: 1px solid transparent;
 }
 
 .image-item-name {
@@ -193,8 +233,8 @@
 }
 
 .list-panel-footer {
-  padding: 16px 24px;
-  border-top: 1px solid #e0e0e0;
+  padding: 12px 14px 14px 14px;
+  border-top: 1px solid rgba(120, 134, 124, 0.14);
   display: flex;
   justify-content: flex-end;
 }
@@ -204,33 +244,7 @@
   margin-left: 8px;
 }
 
-.compressor-page-footer {
-  width: 100%;
-  max-width: 1400px;
-  margin-top: 16px;
-  padding: 12px 16px;
-  border-radius: 12px;
-  background: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-}
-
-.compressor-page-footer .footer-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.compressor-page-footer .footer-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.compressor-page-footer .footer-label {
+.footer-label {
   font-size: 13px;
   color: var(--text-muted, #7a8c80);
 }

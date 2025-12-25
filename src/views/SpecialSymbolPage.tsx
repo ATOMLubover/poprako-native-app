@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import Icon from "../components/Icon";
 import NatureSwitchButton from "../components/NatureSwitchButton";
 import { useToast } from "../components/NotificationToast";
+import { useSpecialSymbolsStore } from "../store/specialSymbols";
 import "./SpecialSymbolPage.css";
+import { createPortal } from "react-dom";
 
 type Mode = "normal" | "select";
 
@@ -42,14 +44,17 @@ const MAX_CUSTOM_SYMBOLS = 15;
 const LONG_PRESS_DURATION = 360;
 const CUSTOM_INPUT_MAX = 6;
 
-const defaultCustomSymbols: string[] = ["★", "☆", "❤", "♡", "❈", "●", "○", "✕"];
-
 export default function SpecialSymbolPage() {
   const { showToast } = useToast();
 
   const [mode, setMode] = useState<Mode>("normal");
-  const [customSymbols, setCustomSymbols] = useState<string[]>(defaultCustomSymbols);
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
+
+  const customSymbols = useSpecialSymbolsStore((state) => state.customSymbols);
+  const loadCustomSymbolsIfNeeded = useSpecialSymbolsStore((state) => state.loadCustomSymbolsIfNeeded);
+  const addCustomSymbolAndPersist = useSpecialSymbolsStore((state) => state.addCustomSymbolAndPersist);
+  const removeCustomSymbol = useSpecialSymbolsStore((state) => state.removeCustomSymbol);
+  const reorderCustomSymbols = useSpecialSymbolsStore((state) => state.reorderCustomSymbols);
 
   const pressTimeoutRef = useRef<number | null>(null);
   const longPressTriggeredRef = useRef<boolean>(false);
@@ -57,6 +62,10 @@ export default function SpecialSymbolPage() {
   const isSelectMode = mode === "select";
 
   // customSymbols are managed in-memory; persistence will be handled by backend (Rust)
+
+  useEffect(() => {
+    loadCustomSymbolsIfNeeded();
+  }, [loadCustomSymbolsIfNeeded]);
 
   useEffect(() => {
     return () => {
@@ -122,7 +131,7 @@ export default function SpecialSymbolPage() {
     }
   };
 
-  const addCustomSymbol = (symbol: string) => {
+  const addCustomSymbol = async (symbol: string) => {
     const value = symbol.trim();
 
     if (!value) {
@@ -139,9 +148,15 @@ export default function SpecialSymbolPage() {
       return;
     }
 
-    setCustomSymbols([...customSymbols, value]);
+    try {
+      await addCustomSymbolAndPersist(value);
 
-    showToast("success", "已添加到自定义表");
+      showToast("success", "已添加到自定义表");
+    } catch (error) {
+      console.error("Add custom symbol failed", error);
+
+      showToast("error", "保存失败，请稍后重试");
+    }
   };
 
   const handleGeneralSymbolClick = (symbol: string) => {
@@ -150,7 +165,7 @@ export default function SpecialSymbolPage() {
       return;
     }
 
-    addCustomSymbol(symbol);
+    void addCustomSymbol(symbol);
   };
 
   const handleCustomPointerDown = (index: number) => {
@@ -190,11 +205,7 @@ export default function SpecialSymbolPage() {
       return;
     }
 
-    const next = [...customSymbols];
-
-    next.splice(index, 1);
-
-    setCustomSymbols(next);
+    removeCustomSymbol(index);
 
     showToast("info", "已从自定义表移除");
   };
@@ -212,24 +223,12 @@ export default function SpecialSymbolPage() {
       return;
     }
 
-    setCustomSymbols((prev) => {
-      if (index < 0 || index >= prev.length) {
-        return prev;
-      }
-
-      const next = [...prev];
-
-      const [moved] = next.splice(draggingIndex, 1);
-
-      next.splice(index, 0, moved);
-
-      return next;
-    });
+    reorderCustomSymbols(draggingIndex, index);
 
     setDraggingIndex(index);
   };
 
-  const handleAddCustomFromInput = () => {
+  const handleAddCustomFromInput = async () => {
     if (customSymbols.length >= MAX_CUSTOM_SYMBOLS) {
       showToast("error", "自定义表已达 15 个上限");
       return;
@@ -247,7 +246,7 @@ export default function SpecialSymbolPage() {
       return;
     }
 
-    addCustomSymbol(trimmed);
+    await addCustomSymbol(trimmed);
   };
 
   const handleModeToggle = (newState: "on" | "off") => {
@@ -316,7 +315,10 @@ export default function SpecialSymbolPage() {
           <header className="board-header custom-header">
             <div className="board-title">
               <Icon name="dashboard" className="board-icon" />
-              <span>自定义表</span>
+                  <span>自定义表</span>
+
+                  {/* 在标题右侧显示一个小问号，hover/聚焦时通过 portal 展示帮助提示 */}
+                  <HelpBadge text={"可以在翻校模式中使用的快捷符号表，如果设置过多可能会影响翻校页面编辑区的显示。"} />
             </div>
 
             <div className="board-controls-row">
@@ -367,5 +369,76 @@ export default function SpecialSymbolPage() {
         </section>
       </div>
     </div>
+  );
+}
+
+function HelpBadge({ text }: { text: string }) {
+  const anchorRef = useRef<HTMLSpanElement | null>(null);
+  const [visible, setVisible] = useState(false);
+  const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+
+  useEffect(() => {
+    if (!visible) {
+      return;
+    }
+
+    const el = anchorRef.current;
+
+    if (!el) {
+      return;
+    }
+
+    const update = () => {
+      const r = el.getBoundingClientRect();
+
+      setPos({ left: r.left + r.width / 2, top: r.bottom + 8 });
+    };
+
+    update();
+
+    window.addEventListener("scroll", update, true);
+    window.addEventListener("resize", update);
+
+    return () => {
+      window.removeEventListener("scroll", update, true);
+      window.removeEventListener("resize", update);
+    };
+  }, [visible]);
+
+  useEffect(() => {
+    if (!visible) {
+      setPos(null);
+    }
+  }, [visible]);
+
+  const tooltip = pos
+    ? (
+      <div
+        className="help-tooltip-portal"
+        style={{ left: pos.left, top: pos.top, transform: "translateX(-50%)" }}
+        role="note"
+      >
+        {text}
+      </div>
+    )
+    : null;
+
+  return (
+    <>
+      <span
+        ref={anchorRef}
+        className="help-badge"
+        tabIndex={0}
+        aria-label="帮助"
+        onMouseEnter={() => setVisible(true)}
+        onMouseLeave={() => setVisible(false)}
+        onFocus={() => setVisible(true)}
+        onBlur={() => setVisible(false)}
+      >
+        ?
+      </span>
+
+      {visible && tooltip && createPortal(tooltip, document.body)}
+    </>
   );
 }

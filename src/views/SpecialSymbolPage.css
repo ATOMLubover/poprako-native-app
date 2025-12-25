@@ -83,7 +83,7 @@
   background: #f9fbfbff;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .board-header {
@@ -119,6 +119,77 @@
   gap: 8px;
   font-weight: 650;
   color: #2f4a3a;
+}
+
+/* 小问号帮助徽章 */
+.help-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #f3f5f4;
+  color: #4b6a59;
+  font-size: 12px;
+  line-height: 1;
+  margin-left: 8px;
+  position: relative;
+  cursor: default;
+}
+
+.help-badge:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(79, 141, 110, 0.12);
+}
+
+/* portal 渲染的 tooltip，定位为 fixed 避免被任何容器裁剪 */
+.help-tooltip-portal {
+  position: fixed;
+  left: 0;
+  top: 0;
+  transform: translateX(-50%);
+  white-space: normal;
+  max-width: 420px;
+  background: #ffffff;
+  color: #2f4a3a;
+  border-radius: 6px;
+  padding: 8px 10px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+  font-size: 0.92rem;
+  z-index: 9999;
+  text-align: left;
+  overflow-wrap: break-word;
+}
+
+.help-tooltip {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%) translateY(6px);
+  top: calc(100% + 8px);
+  white-space: normal;
+  max-width: 300px;
+  display: inline-block;
+  background: #ffffff;
+  color: #2f4a3a;
+  border-radius: 6px;
+  padding: 8px 10px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+  font-size: 0.86rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease, transform 0.12s ease;
+  z-index: 20;
+  text-align: left;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+.help-badge:hover .help-tooltip,
+.help-badge:focus .help-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
 }
 
 .board-icon {
@@ -231,8 +302,9 @@
 }
 
 .custom-board.select-mode .symbol-item {
-  background: rgba(242, 163, 163, 0.08);
-  box-shadow: 0 6px 18px -8px rgba(163, 86, 86, 0.08);
+  background: rgba(242, 163, 163, 0.14);
+  border: 1px solid rgba(163, 86, 86, 0.16);
+  box-shadow: 0 6px 18px -8px rgba(163, 86, 86, 0.18);
 }
 
 /* add button stays neutral even in select mode */

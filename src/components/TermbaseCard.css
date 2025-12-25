@@ -36,7 +36,7 @@
   transform: translateY(-2px) rotate(-1deg);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.07);
   /* 颜色略微变浅（比 #436d58 亮一些，阅读上更舒适） */
-  background-color: #ecfae5;
+  background-color: #f0f4f1;
   /* 默认文本色为非日期的柔和深灰绿 */
   color: #3d403d;
 }

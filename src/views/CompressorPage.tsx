@@ -222,7 +222,51 @@ export function CompressorPage() {
 
   return (
     <div className="compressor-view">
-      <h1 className="compressor-title">压图工具</h1>
+      <div className="compressor-header">
+        <h1 className="compressor-title">压图工具</h1>
+
+        <div className="compressor-toolbar">
+          <div className="toolbar-left">
+            <label className="footer-label">压缩上限</label>
+            <select
+              className="max-bytes-select"
+              value={maxBytes}
+              onChange={(e) => setMaxBytes(Number(e.target.value))}
+              disabled={picaMode}
+            >
+              <option value={5 * 1024 * 1024}>5 MB</option>
+              <option value={1 * 1024 * 1024}>1 MB</option>
+              <option value={512 * 1024}>512 KB</option>
+            </select>
+
+            <label className="footer-label">压缩线程数</label>
+            <select
+              className="threads-select"
+              value={threadCount}
+              onChange={(e) => setThreadCount(Number(e.target.value))}
+            >
+              <option value={4}>4</option>
+              <option value={8}>8</option>
+              <option value={10}>10</option>
+              <option value={12}>12</option>
+            </select>
+          </div>
+
+          <div className="toolbar-right">
+            <NatureSwitchButton
+              initialState="off"
+              onToggle={(newState) => {
+                const enabled = newState === 'on';
+                setPicaMode(enabled);
+                isFirstBatchRef.current = true;
+              }}
+              onText="哔咔模式"
+              offText="哔咔模式"
+              height={36}
+            />
+          </div>
+        </div>
+      </div>
 
       <div className="compressor-content">
         {/* 点击上传区域 */}
@@ -315,48 +359,6 @@ export function CompressorPage() {
               </NatureButton>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div className="compressor-page-footer">
-        <div className="footer-left">
-          <label className="footer-label">压缩上限</label>
-          <select
-            className="max-bytes-select"
-            value={maxBytes}
-            onChange={(e) => setMaxBytes(Number(e.target.value))}
-            disabled={picaMode}
-          >
-            <option value={5 * 1024 * 1024}>5 MB</option>
-            <option value={1 * 1024 * 1024}>1 MB</option>
-            <option value={512 * 1024}>512 KB</option>
-          </select>
-
-          <label className="footer-label">压缩线程数</label>
-          <select
-            className="threads-select"
-            value={threadCount}
-            onChange={(e) => setThreadCount(Number(e.target.value))}
-          >
-            <option value={4}>4</option>
-            <option value={8}>8</option>
-            <option value={10}>10</option>
-            <option value={12}>12</option>
-          </select>
-        </div>
-
-        <div className="footer-right">
-          <NatureSwitchButton
-            initialState="off"
-            onToggle={(newState) => {
-              const enabled = newState === 'on';
-              setPicaMode(enabled);
-              isFirstBatchRef.current = true;
-            }}
-            onText="哔咔模式"
-            offText="哔咔模式"
-            height={36}
-          />
         </div>
       </div>
     </div>

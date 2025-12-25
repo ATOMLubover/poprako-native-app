@@ -5,6 +5,7 @@ use tracing::Level;
 
 mod compress;
 mod ipc;
+mod repository;
 mod result_trace;
 
 /// Memo:
@@ -34,6 +35,7 @@ static APP_ENV: Environment = {
 
 static APP_DATA_DIR: RwLock<Option<PathBuf>> = RwLock::new(None);
 static APP_CACHE_DIR: RwLock<Option<PathBuf>> = RwLock::new(None);
+static APP_DB_PATH: RwLock<Option<PathBuf>> = RwLock::new(None);
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -51,13 +53,21 @@ pub fn run() {
             // Initialize the application cache directory.
             init_cache_dir(app)?;
 
+            // Initialize the database path.
+            init_database_path(app)?;
+
+            // Initialize the database.
+            tauri::async_runtime::block_on(async { repository::init_database().await })?;
+
             Ok(())
         })
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             ipc::compress::compress_image,
             ipc::compress::open_compress_dir,
-            ipc::compress::select_image_files
+            ipc::compress::select_image_files,
+            ipc::specail_symbols::get_special_symbols,
+            ipc::specail_symbols::save_specail_symbols
         ])
         .run(tauri::generate_context!())
         .expect("无法启动 Tauri 应用程序");
@@ -171,6 +181,30 @@ fn init_log_dir(app: &App) -> Result<(), String> {
         .map_err(|e| format!("无法创建 log 目录 {:?}: {}", log_dir, e))?;
 
     tracing::info!(log_dir = ?log_dir, "setup.log_dir.initialized");
+
+    Ok(())
+}
+
+fn init_database_path(app: &App) -> Result<(), String> {
+    let data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("无法获取应用 data 目录: {}", e))?;
+
+    let database_path = data_dir.join("repository.db");
+
+    // Create the DB file if it does not already exist. If it exists, ignore.
+    if !database_path.exists() {
+        std::fs::File::create(&database_path)
+            .map_err(|e| format!("无法创建数据库文件 {:?}: {}", database_path, e))?;
+    }
+
+    APP_DB_PATH
+        .write()
+        .map_err(|e| format!("无法锁定 APP_DB_PATH: {}", e))?
+        .replace(database_path.clone());
+
+    tracing::info!(db_path = ?database_path, "setup.database_path.initialized");
 
     Ok(())
 }

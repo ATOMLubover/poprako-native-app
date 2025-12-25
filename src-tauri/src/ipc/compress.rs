@@ -1,6 +1,6 @@
 use std::{path::PathBuf, process::Command, sync::LazyLock};
 
-use crate::{compress, result_trace::ResultTrace, APP_CACHE_DIR};
+use crate::{compress, ipc::get_ipc_request_id, result_trace::ResultTrace, APP_CACHE_DIR};
 
 static COMPRESS_DIR: LazyLock<PathBuf> = LazyLock::new(|| {
     // APP_CACHE_DIR is expected to be initialized before use.
@@ -21,7 +21,7 @@ pub async fn compress_image(
     min_scale: f32,
     min_quality: u8,
 ) -> Result<String, String> {
-    let ipc_id = rand::random::<u32>() % 10000;
+    let ipc_id = get_ipc_request_id();
 
     tracing::info!(ipc_id = ipc_id, "ipc.compress.compress_image.start");
 
@@ -66,7 +66,7 @@ pub async fn compress_image(
 #[tauri::command]
 #[tracing::instrument]
 pub async fn open_compress_dir() -> Result<(), String> {
-    let ipc_id = rand::random::<u32>() % 10000;
+    let ipc_id = get_ipc_request_id();
 
     tracing::info!(ipc_id = ipc_id, "ipc.compress.open_compress_dir.start");
 
@@ -93,15 +93,15 @@ pub async fn open_compress_dir() -> Result<(), String> {
     Ok(())
 }
 
-/// 使用 Windows 原生文件选择对话框让用户多选图片文件
+/// Use Windows-only PowerShell to open a file dialog for selecting image files.
 #[tauri::command]
 #[tracing::instrument]
 pub async fn select_image_files() -> Result<Vec<String>, String> {
-    let ipc_id = rand::random::<u32>() % 10000;
+    let ipc_id = get_ipc_request_id();
 
     tracing::info!(ipc_id = ipc_id, "ipc.compress.select_image_files.start");
 
-    // PowerShell 脚本：调用 .NET 的 OpenFileDialog
+    // Use PowerShell to open a file dialog
     let script = r#"
         Add-Type -AssemblyName System.Windows.Forms
         $dialog = New-Object System.Windows.Forms.OpenFileDialog
