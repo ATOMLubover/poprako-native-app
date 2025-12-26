@@ -14,16 +14,20 @@ type ImageLayerProps = {
     top: number;
     scale: number;
   }) => void;
+  onCanvasClick?: (e: React.MouseEvent) => void;
+  onCanvasContextMenu?: (e: React.MouseEvent) => void;
 };
 
 const ZOOM_STEP = 0.08; // 每次滚轮的乘法缩放步长（降低灵敏度）
 const MAX_SCALE = 3; // 最大放大倍数（相对于fitScale）
 
-const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, onRenderUpdate }, ref) => {
+const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, onRenderUpdate, onCanvasClick, onCanvasContextMenu }, ref) => {
   const imageRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const suppressClickRef = useRef(false);
+  const DRAG_THRESHOLD = 5; // px
   
   // 图片的自然尺寸
   const [naturalSize, setNaturalSize] = useState({ width: 0, height: 0 });
@@ -62,6 +66,30 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
       top,
       scale: totalScale,
     });
+  };
+
+  // 基于给定的 userScale 和 userOffset 计算渲染信息（用于在事件中即时通知）
+  const computeRenderInfo = (scale: number, offset: { x: number; y: number }) => {
+    if (!containerRef.current || naturalSize.width === 0) return null;
+
+    const container = containerRef.current;
+    const containerWidth = container.clientWidth;
+    const containerHeight = container.clientHeight;
+
+    const renderWidth = naturalSize.width * fitScale * scale;
+    const renderHeight = naturalSize.height * fitScale * scale;
+    const totalScale = fitScale * scale;
+
+    const left = containerWidth / 2 - renderWidth / 2 + offset.x;
+    const top = containerHeight / 2 - renderHeight / 2 + offset.y;
+
+    return {
+      width: renderWidth,
+      height: renderHeight,
+      left,
+      top,
+      scale: totalScale,
+    };
   };
 
   // 当任何影响渲染的状态变化时，更新渲染信息
@@ -105,6 +133,25 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
 
   // 鼠标按下开始拖动
   const handleMouseDown = (e: React.MouseEvent) => {
+    if (!containerRef.current || naturalSize.width === 0) return;
+
+    // 只在鼠标位于真实图片区域时才启用拖动
+    const rect = containerRef.current.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    const currentWidth = naturalSize.width * fitScale * userScale;
+    const currentHeight = naturalSize.height * fitScale * userScale;
+
+    const currentLeft = rect.width / 2 - currentWidth / 2 + userOffset.x;
+    const currentTop = rect.height / 2 - currentHeight / 2 + userOffset.y;
+
+    const isOnImage = mouseX >= currentLeft && mouseX <= currentLeft + currentWidth && mouseY >= currentTop && mouseY <= currentTop + currentHeight;
+
+    if (!isOnImage) {
+      return;
+    }
+
     setIsDragging(true);
     setDragStart({ x: e.clientX - userOffset.x, y: e.clientY - userOffset.y });
   };
@@ -119,13 +166,25 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
         x: e.clientX - dragStart.x,
         y: e.clientY - dragStart.y,
       };
+      // 如果移动超过阈值，标记为拖动以抑制后续 click/contextmenu
+      const moved = Math.hypot(e.clientX - dragStart.x, e.clientY - dragStart.y) > DRAG_THRESHOLD;
+      if (moved) {
+        suppressClickRef.current = true;
+      }
       setUserOffset(passthroughOffset(newOffset));
+      // 立即计算并通知渲染信息，避免 MarkerOverlay 因 useEffect 延迟而产生滞后
+      const info = computeRenderInfo(userScale, newOffset);
+      if (info) {
+        onRenderUpdate(info);
+      }
     }
   };
 
   // 鼠标释放
   const handleMouseUp = () => {
     setIsDragging(false);
+    // 在 mouseup 发生后，click event 会紧随其后；保留 suppressClickRef 直到 click 处理完毕。
+    // 在 click/contextmenu 处理处会清除 suppressClickRef。
   };
 
   // 防止在容器外松开鼠标仍然保持拖动
@@ -190,6 +249,12 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
 
     setUserScale(newUserScale);
     setUserOffset({ x: newOffsetX, y: newOffsetY });
+
+    // 立即通知新的渲染信息，使 MarkerOverlay 能同步更新
+    const infoAfter = computeRenderInfo(newUserScale, { x: newOffsetX, y: newOffsetY });
+    if (infoAfter) {
+      onRenderUpdate(infoAfter);
+    }
   };
 
   // 计算最终渲染尺寸（不使用CSS scale，直接设置width/height）
@@ -205,6 +270,30 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
       onWheel={handleWheel}
+      onClick={(e) => {
+        if (suppressClickRef.current) {
+          suppressClickRef.current = false;
+          e.stopPropagation();
+          e.preventDefault();
+          return;
+        }
+
+        if (typeof onCanvasClick === 'function') {
+          onCanvasClick(e);
+        }
+      }}
+      onContextMenu={(e) => {
+        if (suppressClickRef.current) {
+          suppressClickRef.current = false;
+          e.stopPropagation();
+          e.preventDefault();
+          return;
+        }
+
+        if (typeof onCanvasContextMenu === 'function') {
+          onCanvasContextMenu(e);
+        }
+      }}
     >
       <img
         ref={imageRef}

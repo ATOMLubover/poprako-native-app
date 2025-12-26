@@ -57,7 +57,8 @@ export const Stage = forwardRef<StageHandle, StageProps>(({ page, mode, selected
     if (!onUnitCreate || !containerRef.current || isLoading) return;
 
     // 只处理直接点击画布的情况（不是点击marker）
-    if (e.target !== e.currentTarget) return;
+      // 允许子元素（如 image-layer 的空白区域）触发创建，
+      // 但 Marker 会阻止事件传播，所以不需要检查 e.target
 
     const rect = containerRef.current.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
@@ -96,8 +97,6 @@ export const Stage = forwardRef<StageHandle, StageProps>(({ page, mode, selected
     <div
       className="stage"
       ref={containerRef}
-      onClick={handleCanvasClick}
-      onContextMenu={handleCanvasContextMenu}
     >
       {isLoading && (
         <div className="stage-loading">
@@ -111,6 +110,8 @@ export const Stage = forwardRef<StageHandle, StageProps>(({ page, mode, selected
             ref={imageLayerRef}
             imageUrl={imageUrl}
             onRenderUpdate={handleImageRenderUpdate}
+            onCanvasClick={handleCanvasClick}
+            onCanvasContextMenu={handleCanvasContextMenu}
           />
 
           {showMarkers && !isLoading && (

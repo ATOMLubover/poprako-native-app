@@ -13,7 +13,9 @@
 .stage-image {
   display: block;
   transform-origin: center center;
-  transition: width 0.08s ease-out, height 0.08s ease-out, transform 0.08s ease-out;
+  /* Remove transition to avoid intermediate layout/transform frames during zoom/pan
+     which cause visible pull/jump. Keep interactions snappy and deterministic. */
+  transition: none;
   user-select: none;
   -webkit-user-drag: none;
 }

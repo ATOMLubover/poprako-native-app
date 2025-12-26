@@ -5,6 +5,7 @@ import TagPoolPage from "./TagPoolPage";
 import { CompressorPage } from "./CompressorPage";
 import SpecialSymbolPage from "./SpecialSymbolPage";
 import { Translator } from "../components/translator/Translator";
+import { useToast } from "../components/NotificationToast";
 import type { Page, Project, Unit } from "../models/translator";
 import "./PanelView.css";
 
@@ -147,7 +148,7 @@ export default function PanelView() {
 }
 
 function DraftBoard() {
-  const mockProject: Project = {
+  const [project, setProject] = useState<Project>({
     id: "proj-001",
     author: "白杨汉化组",
     title: "某某漫画第一话",
@@ -155,7 +156,7 @@ function DraftBoard() {
     unitCount: 120,
     translatedUnitCount: 85,
     proovedUnitCount: 42,
-  };
+  });
 
   const [page, setPage] = useState<Page>({
     id: "PG-882104",
@@ -215,17 +216,120 @@ function DraftBoard() {
 
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
 
+  const { showToast } = useToast();
+
   const handleUnitSelect = (unitId: string | null) => {
     setSelectedUnitId(unitId);
   };
 
-  const handleUnitSave = (unit: Partial<Unit> & { id: string }) => {
-    console.log("[PanelView] handleUnitSave called with:", unit);
+  const handleUnitRemove = (unitId: string) => {
+    console.log("[PanelView] handleUnitRemove called with:", unitId);
+
+    // We'll compute updated page and project deltas inside the updater,
+    // but call setProject/showToast after setPage returns to avoid setState-in-render warnings.
+    let computed = { inbox: 0, outbox: 0, translated: 0, prooved: 0 };
 
     setPage((prevPage) => {
-      const updatedUnits = prevPage.units.map((u) =>
-        u.id === unit.id ? { ...u, ...unit } : u
-      );
+      const filtered = prevPage.units.filter((u) => u.id !== unitId);
+
+      const reindexed = filtered.map((u, idx) => ({ ...u, indexInPage: idx }));
+
+      let inbox = 0;
+      let outbox = 0;
+      let translated = 0;
+      let prooved = 0;
+
+      for (const u of reindexed) {
+        if (u.isInbox) inbox++; else outbox++;
+        if (u.translatedText) translated++;
+        if (u.proovedText) prooved++;
+      }
+
+      computed = { inbox, outbox, translated, prooved };
+
+      const newPage = {
+        ...prevPage,
+        units: reindexed,
+        inboxUnitCount: inbox,
+        outboxUnitCount: outbox,
+        translatedUnitCount: translated,
+        proovedUnitCount: prooved,
+      };
+
+      console.log("[PanelView] Updated page after remove:", newPage);
+
+      if (selectedUnitId && selectedUnitId === unitId) {
+        setSelectedUnitId(null);
+      }
+
+      return newPage;
+    });
+
+    // sync project state and show toast outside updater
+    setProject((p) => ({
+      ...p,
+      unitCount: Math.max(0, (p.unitCount ?? 0) - 1),
+      inboxUnitCount: computed.inbox,
+      outboxUnitCount: computed.outbox,
+      translatedUnitCount: computed.translated,
+      proovedUnitCount: computed.prooved,
+    }));
+
+    showToast("success", "单元已删除");
+  };
+
+
+  const handleUnitSave = (unit: Partial<Unit> & { id: string }) => {
+    console.log("[PanelView] handleUnitSave called with:", unit);
+    let isNew = false;
+    let unitCountDelta = 0;
+    let inboxDelta = 0;
+    let outboxDelta = 0;
+    let translatedDelta = 0;
+    let proovedDelta = 0;
+
+    setPage((prevPage) => {
+      // 更新已有 unit 或追加新 unit（upsert）
+      const exists = prevPage.units.some((u) => u.id === unit.id);
+
+      let updatedUnits: Unit[];
+
+      if (exists) {
+        updatedUnits = prevPage.units.map((u) => (u.id === unit.id ? { ...u, ...unit } : u));
+      } else {
+        // append new unit; 填充必要字段以满足 Unit 类型
+        const newIndex = prevPage.units.length;
+        const newUnit: Unit = {
+          id: unit.id,
+          x: (unit.x as number) ?? 0,
+          y: (unit.y as number) ?? 0,
+          indexInPage: unit.indexInPage ?? newIndex,
+          isInbox: (unit.isInbox as boolean) ?? true,
+          isProoved: (unit.isProoved as boolean) ?? false,
+          translatedText: (unit.translatedText as string) ?? undefined,
+          proovedText: (unit.proovedText as string) ?? undefined,
+        };
+
+        updatedUnits = [...prevPage.units, newUnit];
+
+        // 更新 page 计数
+        const inboxDelta = newUnit.isInbox ? 1 : 0;
+        const outboxDelta = newUnit.isInbox ? 0 : 1;
+        const translatedDelta = newUnit.translatedText ? 1 : 0;
+        const proovedDelta = newUnit.proovedText ? 1 : 0;
+        isNew = true;
+        unitCountDelta = 1;
+
+        return {
+          ...prevPage,
+          units: updatedUnits,
+          inboxUnitCount: (prevPage.inboxUnitCount ?? 0) + inboxDelta,
+          outboxUnitCount: (prevPage.outboxUnitCount ?? 0) + outboxDelta,
+          translatedUnitCount: (prevPage.translatedUnitCount ?? 0) + translatedDelta,
+          proovedUnitCount: (prevPage.proovedUnitCount ?? 0) + proovedDelta,
+        };
+      }
+
 
       const newPage = {
         ...prevPage,
@@ -233,14 +337,26 @@ function DraftBoard() {
       };
 
       console.log("[PanelView] Updated page:", newPage);
+
       return newPage;
     });
+
+    if (isNew) {
+      setProject((p) => ({
+        ...p,
+        unitCount: (p.unitCount ?? 0) + unitCountDelta,
+        inboxUnitCount: (p.inboxUnitCount ?? 0) + inboxDelta,
+        outboxUnitCount: (p.outboxUnitCount ?? 0) + outboxDelta,
+        translatedUnitCount: (p.translatedUnitCount ?? 0) + translatedDelta,
+        proovedUnitCount: (p.proovedUnitCount ?? 0) + proovedDelta,
+      }));
+    }
   };
 
   return (
     <div style={{ height: "100%", width: "100%", overflow: "hidden" }}>
       <Translator
-        project={mockProject}
+        project={project}
         currentPage={page}
         isLoading={false}
         mode="proofread"
@@ -249,7 +365,7 @@ function DraftBoard() {
         selectedUnitId={selectedUnitId}
         onRequestPage={(idx) => console.log("Request page:", idx)}
         onUnitSave={handleUnitSave}
-        onUnitRemove={(id) => console.log("Remove unit:", id)}
+        onUnitRemove={handleUnitRemove}
         onUnitSelect={handleUnitSelect}
       />
     </div>
