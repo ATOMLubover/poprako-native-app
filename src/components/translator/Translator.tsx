@@ -22,6 +22,7 @@ export type TranslatorProps = {
   onUnitSave: (unit: Partial<Unit> & { id: string }) => void;
   onUnitRemove: (unitId: string) => void;
   onUnitSelect?: (unitId: string | null) => void;
+  onRearrangeUnits?: (unitId: string, targetIndex: number) => void;
 };
 
 const ModeIcon: React.FC<{ mode: TranslatorMode }> = ({ mode }) => {
@@ -111,6 +112,7 @@ export const Translator: React.FC<TranslatorProps> = ({
   onUnitSelect,
   onUnitSave,
   onUnitRemove,
+  onRearrangeUnits,
 }) => {
   const { customSymbols, loadCustomSymbolsIfNeeded } = useSpecialSymbolsStore();
   const editorRef = useRef<EditorRef>(null);
@@ -343,11 +345,17 @@ export const Translator: React.FC<TranslatorProps> = ({
                         ""
                       : selectedUnit.translatedText ?? ""
                   }
+                  totalUnits={currentPage.units.length}
                   onTextModify={handleTextModify}
                   onStatusClick={() => {
                     // 切换 isInbox 状态并保存
                     const newIsInbox = !selectedUnit.isInbox;
                     onUnitSave({ id: selectedUnit.id, isInbox: newIsInbox });
+                  }}
+                  onIndexChange={(targetIndex) => {
+                    if (!onRearrangeUnits) return;
+
+                    onRearrangeUnits(selectedUnit.id, targetIndex);
                   }}
                 />
               </div>

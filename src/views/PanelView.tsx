@@ -353,6 +353,34 @@ function DraftBoard() {
     }
   };
 
+  const rearrangeUnits = (unitId: string, targetIndex: number) => {
+    setPage((prevPage) => {
+      const currentIndex = prevPage.units.findIndex((u) => u.id === unitId);
+
+      if (currentIndex === -1) {
+        console.log("[PanelView] Rearrange skipped, unit not found", unitId);
+        return prevPage;
+      }
+
+      const maxIndex = Math.max(prevPage.units.length - 1, 0);
+      const safeIndex = Math.min(Math.max(targetIndex, 0), maxIndex);
+
+      if (safeIndex === currentIndex) return prevPage;
+
+      const nextUnits = [...prevPage.units];
+      const [movedUnit] = nextUnits.splice(currentIndex, 1);
+
+      nextUnits.splice(safeIndex, 0, movedUnit);
+
+      const reindexedUnits = nextUnits.map((unit, index) => ({ ...unit, indexInPage: index }));
+
+      return {
+        ...prevPage,
+        units: reindexedUnits,
+      };
+    });
+  };
+
   return (
     <div style={{ height: "100%", width: "100%", overflow: "hidden" }}>
       <Translator
@@ -367,6 +395,7 @@ function DraftBoard() {
         onUnitSave={handleUnitSave}
         onUnitRemove={handleUnitRemove}
         onUnitSelect={handleUnitSelect}
+        onRearrangeUnits={rearrangeUnits}
       />
     </div>
   );

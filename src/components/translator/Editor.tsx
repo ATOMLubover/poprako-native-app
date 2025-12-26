@@ -6,8 +6,10 @@ type EditorProps = {
   isInsideBox: boolean;
   symbols: string[];
   initialText: string;
+  totalUnits: number;
   onTextModify: (newText: string) => void;
   onStatusClick: () => void;
+  onIndexChange: (targetIndex: number) => void;
 };
 
 export type EditorRef = {
@@ -23,13 +25,17 @@ const Editor = forwardRef<EditorRef, EditorProps>((
     isInsideBox,
     symbols,
     initialText,
+    totalUnits,
     onTextModify,
     onStatusClick,
+    onIndexChange,
   },
   ref
 ) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [text, setText] = useState(initialText);
+  const [editingIndex, setEditingIndex] = useState(false);
+  const [indexInput, setIndexInput] = useState(String(indexInPage + 1));
 
   useImperativeHandle(ref, () => ({
     focus: (toEnd?: boolean) => {
@@ -79,12 +85,58 @@ const Editor = forwardRef<EditorRef, EditorProps>((
     onTextModify(newValue);
   };
 
+  const handleIndexClick = () => {
+    setEditingIndex(true);
+    setIndexInput(String(indexInPage + 1));
+  };
+
+  const confirmIndex = (raw: string) => {
+    const parsed = Number.parseInt(raw, 10);
+    if (Number.isNaN(parsed)) {
+      console.log("[Editor] Invalid index input", raw);
+      setEditingIndex(false);
+      return;
+    }
+
+    const maxIndex = Math.max(totalUnits - 1, 0);
+    let userOneBased = parsed;
+    if (userOneBased < 1) userOneBased = 1;
+    if (userOneBased - 1 > maxIndex) userOneBased = maxIndex + 1;
+
+    const target = userOneBased - 1;
+    onIndexChange(target);
+    setEditingIndex(false);
+  };
+
+  const cancelEdit = () => {
+    setEditingIndex(false);
+  };
+
   return (
     <div className="editor-card">
       <div className="card-header">
-        <span className="index-label">
-          {String(indexInPage + 1).padStart(2, "0")}
-        </span>
+        {editingIndex ? (
+          <input
+            className="index-input"
+            value={indexInput}
+            onChange={(e) => setIndexInput(e.target.value)}
+            onBlur={() => confirmIndex(indexInput)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                confirmIndex(indexInput);
+              }
+
+              if (e.key === "Escape") {
+                cancelEdit();
+              }
+            }}
+            autoFocus
+          />
+        ) : (
+          <span className="index-label" onClick={handleIndexClick}>
+            {String(indexInPage + 1).padStart(2, "0")}
+          </span>
+        )}
         <span
           className={`status-tag ${isInsideBox ? "tag-in" : "tag-out"}`}
           onClick={onStatusClick}

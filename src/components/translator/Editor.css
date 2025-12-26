@@ -26,10 +26,23 @@
 }
 
 .index-label {
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--text-muted);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.index-input {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  width: 48px;
+  padding: 2px 6px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
 }
 
 .status-tag {

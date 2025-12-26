@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简约提示弹窗</title>
+    <style>
+        :root {
+            --bg-card: #ffffff;
+            --primary-color: #2c2c2e;
+            --accent-color: #007AFF;
+            --text-main: #1d1d1f;
+            --text-secondary: #86868b;
+            --border-color: #f2f2f7;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+            background-color: #f5f5f7;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* 遮罩层：改为靠顶对齐 */
+        .alert-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* 靠上对齐 */
+            padding-top: 50px;       /* 距离顶部的位置 */
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .alert-overlay.show {
+            opacity: 1;
+        }
+
+        /* 弹窗核心样式 */
+        .custom-alert-card {
+            background: var(--bg-card);
+            width: 260px;
+            padding: 24px 20px 16px 20px;
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--border-color);
+            user-select: none;
+            /* 默认进入动画 */
+            animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* 退出动画类 */
+        .custom-alert-card.exit {
+            animation: slideUp 0.3s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+        }
+
+        /* 第一行：居中大标题 */
+        .alert-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--text-main);
+            text-align: center;
+            margin-bottom: 24px;
+            line-height: 1.4;
+        }
+
+        /* 第二行：右对齐按钮布局 */
+        .alert-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .alert-btn {
+            padding: 8px 14px;
+            font-size: 15px;
+            font-weight: 500;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn-cancel {
+            color: var(--text-secondary);
+        }
+
+        .btn-confirm {
+            color: var(--accent-color);
+        }
+
+        .alert-btn:active {
+            background-color: #f2f2f7;
+            transform: scale(0.96);
+        }
+
+        /* 动画关键帧 */
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-100%); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-100%); }
+        }
+    </style>
+</head>
+<body>
+
+    <button onclick="triggerAlert()" style="padding: 10px 20px; cursor: pointer;">显示顶部划入弹窗</button>
+
+    <script>
+        /**
+         * 纯净提示弹窗 (顶部划入版)
+         */
+        function showAlert({ title, onConfirm, onCancel }) {
+            const overlay = document.createElement('div');
+            overlay.className = 'alert-overlay';
+
+            const card = document.createElement('div');
+            card.className = 'custom-alert-card';
+
+            card.innerHTML = `
+                <div class="alert-title">${title}</div>
+                <div class="alert-actions">
+                    <button class="alert-btn btn-cancel" id="js-cancel">取消</button>
+                    <button class="alert-btn btn-confirm" id="js-confirm">确认</button>
+                </div>
+            `;
+
+            overlay.appendChild(card);
+            document.body.appendChild(overlay);
+            
+            // 触发显隐过渡
+            requestAnimationFrame(() => overlay.classList.add('show'));
+
+            // 统一销毁函数（带动画）
+            const destroy = () => {
+                card.classList.add('exit');
+                overlay.classList.remove('show');
+                // 等待动画结束后移除 DOM
+                setTimeout(() => {
+                    if (overlay.parentNode) document.body.removeChild(overlay);
+                }, 300);
+            };
+
+            document.getElementById('js-confirm').onclick = () => {
+                if (onConfirm) onConfirm();
+                destroy();
+            };
+
+            document.getElementById('js-cancel').onclick = () => {
+                if (onCancel) onCancel();
+                destroy();
+            };
+
+            overlay.onclick = (e) => {
+                if (e.target === overlay) destroy();
+            };
+        }
+
+        function triggerAlert() {
+            showAlert({
+                title: '确认保存更改吗？',
+                onConfirm: () => console.log('Confirm Clicked'),
+                onCancel: () => console.log('Cancel Clicked')
+            });
+        }
+    </script>
+</body>
+</html>
