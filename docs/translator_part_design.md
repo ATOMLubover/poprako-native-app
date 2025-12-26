@@ -83,22 +83,7 @@ export interface TranslatorProps {
     - **UnitList**: 上半部分。可收起/隐藏；阅读模式下隐藏。
     - **Editor**: 下半部分。文本编辑器（未来可支持拖出窗口）。
 
-## 4. 内部模块划分
 
-```text
-src/components/translator/
-├── Translator.tsx          # 入口组件 (布局容器)
-├── Translator.css
-├── Header.tsx              # 顶部栏
-├── Toolbox.tsx             # 左侧工具栏
-├── Stage.tsx               # 中间画布容器
-│   ├── ImageLayer.tsx      # 图片渲染与手势处理
-│   ├── MarkerOverlay.tsx   # 标记层容器
-│   └── Marker.tsx          # 单个标记组件 (圆+点)
-└── Sidebar.tsx             # 右侧容器
-    ├── UnitList.tsx        # (已有的组件)
-    └── Editor.tsx          # 编辑器区域
-```
 
 ## 5. 关键业务逻辑细节
 

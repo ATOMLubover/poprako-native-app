@@ -1,0 +1,53 @@
+.marker {
+  position: absolute;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: none;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.marker:hover {
+  z-index: 20;
+}
+
+.marker-selected {
+  z-index: 30;
+}
+
+.marker-circle {
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid transparent;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.marker:hover .marker-circle {
+  transform: scale(1.1);
+}
+
+.marker-selected .marker-circle {
+  border-color: #3b82f6;
+  border-width: 3px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.marker-index {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  user-select: none;
+}
+
+.marker-pointer {
+  border-radius: 50%;
+  margin-top: -1px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}

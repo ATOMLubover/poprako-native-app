@@ -3,6 +3,7 @@ import "./Translator.css";
 import ProgressBar from "../ProgressBar";
 import { UnitList } from "./UnitList";
 import Editor, { type EditorRef } from "./Editor";
+import { Stage, type StageHandle } from "./Stage";
 import { useSpecialSymbolsStore } from "../../store/specialSymbols";
 import type { Project, Page, Unit } from "../../models/translator";
 
@@ -90,6 +91,17 @@ type ShortcutConfig = {
   description: string;
 };
 
+/**
+ * 快捷键说明：
+ * - Home: 取消选择单元
+ * - Tab: 切换到下一个单元（循环）
+ * - Shift+Tab: 切换到上一个单元（循环）
+ * - 画布左键: 创建新单元（框内）
+ * - 画布右键: 创建新单元（框外）
+ * - Marker左键: 聚焦选中单元
+ * - Marker右键: 删除单元（有文本时会弹窗确认）
+ */
+
 export const Translator: React.FC<TranslatorProps> = ({
   project,
   currentPage,
@@ -98,9 +110,11 @@ export const Translator: React.FC<TranslatorProps> = ({
   selectedUnitId,
   onUnitSelect,
   onUnitSave,
+  onUnitRemove,
 }) => {
   const { customSymbols, loadCustomSymbolsIfNeeded } = useSpecialSymbolsStore();
   const editorRef = useRef<EditorRef>(null);
+  const stageRef = useRef<StageHandle>(null);
 
   const selectedUnit = currentPage.units.find((u) => u.id === selectedUnitId);
 
@@ -116,6 +130,26 @@ export const Translator: React.FC<TranslatorProps> = ({
     }
   }, [selectedUnitId]);
 
+  // 处理创建新unit
+  const handleUnitCreate = (unit: Omit<Unit, "id" | "indexInPage">) => {
+    // 生成临时ID和索引
+    const newId = `unit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const newIndexInPage = currentPage.units.length;
+
+    const newUnit: Unit = {
+      ...unit,
+      id: newId,
+      indexInPage: newIndexInPage,
+    };
+
+    onUnitSave(newUnit);
+    
+    // 自动选中新创建的unit
+    if (onUnitSelect) {
+      onUnitSelect(newId);
+    }
+  };
+
   const shortcuts: ShortcutConfig[] = [
     {
       key: "Home",
@@ -123,6 +157,9 @@ export const Translator: React.FC<TranslatorProps> = ({
         if (onUnitSelect) {
           onUnitSelect(null);
         }
+
+        // Home 额外重置视图
+        stageRef.current?.resetView();
       },
       description: "取消选择单元",
     },
@@ -268,12 +305,15 @@ export const Translator: React.FC<TranslatorProps> = ({
       <div className="translator-body">
         {/* 中间画布区 */}
         <div className="translator-stage">
-          <div className="stage-placeholder">
-            <div>画布区域</div>
-            <div style={{ fontSize: "12px", marginTop: "8px" }}>
-              Image + Marker Overlay
-            </div>
-          </div>
+          <Stage
+            ref={stageRef}
+            page={currentPage}
+            mode={mode}
+            selectedUnitId={selectedUnitId}
+            onUnitClick={onUnitSelect}
+            onUnitCreate={handleUnitCreate}
+            onUnitRemove={onUnitRemove}
+          />
         </div>
 
         {/* 右侧侧边栏 */}

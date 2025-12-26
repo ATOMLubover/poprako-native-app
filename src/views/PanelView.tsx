@@ -159,6 +159,7 @@ function DraftBoard() {
 
   const [page, setPage] = useState<Page>({
     id: "PG-882104",
+    localImageUrl: "/tests/images/01_001.jpg",
     translatedUnitCount: 3,
     proovedUnitCount: 1,
     inboxUnitCount: 8,
@@ -166,8 +167,8 @@ function DraftBoard() {
     units: [
       {
         id: "u1",
-        x: 0.1,
-        y: 0.05,
+        x: 0.3,
+        y: 0.15,
         indexInPage: 0,
         translatedText: "第一句翻译",
         isProoved: true,
@@ -175,8 +176,8 @@ function DraftBoard() {
       },
       {
         id: "u2",
-        x: 0.15,
-        y: 0.12,
+        x: 0.5,
+        y: 0.35,
         indexInPage: 1,
         translatedText: "正在等待校对的长文本示例",
         isProoved: false,
@@ -184,13 +185,30 @@ function DraftBoard() {
       },
       {
         id: "u3",
-        x: 0.2,
-        y: 0.25,
+        x: 0.7,
+        y: 0.55,
         indexInPage: 2,
         translatedText: "已翻译完成的对话",
         proovedText: "校对后的终稿文本",
         isProoved: true,
         isInbox: false,
+      },
+      {
+        id: "u4",
+        x: 0.2,
+        y: 0.7,
+        indexInPage: 3,
+        translatedText: "测试文本4",
+        isProoved: false,
+        isInbox: true,
+      },
+      {
+        id: "u5",
+        x: 0.8,
+        y: 0.25,
+        indexInPage: 4,
+        isProoved: false,
+        isInbox: true,
       },
     ],
   });
