@@ -1,10 +1,11 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "./Translator.css";
 import ProgressBar from "../ProgressBar";
 import { UnitList } from "./UnitList";
 import Editor, { type EditorRef } from "./Editor";
 import { Stage, type StageHandle } from "./Stage";
 import { useSpecialSymbolsStore } from "../../store/specialSymbols";
+import ConfirmDialogBox from "../ConfirmDialogBox";
 import type { Project, Page, Unit } from "../../models/translator";
 
 export type TranslatorMode = "translate" | "proofread" | "read";
@@ -75,10 +76,27 @@ const ArrowButton: React.FC<{ direction: "prev" | "next" }> = ({ direction }) =>
 
 const NoteIcon: React.FC = () => {
   return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#374151"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <text x="50%" y="50%" dy="0.35em" textAnchor="middle" fontSize="16" fill="#374151">♪</text>
+    </svg>
+  );
+};
+
+const MemoIcon: React.FC = () => {
+  return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M9 18a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" />
-      <path d="M18 16a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" />
-      <path d="M11 14V6l7-2v8" />
+      <circle cx="12" cy="12" r="10" />
+      <text x="12" y="16" textAnchor="middle" fontSize="12" fill="#374151">?</text>
     </svg>
   );
 };
@@ -97,6 +115,8 @@ type ShortcutConfig = {
  * - Home: 取消选择单元
  * - Tab: 切换到下一个单元（循环）
  * - Shift+Tab: 切换到上一个单元（循环）
+ * - ← : 上一页
+ * - → : 下一页
  * - 画布左键: 创建新单元（框内）
  * - 画布右键: 创建新单元（框外）
  * - Marker左键: 聚焦选中单元
@@ -109,6 +129,7 @@ export const Translator: React.FC<TranslatorProps> = ({
   mode,
   currentPageIndex,
   selectedUnitId,
+  onRequestPage,
   onUnitSelect,
   onUnitSave,
   onUnitRemove,
@@ -119,6 +140,7 @@ export const Translator: React.FC<TranslatorProps> = ({
   const stageRef = useRef<StageHandle>(null);
 
   const selectedUnit = currentPage.units.find((u) => u.id === selectedUnitId);
+  const [showMemo, setShowMemo] = useState(false);
 
   useEffect(() => {
     loadCustomSymbolsIfNeeded();
@@ -216,6 +238,30 @@ export const Translator: React.FC<TranslatorProps> = ({
       },
       description: "切换到上一个单元（循环）",
     },
+    {
+      key: "ArrowLeft",
+      handler: () => {
+        if (!onRequestPage) return;
+
+        const prev = Math.max(0, currentPageIndex - 1);
+        if (prev !== currentPageIndex) {
+          onRequestPage(prev);
+        }
+      },
+      description: "上一页",
+    },
+    {
+      key: "ArrowRight",
+      handler: () => {
+        if (!onRequestPage) return;
+
+        const next = Math.min((project.pageCount ?? 1) - 1, currentPageIndex + 1);
+        if (next !== currentPageIndex) {
+          onRequestPage(next);
+        }
+      },
+      description: "下一页",
+    },
   ];
 
   useEffect(() => {
@@ -255,7 +301,8 @@ export const Translator: React.FC<TranslatorProps> = ({
   };
 
   return (
-    <div className="translator-container">
+    <>
+      <div className="translator-container">
       {/* 顶部栏 */}
       <div className="translator-header">
         <div className="project-info">
@@ -281,20 +328,59 @@ export const Translator: React.FC<TranslatorProps> = ({
         </div>
 
         <div className="header-toolbox" style={{ marginLeft: 'auto' }}>
-          <div className="toolbox-pill" aria-label="模式">
+          <div className="toolbox-pill" aria-label="模式" title="切换翻译、校对、阅览模式">
             <ModeIcon mode={mode} />
           </div>
 
-          <div className="toolbox-pill" aria-label="上一页">
-            <ArrowButton direction="prev" />
-          </div>
+          {(() => {
+            const isPrevDisabled = currentPageIndex <= 0;
+            const isNextDisabled = currentPageIndex >= (project.pageCount ?? 1) - 1;
 
-          <div className="toolbox-pill" aria-label="下一页">
-            <ArrowButton direction="next" />
-          </div>
+            return (
+              <>
+                <div
+                  className="toolbox-pill"
+                  aria-label="上一页"
+                  title="上一页 (←)"
+                  onClick={() => {
+                    if (isPrevDisabled) return;
 
-          <div className="toolbox-pill" aria-label="特殊符号">
+                    const prev = Math.max(0, currentPageIndex - 1);
+                    if (prev !== currentPageIndex) {
+                      onRequestPage(prev);
+                    }
+                  }}
+                  style={{ cursor: isPrevDisabled ? "default" : "pointer", opacity: isPrevDisabled ? 0.4 : 1, pointerEvents: isPrevDisabled ? "none" : "auto" }}
+                >
+                  <ArrowButton direction="prev" />
+                </div>
+
+                <div
+                  className="toolbox-pill"
+                  aria-label="下一页"
+                  title="下一页 (→)"
+                  onClick={() => {
+                    if (isNextDisabled) return;
+
+                    const next = Math.min((project.pageCount ?? 1) - 1, currentPageIndex + 1);
+                    if (next !== currentPageIndex) {
+                      onRequestPage(next);
+                    }
+                  }}
+                  style={{ cursor: isNextDisabled ? "default" : "pointer", opacity: isNextDisabled ? 0.4 : 1, pointerEvents: isNextDisabled ? "none" : "auto" }}
+                >
+                  <ArrowButton direction="next" />
+                </div>
+              </>
+            );
+          })()}
+
+          <div className="toolbox-pill" aria-label="特殊符号" title="特殊符号">
             <NoteIcon />
+          </div>
+
+          <div className="toolbox-pill" aria-label="快捷键说明" title="快捷键说明" onClick={() => setShowMemo(true)} style={{ cursor: 'pointer' }}>
+            <MemoIcon />
           </div>
         </div>
 
@@ -367,6 +453,18 @@ export const Translator: React.FC<TranslatorProps> = ({
           </div>
         )}
       </div>
-    </div>
+      </div>
+
+      <ConfirmDialogBox
+        visible={showMemo}
+        title="快捷键说明"
+        description={SHORTCUT_TEXT}
+        confirmText="确认"
+        onConfirm={() => setShowMemo(false)}
+      />
+    </>
   );
 };
+
+// Shortcut description text used in memo card
+const SHORTCUT_TEXT = `快捷键说明：\n- Home: 取消选择单元\n- Tab: 切换到下一个单元\n- Shift+Tab: 切换到上一个单元\n- 左键空白: 创建新框内\n- 右键空白: 创建新框外\n- 左键标记: 聚焦\n- 右键标记: 删除标记`;

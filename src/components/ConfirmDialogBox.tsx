@@ -9,7 +9,7 @@ type ConfirmDialogBoxProps = {
   cancelText?: string;
   visible: boolean;
   onConfirm: () => void;
-  onCancel: () => void;
+  onCancel?: () => void;
 };
 
 const ConfirmDialogBox: React.FC<ConfirmDialogBoxProps> = ({
@@ -29,9 +29,12 @@ const ConfirmDialogBox: React.FC<ConfirmDialogBoxProps> = ({
         <div className="cdb-title">{title}</div>
         {description && <div className="cdb-desc">{description}</div>}
         <div className="cdb-actions">
-          <button className="cdb-btn cdb-cancel" onClick={onCancel}>
-            {cancelText}
-          </button>
+          {onCancel && (
+            <button className="cdb-btn cdb-cancel" onClick={onCancel}>
+              {cancelText}
+            </button>
+          )}
+
           <button className="cdb-btn cdb-confirm" onClick={onConfirm}>
             {confirmText}
           </button>

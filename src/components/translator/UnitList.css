@@ -164,6 +164,8 @@
   pointer-events: none;
   overflow: hidden;
   min-height: 1.25rem;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .status-empty {
@@ -196,6 +198,7 @@
   line-height: 1.45;
   color: #374151;
   word-break: break-word;
+  white-space: pre-line;
 }
 
 .translated-text {

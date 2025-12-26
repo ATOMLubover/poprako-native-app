@@ -11,6 +11,7 @@ import "./PanelView.css";
 
 type MenuItem = "draft-board" | "team-list" | "tag-pool" | "termbase-pool" | "font-repo" | "compressor-helper" | "special-symbols" | "settings";
 
+
 type NavItem = {
   id: MenuItem;
   icon: string;
@@ -152,67 +153,102 @@ function DraftBoard() {
     id: "proj-001",
     author: "白杨汉化组",
     title: "某某漫画第一话",
-    pageCount: 25,
+    pageCount: 4,
     unitCount: 120,
     translatedUnitCount: 85,
     proovedUnitCount: 42,
   });
 
-  const [page, setPage] = useState<Page>({
-    id: "PG-882104",
-    localImageUrl: "/tests/images/01_001.jpg",
-    translatedUnitCount: 3,
-    proovedUnitCount: 1,
-    inboxUnitCount: 8,
-    outboxUnitCount: 7,
-    units: [
-      {
-        id: "u1",
-        x: 0.3,
-        y: 0.15,
-        indexInPage: 0,
-        translatedText: "第一句翻译",
-        isProoved: true,
-        isInbox: true,
-      },
-      {
-        id: "u2",
-        x: 0.5,
-        y: 0.35,
-        indexInPage: 1,
-        translatedText: "正在等待校对的长文本示例",
-        isProoved: false,
-        isInbox: false,
-      },
-      {
-        id: "u3",
-        x: 0.7,
-        y: 0.55,
-        indexInPage: 2,
-        translatedText: "已翻译完成的对话",
-        proovedText: "校对后的终稿文本",
-        isProoved: true,
-        isInbox: false,
-      },
-      {
-        id: "u4",
-        x: 0.2,
-        y: 0.7,
-        indexInPage: 3,
-        translatedText: "测试文本4",
-        isProoved: false,
-        isInbox: true,
-      },
-      {
-        id: "u5",
-        x: 0.8,
-        y: 0.25,
-        indexInPage: 4,
-        isProoved: false,
-        isInbox: true,
-      },
-    ],
-  });
+  const initialPages: Page[] = [
+    {
+      id: "PG-882104-1",
+      localImageUrl: "/tests/images/01_001.jpg",
+      translatedUnitCount: 3,
+      proovedUnitCount: 1,
+      inboxUnitCount: 8,
+      outboxUnitCount: 7,
+      units: [
+        {
+          id: "u1",
+          x: 0.3,
+          y: 0.15,
+          indexInPage: 0,
+          translatedText: "第一句翻译",
+          isProoved: true,
+          isInbox: true,
+        },
+        {
+          id: "u2",
+          x: 0.5,
+          y: 0.35,
+          indexInPage: 1,
+          translatedText: "正在等待校对的长文本示例",
+          isProoved: false,
+          isInbox: false,
+        },
+        {
+          id: "u3",
+          x: 0.7,
+          y: 0.55,
+          indexInPage: 2,
+          translatedText: "已翻译完成的对话",
+          proovedText: "校对后的终稿文本",
+          isProoved: true,
+          isInbox: false,
+        },
+        {
+          id: "u4",
+          x: 0.2,
+          y: 0.7,
+          indexInPage: 3,
+          translatedText: "测试文本4",
+          isProoved: false,
+          isInbox: true,
+        },
+        {
+          id: "u5",
+          x: 0.8,
+          y: 0.25,
+          indexInPage: 4,
+          isProoved: false,
+          isInbox: true,
+        },
+      ],
+    },
+
+    {
+      id: "PG-882104-2",
+      localImageUrl: "/tests/images/01_002.jpg",
+      translatedUnitCount: 0,
+      proovedUnitCount: 0,
+      inboxUnitCount: 0,
+      outboxUnitCount: 0,
+      units: [],
+    },
+
+    {
+      id: "PG-882104-3",
+      localImageUrl: "/tests/images/01_003.jpg",
+      translatedUnitCount: 0,
+      proovedUnitCount: 0,
+      inboxUnitCount: 0,
+      outboxUnitCount: 0,
+      units: [],
+    },
+
+    {
+      id: "PG-882104-4",
+      localImageUrl: "/tests/images/01_004.jpg",
+      translatedUnitCount: 0,
+      proovedUnitCount: 0,
+      inboxUnitCount: 0,
+      outboxUnitCount: 0,
+      units: [],
+    },
+  ];
+
+  const [pages, setPages] = useState<Page[]>(initialPages);
+  const [currentPageIndex, setCurrentPageIndex] = useState<number>(0);
 
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
 
@@ -225,13 +261,13 @@ function DraftBoard() {
   const handleUnitRemove = (unitId: string) => {
     console.log("[PanelView] handleUnitRemove called with:", unitId);
 
-    // We'll compute updated page and project deltas inside the updater,
-    // but call setProject/showToast after setPage returns to avoid setState-in-render warnings.
     let computed = { inbox: 0, outbox: 0, translated: 0, prooved: 0 };
 
-    setPage((prevPage) => {
-      const filtered = prevPage.units.filter((u) => u.id !== unitId);
+    setPages((prev) => {
+      const next = [...prev];
+      const p = next[currentPageIndex];
 
+      const filtered = p.units.filter((u) => u.id !== unitId);
       const reindexed = filtered.map((u, idx) => ({ ...u, indexInPage: idx }));
 
       let inbox = 0;
@@ -247,8 +283,8 @@ function DraftBoard() {
 
       computed = { inbox, outbox, translated, prooved };
 
-      const newPage = {
-        ...prevPage,
+      next[currentPageIndex] = {
+        ...p,
         units: reindexed,
         inboxUnitCount: inbox,
         outboxUnitCount: outbox,
@@ -256,16 +292,15 @@ function DraftBoard() {
         proovedUnitCount: prooved,
       };
 
-      console.log("[PanelView] Updated page after remove:", newPage);
-
       if (selectedUnitId && selectedUnitId === unitId) {
         setSelectedUnitId(null);
       }
 
-      return newPage;
+      console.log("[PanelView] Updated page after remove:", next[currentPageIndex]);
+
+      return next;
     });
 
-    // sync project state and show toast outside updater
     setProject((p) => ({
       ...p,
       unitCount: Math.max(0, (p.unitCount ?? 0) - 1),
@@ -288,16 +323,20 @@ function DraftBoard() {
     let translatedDelta = 0;
     let proovedDelta = 0;
 
-    setPage((prevPage) => {
-      // 更新已有 unit 或追加新 unit（upsert）
+    setPages((prev) => {
+      const next = [...prev];
+      const prevPage = next[currentPageIndex];
+
       const exists = prevPage.units.some((u) => u.id === unit.id);
 
       let updatedUnits: Unit[];
 
       if (exists) {
         updatedUnits = prevPage.units.map((u) => (u.id === unit.id ? { ...u, ...unit } : u));
+        next[currentPageIndex] = { ...prevPage, units: updatedUnits };
+        console.log("[PanelView] Updated page:", next[currentPageIndex]);
+        return next;
       } else {
-        // append new unit; 填充必要字段以满足 Unit 类型
         const newIndex = prevPage.units.length;
         const newUnit: Unit = {
           id: unit.id,
@@ -312,7 +351,6 @@ function DraftBoard() {
 
         updatedUnits = [...prevPage.units, newUnit];
 
-        // 更新 page 计数
         const inboxDelta = newUnit.isInbox ? 1 : 0;
         const outboxDelta = newUnit.isInbox ? 0 : 1;
         const translatedDelta = newUnit.translatedText ? 1 : 0;
@@ -320,7 +358,7 @@ function DraftBoard() {
         isNew = true;
         unitCountDelta = 1;
 
-        return {
+        next[currentPageIndex] = {
           ...prevPage,
           units: updatedUnits,
           inboxUnitCount: (prevPage.inboxUnitCount ?? 0) + inboxDelta,
@@ -328,17 +366,9 @@ function DraftBoard() {
           translatedUnitCount: (prevPage.translatedUnitCount ?? 0) + translatedDelta,
           proovedUnitCount: (prevPage.proovedUnitCount ?? 0) + proovedDelta,
         };
+
+        return next;
       }
-
-
-      const newPage = {
-        ...prevPage,
-        units: updatedUnits,
-      };
-
-      console.log("[PanelView] Updated page:", newPage);
-
-      return newPage;
     });
 
     if (isNew) {
@@ -351,21 +381,25 @@ function DraftBoard() {
         proovedUnitCount: (p.proovedUnitCount ?? 0) + proovedDelta,
       }));
     }
+
   };
 
   const rearrangeUnits = (unitId: string, targetIndex: number) => {
-    setPage((prevPage) => {
+    setPages((prev) => {
+      const next = [...prev];
+      const prevPage = next[currentPageIndex];
+
       const currentIndex = prevPage.units.findIndex((u) => u.id === unitId);
 
       if (currentIndex === -1) {
         console.log("[PanelView] Rearrange skipped, unit not found", unitId);
-        return prevPage;
+        return prev;
       }
 
       const maxIndex = Math.max(prevPage.units.length - 1, 0);
       const safeIndex = Math.min(Math.max(targetIndex, 0), maxIndex);
 
-      if (safeIndex === currentIndex) return prevPage;
+      if (safeIndex === currentIndex) return prev;
 
       const nextUnits = [...prevPage.units];
       const [movedUnit] = nextUnits.splice(currentIndex, 1);
@@ -374,10 +408,9 @@ function DraftBoard() {
 
       const reindexedUnits = nextUnits.map((unit, index) => ({ ...unit, indexInPage: index }));
 
-      return {
-        ...prevPage,
-        units: reindexedUnits,
-      };
+      next[currentPageIndex] = { ...prevPage, units: reindexedUnits };
+
+      return next;
     });
   };
 
@@ -385,13 +418,13 @@ function DraftBoard() {
     <div style={{ height: "100%", width: "100%", overflow: "hidden" }}>
       <Translator
         project={project}
-        currentPage={page}
+        currentPage={pages[currentPageIndex]}
         isLoading={false}
         mode="proofread"
         isOffline={false}
-        currentPageIndex={0}
+        currentPageIndex={currentPageIndex}
         selectedUnitId={selectedUnitId}
-        onRequestPage={(idx) => console.log("Request page:", idx)}
+        onRequestPage={(idx) => setCurrentPageIndex(Math.min(Math.max(idx, 0), pages.length - 1))}
         onUnitSave={handleUnitSave}
         onUnitRemove={handleUnitRemove}
         onUnitSelect={handleUnitSelect}

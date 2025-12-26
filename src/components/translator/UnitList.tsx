@@ -94,6 +94,7 @@ export const UnitList: React.FC<UnitListProps> = ({ page, onUnitClick, selectedU
             }
 
             const displayText = unit.proovedText || unit.translatedText || "-";
+
             return <textarea className="unit-textarea" readOnly value={displayText} />;
           };
 

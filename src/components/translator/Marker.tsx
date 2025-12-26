@@ -199,6 +199,20 @@ export const Marker: React.FC<MarkerProps> = ({
 
   return (
     <>
+      {mode === "proofread" && isSelected && (
+        (() => {
+          const centerX = dragScreenPos ? dragScreenPos.x : pointScreenX;
+          const centerY = dragScreenPos ? dragScreenPos.y : pointScreenY;
+
+          return (
+            <div className="marker-preview" style={{ left: `${centerX}px`, top: `${centerY}px` }}>
+              <div className="marker-preview-content">
+                {unit.proovedText ?? unit.translatedText ?? "-"}
+              </div>
+            </div>
+          );
+        })()
+      )}
       <div
         className={`marker ${isSelected ? "marker-selected" : ""} ${dragScreenPos ? "marker-dragging" : ""}`}
         style={{

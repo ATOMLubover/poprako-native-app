@@ -56,6 +56,7 @@ export const Stage = forwardRef<StageHandle, StageProps>(({ page, mode, selected
 
   // 处理画布点击事件（创建新unit）
   const handleCanvasClick = (e: React.MouseEvent) => {
+    console.log("[Stage] handleCanvasClick button=", e.button, "client=", e.clientX, e.clientY);
     if (!onUnitCreate || !containerRef.current || isLoading) return;
 
     // 只处理直接点击画布的情况（不是点击marker）
@@ -88,6 +89,7 @@ export const Stage = forwardRef<StageHandle, StageProps>(({ page, mode, selected
 
   // 处理画布右键点击
   const handleCanvasContextMenu = (e: React.MouseEvent) => {
+    console.log("[Stage] handleCanvasContextMenu button=", e.button, "client=", e.clientX, e.clientY);
     e.preventDefault();
     handleCanvasClick(e);
   };
@@ -99,6 +101,14 @@ export const Stage = forwardRef<StageHandle, StageProps>(({ page, mode, selected
     <div
       className="stage"
       ref={containerRef}
+      onContextMenuCapture={(e) => {
+        console.log("[Stage] onContextMenuCapture button=", (e as unknown as any).button, "client=", e.clientX, e.clientY);
+        // 全局阻止浏览器默认右键菜单；具体业务逻辑由子层（Marker / ImageLayer）决定。
+        e.preventDefault();
+      }}
+      onPointerDownCapture={(e) => {
+        console.log("[Stage] onPointerDownCapture button=", (e as unknown as any).button, "client=", e.clientX, e.clientY);
+      }}
     >
       {isLoading && (
         <div className="stage-loading">

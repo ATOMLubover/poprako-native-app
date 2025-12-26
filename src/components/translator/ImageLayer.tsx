@@ -270,7 +270,26 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
       onWheel={handleWheel}
+      onPointerDown={(e) => {
+        // Handle right-button presses at pointer-down to ensure outbox creation
+        // still works even if contextmenu handling or click bubbling is interrupted.
+        if (e.button === 2) {
+          console.log("[ImageLayer] onPointerDown button=", e.button, "client=", e.clientX, e.clientY);
+          if (suppressClickRef.current) {
+            suppressClickRef.current = false;
+            (e as React.PointerEvent).stopPropagation?.();
+            (e as React.PointerEvent).preventDefault?.();
+            return;
+          }
+
+          (e as unknown as React.MouseEvent).preventDefault?.();
+          if (typeof onCanvasContextMenu === 'function') {
+            onCanvasContextMenu(e as unknown as React.MouseEvent);
+          }
+        }
+      }}
       onClick={(e) => {
+        console.log("[ImageLayer] onClick button=", (e as React.MouseEvent).button, "client=", e.clientX, e.clientY);
         if (suppressClickRef.current) {
           suppressClickRef.current = false;
           e.stopPropagation();
@@ -283,6 +302,7 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
         }
       }}
       onContextMenu={(e) => {
+        console.log("[ImageLayer] onContextMenu button=", e.button, "client=", e.clientX, e.clientY);
         if (suppressClickRef.current) {
           suppressClickRef.current = false;
           e.stopPropagation();

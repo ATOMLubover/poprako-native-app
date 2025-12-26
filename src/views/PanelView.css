@@ -95,7 +95,6 @@ html, body, #root {
   filter: grayscale(40%) brightness(0.95) saturate(0.95);
   transition: filter 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
   will-change: filter;
-  pointer-events: none;
 }
 /* Logo 区域 */
 .logo-section {

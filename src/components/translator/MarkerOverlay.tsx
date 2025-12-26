@@ -49,9 +49,6 @@ const MarkerOverlay: React.FC<MarkerOverlayProps> = (props) => {
   return (
     <div
       className="marker-overlay"
-      style={{
-        pointerEvents: "auto",
-      }}
     >
       {units.map((unit) => (
         <Marker
