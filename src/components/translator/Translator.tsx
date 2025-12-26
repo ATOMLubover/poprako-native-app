@@ -315,6 +315,10 @@ export const Translator: React.FC<TranslatorProps> = ({
             onUnitClick={onUnitSelect}
             onUnitCreate={handleUnitCreate}
             onUnitRemove={onUnitRemove}
+            onUnitMoveEnd={(unitId, x, y) => {
+              // 持久化单元位置变更为 patch
+              onUnitSave({ id: unitId, x, y });
+            }}
           />
         </div>
 

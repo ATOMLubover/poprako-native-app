@@ -19,7 +19,7 @@ type ImageLayerProps = {
 };
 
 const ZOOM_STEP = 0.08; // 每次滚轮的乘法缩放步长（降低灵敏度）
-const MAX_SCALE = 3; // 最大放大倍数（相对于fitScale）
+const MAX_SCALE = 5; // 最大放大倍数（相对于fitScale）
 
 const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, onRenderUpdate, onCanvasClick, onCanvasContextMenu }, ref) => {
   const imageRef = useRef<HTMLImageElement>(null);
@@ -306,7 +306,7 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
           width: `${renderWidth}px`,
           height: `${renderHeight}px`,
           transform: `translate(${userOffset.x}px, ${userOffset.y}px)`,
-          cursor: isDragging ? "grabbing" : "grab",
+          cursor: isDragging ? "grabbing" : "default",
         }}
       />
     </div>
