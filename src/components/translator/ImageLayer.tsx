@@ -27,6 +27,7 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const suppressClickRef = useRef(false);
+  const contextMenuHandledRef = useRef(false);
   const DRAG_THRESHOLD = 5; // px
   
   // 图片的自然尺寸
@@ -121,7 +122,7 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
       const containerHeight = container.clientHeight;
 
       const availableWidth = containerWidth * 0.9;
-      const availableHeight = containerHeight * 0.9;
+      const availableHeight = containerHeight * 0.87;
 
       const scaleX = availableWidth / naturalWidth;
       const scaleY = availableHeight / naturalHeight;
@@ -282,7 +283,13 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
             return;
           }
 
+          // Mark that we've handled the contextmenu via pointerdown so the
+          // subsequent native `contextmenu` event won't trigger the handler
+          // again and create a duplicate unit.
+          contextMenuHandledRef.current = true;
+
           (e as unknown as React.MouseEvent).preventDefault?.();
+
           if (typeof onCanvasContextMenu === 'function') {
             onCanvasContextMenu(e as unknown as React.MouseEvent);
           }
@@ -303,6 +310,15 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
       }}
       onContextMenu={(e) => {
         console.log("[ImageLayer] onContextMenu button=", e.button, "client=", e.clientX, e.clientY);
+        // If pointerdown already handled the contextmenu, skip to avoid
+        // duplicate invocation. Clear the flag either way.
+        if (contextMenuHandledRef.current) {
+          contextMenuHandledRef.current = false;
+          e.stopPropagation();
+          e.preventDefault();
+          return;
+        }
+
         if (suppressClickRef.current) {
           suppressClickRef.current = false;
           e.stopPropagation();

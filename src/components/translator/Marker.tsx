@@ -58,6 +58,7 @@ export const Marker: React.FC<MarkerProps> = ({
     borderColor = "#10b981";
   }
   const backgroundColor = unit.isInbox ? "#fce7f3" : "#fef3c7";
+  const hasBorder = borderColor !== "transparent";
 
   // 确认对话框控制
   const [confirmVisible, setConfirmVisible] = useState(false);
@@ -201,11 +202,17 @@ export const Marker: React.FC<MarkerProps> = ({
     <>
       {mode === "proofread" && isSelected && (
         (() => {
-          const centerX = dragScreenPos ? dragScreenPos.x : pointScreenX;
-          const centerY = dragScreenPos ? dragScreenPos.y : pointScreenY;
+          // 预览框固定展示在 marker 右侧，左上角锚定到 marker 的 top-right + GAP
+          const markerLeft = dragScreenPos ? (dragScreenPos.x - circleSize / 2) : containerLeft;
+          const markerTop = dragScreenPos ? (dragScreenPos.y - totalHeight) : containerTop;
+          const markerRight = markerLeft + circleSize;
+          const GAP = 4; // 预览与 marker 之间的间隙（像素）
+
+          const previewLeft = markerRight + GAP;
+          const previewTop = markerTop; // 固定为与 marker 顶端对齐，向下扩展不会覆盖 marker
 
           return (
-            <div className="marker-preview" style={{ left: `${centerX}px`, top: `${centerY}px` }}>
+            <div className="marker-preview" style={{ left: `${previewLeft}px`, top: `${previewTop}px` }}>
               <div className="marker-preview-content">
                 {unit.proovedText ?? unit.translatedText ?? "-"}
               </div>
@@ -214,7 +221,7 @@ export const Marker: React.FC<MarkerProps> = ({
         })()
       )}
       <div
-        className={`marker ${isSelected ? "marker-selected" : ""} ${dragScreenPos ? "marker-dragging" : ""}`}
+        className={`marker ${isSelected ? "marker-selected" : ""} ${dragScreenPos ? "marker-dragging" : ""} ${hasBorder ? "marker-has-border" : ""}`}
         style={{
           left: `${dragScreenPos ? dragScreenPos.x - circleSize / 2 : containerLeft}px`,
           top: `${dragScreenPos ? dragScreenPos.y - totalHeight : containerTop}px`,
@@ -233,7 +240,8 @@ export const Marker: React.FC<MarkerProps> = ({
             height: `${circleSize}px`,
             backgroundColor,
             borderColor,
-          }}
+            ["--marker-border-color" as any]: borderColor,
+          } as React.CSSProperties}
         >
           <span className="marker-index">{unit.indexInPage + 1}</span>
         </div>

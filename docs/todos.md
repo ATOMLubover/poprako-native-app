@@ -4,4 +4,5 @@
 - [x] Enlarge the font size of likes tag.
 - [x] Optimize the size of termbase page list.
 - [x] Add progress bar in compressor.
-- [ ] Unexpected movement towards left-up in stage.
+- [x] Unexpected movement towards left-up in stage.
+- [ ] Quick proove and copy button in unit list when in proof mode.

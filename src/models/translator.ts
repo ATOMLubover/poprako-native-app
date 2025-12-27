@@ -16,10 +16,6 @@ export type Page = {
   id: string;
   localImageUrl?: string; // 漫画页在本地的存储路径（可选)
   remoteImageUrl?: string; // 漫画页的远程 URL 地址（可选）
-  translatedUnitCount: number; // 已翻译的单元数量
-  proovedUnitCount: number; // 已校对的单元数量
-  inboxUnitCount: number; // 框内单元数量
-  outboxUnitCount: number; // 框外单元数量
   units: Unit[]; // 漫画页中的翻译单元列表
 };
 

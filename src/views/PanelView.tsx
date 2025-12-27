@@ -163,10 +163,6 @@ function DraftBoard() {
     {
       id: "PG-882104-1",
       localImageUrl: "/tests/images/01_001.jpg",
-      translatedUnitCount: 3,
-      proovedUnitCount: 1,
-      inboxUnitCount: 8,
-      outboxUnitCount: 7,
       units: [
         {
           id: "u1",
@@ -182,7 +178,7 @@ function DraftBoard() {
           x: 0.5,
           y: 0.35,
           indexInPage: 1,
-          translatedText: "正在等待校对的长文本示例",
+          translatedText: "正在等待校对的长文本示例\n测试测试第二行\n测试第三行",
           isProoved: false,
           isInbox: false,
         },
@@ -218,31 +214,19 @@ function DraftBoard() {
 
     {
       id: "PG-882104-2",
-      localImageUrl: "/tests/images/01_002.jpg",
-      translatedUnitCount: 0,
-      proovedUnitCount: 0,
-      inboxUnitCount: 0,
-      outboxUnitCount: 0,
+      localImageUrl: "/tests/images/02_003.jpg",
       units: [],
     },
 
     {
       id: "PG-882104-3",
-      localImageUrl: "/tests/images/01_003.jpg",
-      translatedUnitCount: 0,
-      proovedUnitCount: 0,
-      inboxUnitCount: 0,
-      outboxUnitCount: 0,
+      localImageUrl: "/tests/images/03_004.jpg",
       units: [],
     },
 
     {
       id: "PG-882104-4",
-      localImageUrl: "/tests/images/01_004.jpg",
-      translatedUnitCount: 0,
-      proovedUnitCount: 0,
-      inboxUnitCount: 0,
-      outboxUnitCount: 0,
+      localImageUrl: "/tests/images/04_005.jpg",
       units: [],
     },
   ];
@@ -270,26 +254,9 @@ function DraftBoard() {
       const filtered = p.units.filter((u) => u.id !== unitId);
       const reindexed = filtered.map((u, idx) => ({ ...u, indexInPage: idx }));
 
-      let inbox = 0;
-      let outbox = 0;
-      let translated = 0;
-      let prooved = 0;
-
-      for (const u of reindexed) {
-        if (u.isInbox) inbox++; else outbox++;
-        if (u.translatedText) translated++;
-        if (u.proovedText) prooved++;
-      }
-
-      computed = { inbox, outbox, translated, prooved };
-
       next[currentPageIndex] = {
         ...p,
         units: reindexed,
-        inboxUnitCount: inbox,
-        outboxUnitCount: outbox,
-        translatedUnitCount: translated,
-        proovedUnitCount: prooved,
       };
 
       if (selectedUnitId && selectedUnitId === unitId) {
@@ -304,6 +271,7 @@ function DraftBoard() {
     setProject((p) => ({
       ...p,
       unitCount: Math.max(0, (p.unitCount ?? 0) - 1),
+      // project-level counts remain updated from computed values
       inboxUnitCount: computed.inbox,
       outboxUnitCount: computed.outbox,
       translatedUnitCount: computed.translated,
@@ -351,20 +319,17 @@ function DraftBoard() {
 
         updatedUnits = [...prevPage.units, newUnit];
 
-        const inboxDelta = newUnit.isInbox ? 1 : 0;
-        const outboxDelta = newUnit.isInbox ? 0 : 1;
-        const translatedDelta = newUnit.translatedText ? 1 : 0;
-        const proovedDelta = newUnit.proovedText ? 1 : 0;
+        // update outer deltas so project-level counts can be updated after setPages
+        inboxDelta = newUnit.isInbox ? 1 : 0;
+        outboxDelta = newUnit.isInbox ? 0 : 1;
+        translatedDelta = newUnit.translatedText ? 1 : 0;
+        proovedDelta = newUnit.proovedText ? 1 : 0;
         isNew = true;
         unitCountDelta = 1;
 
         next[currentPageIndex] = {
           ...prevPage,
           units: updatedUnits,
-          inboxUnitCount: (prevPage.inboxUnitCount ?? 0) + inboxDelta,
-          outboxUnitCount: (prevPage.outboxUnitCount ?? 0) + outboxDelta,
-          translatedUnitCount: (prevPage.translatedUnitCount ?? 0) + translatedDelta,
-          proovedUnitCount: (prevPage.proovedUnitCount ?? 0) + proovedDelta,
         };
 
         return next;

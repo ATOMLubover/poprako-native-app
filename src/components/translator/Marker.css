@@ -18,14 +18,45 @@
 }
 
 .marker-circle {
+  position: relative;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 2px solid transparent;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.24);
   transition: all 0.15s ease;
   flex-shrink: 0;
+}
+
+/* 增强边缘对比：内描边用于在复杂/亮背景上提供深色轮廓 */
+.marker-circle::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+  pointer-events: none;
+}
+
+/* 当存在语义边框（如已翻译/已校对）时，增强可视效果：加粗边框并添加外发光 */
+.marker-has-border .marker-circle {
+  border-width: 3px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28), 0 0 8px var(--marker-border-color, transparent);
+}
+
+.marker-has-border .marker-circle::after {
+  content: "";
+  position: absolute;
+  left: -6px;
+  top: -6px;
+  right: -6px;
+  bottom: -6px;
+  border-radius: 50%;
+  background: var(--marker-border-color, transparent);
+  opacity: 0.12;
+  filter: blur(6px);
+  pointer-events: none;
 }
 
 .marker:hover .marker-circle {
@@ -43,12 +74,15 @@
   font-weight: 600;
   color: #374151;
   user-select: none;
+  /* 文字描边/阴影提升对比度，复杂背景下更易读 */
+  text-shadow: 0 1px 0 rgba(255,255,255,0.6), 0 2px 6px rgba(0,0,0,0.28);
 }
 
 .marker-pointer {
   border-radius: 50%;
   margin-top: -1px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.22);
+  border: 2px solid rgba(0,0,0,0.12);
   flex-shrink: 0;
 }
 
@@ -57,7 +91,8 @@
   position: absolute;
   pointer-events: none;
   z-index: 40;
-  transform: translate(-50%, calc(-100% - 42px));
+  /* 移除 translate 偏移，让 JS 传入的 left/top 作为左上角锚点 */
+  transform: none;
   max-width: 240px;
   width: max-content;
 }
@@ -65,7 +100,7 @@
 .marker-preview-content {
   padding: 8px 12px;
   border-radius: 12px;
-  background: rgba(28, 40, 58, 0.72);
+  background: rgba(28, 40, 58, 0.88);
   color: #f5f8ff;
   font-size: 12px;
   line-height: 1.5;

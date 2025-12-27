@@ -90,6 +90,48 @@
   gap: 6px;
 }
 
+/* 批量操作按钮 */
+.list-actions {
+  display: flex;
+  gap: 8px;
+  padding: 4px 10px;
+  padding-top: 6px;
+  align-items: center;
+  background: transparent;
+  justify-content: center;
+}
+
+.action-button--danger{
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: none;
+  background: #ffffff;
+  font-size: 0.80rem;
+  cursor: pointer;
+  color: inherit;
+  transition: transform 120ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.action-button--danger:hover,
+.action-button--danger:focus-visible {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+/* Hover lift effect for action buttons */
+.action-button:hover,
+.action-button:focus-visible,
+.action-button--danger:hover,
+.action-button--danger:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(188, 172, 172, 0.532);
+}
+
+.action-button:active,
+.action-button--danger:active {
+  transform: translateY(0);
+}
+
 .list-content::-webkit-scrollbar {
   width: 6px;
 }
@@ -205,9 +247,55 @@
   color: #6b7280;
 }
 
+/* Proof mode: translated row with right-aligned square copy button */
+.unit-content-dual {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.unit-content-dual .translated-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.unit-content-dual .translated-row .translated-text {
+  flex: 1 1 auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #374151;
+}
+
+.copy-button {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  border-radius: 4px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.copy-button svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+
+.copy-button:active {
+  transform: translateY(1px);
+}
+
 .divider-line {
   height: 1px;
-  background: linear-gradient(to right, transparent, #d1d5db 20%, #d1d5db 80%, transparent);
+  background-color: #d1d5db;
   margin: 0 -4px;
 }
 

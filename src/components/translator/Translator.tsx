@@ -142,6 +142,31 @@ export const Translator: React.FC<TranslatorProps> = ({
   const selectedUnit = currentPage.units.find((u) => u.id === selectedUnitId);
   const [showMemo, setShowMemo] = useState(false);
 
+  // 批量操作：复制已翻译文本到校对文本（仅当没有校对文本时）
+  
+
+  // 批量操作：确认校对所有单元（设 isProoved = true）
+  const handleBulkConfirmProofAll = () => {
+    for (const u of currentPage.units) {
+      // 若单元有任何文本（翻译文本或校对文本），则可被标记为已校对
+      const hasAnyText = ((u.translatedText ?? "") as string).toString().trim() !== "" ||
+        ((u.proovedText ?? "") as string).toString().trim() !== "";
+
+      if (!u.isProoved && hasAnyText) {
+        onUnitSave({ id: u.id, isProoved: true });
+      }
+    }
+  };
+
+  // 复制单个 unit 的 translatedText 到 proovedText 并保存
+  const handleCopyTranslatedToProof = (unitId: string) => {
+    const u = currentPage.units.find((x) => x.id === unitId);
+    if (!u) return;
+    if (!u.translatedText) return;
+
+    onUnitSave({ id: unitId, proovedText: u.translatedText });
+  };
+
   useEffect(() => {
     loadCustomSymbolsIfNeeded();
   }, [loadCustomSymbolsIfNeeded]);
@@ -417,6 +442,8 @@ export const Translator: React.FC<TranslatorProps> = ({
                 onUnitClick={onUnitSelect}
                 selectedUnitId={selectedUnitId}
                 isProofMode={mode === "proofread"}
+                onCopyTranslatedToProof={handleCopyTranslatedToProof}
+                onBulkConfirmProofAll={handleBulkConfirmProofAll}
               />
             </div>
 
