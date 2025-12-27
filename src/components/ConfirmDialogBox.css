@@ -44,6 +44,21 @@
   overflow: auto;
 }
 
+/* confirm dialog uses its own compact scrollbar (not the shared app scrollbar) */
+.cdb-desc::-webkit-scrollbar {
+  width: 4px;
+}
+
+.cdb-desc::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 2px;
+}
+
+.cdb-desc {
+  scrollbar-width: thin;
+  scrollbar-color: #e5e7eb transparent;
+}
+
 .cdb-actions{
   display: flex;
   justify-content: flex-end;

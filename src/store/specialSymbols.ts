@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { getSpecialSymbols, saveSpecailSymbols } from "../ipc/specail_symbols";
+import { getSpecialSymbols, saveSpecailSymbols } from "../ipc/specailSymbol";
 
 // 特殊符号的默认列表
 const DEFAULT_CUSTOM_SYMBOLS: string[] = [

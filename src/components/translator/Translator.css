@@ -9,7 +9,7 @@
 
 /* ========== 顶部栏 ========== */
 .translator-header {
-  height: 56px;
+  height: 50px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -104,6 +104,12 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  transition: width 0.3s ease, opacity 0.3s ease;
+}
+
+.translator-sidebar.hidden {
+  width: 0;
+  opacity: 0;
 }
 
 .sidebar-unitlist {

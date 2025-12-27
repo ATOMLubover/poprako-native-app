@@ -39,12 +39,6 @@
   pointer-events: none;
 }
 
-/* 当存在语义边框（如已翻译/已校对）时，增强可视效果：加粗边框并添加外发光 */
-.marker-has-border .marker-circle {
-  border-width: 3px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28), 0 0 8px var(--marker-border-color, transparent);
-}
-
 .marker-has-border .marker-circle::after {
   content: "";
   position: absolute;

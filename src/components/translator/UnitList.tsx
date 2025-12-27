@@ -12,7 +12,7 @@ type UnitListProps = {
   onBulkConfirmProofAll?: () => void;
 };
 
-export const UnitList: React.FC<UnitListProps> = ({ page, onUnitClick, selectedUnitId, isProofMode = false, onCopyTranslatedToProof, onBulkConfirmProofAll }) => {
+export const UnitList: React.FC<UnitListProps> = ({ page, onUnitClick, selectedUnitId, isProofMode = false, onBulkConfirmProofAll }) => {
   const listContentRef = useRef<HTMLDivElement>(null);
   const [confirmVisible, setConfirmVisible] = useState(false);
 
@@ -28,6 +28,17 @@ export const UnitList: React.FC<UnitListProps> = ({ page, onUnitClick, selectedU
       element.style.height = element.scrollHeight + "px";
     });
   }, [page.units]);
+
+  // 当选中单元变化时，自动滚动到可视区域
+  useEffect(() => {
+    if (!selectedUnitId || !listContentRef.current) return;
+
+    const selectedElement = listContentRef.current.querySelector(`[data-unit-id="${selectedUnitId}"]`);
+
+    if (selectedElement) {
+      selectedElement.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [selectedUnitId]);
 
   // 计算统计数据（仅逻辑，保留现有 JSX/样式不变）
   const total = page.units.length;
@@ -77,30 +88,17 @@ export const UnitList: React.FC<UnitListProps> = ({ page, onUnitClick, selectedU
           <div className="status-tags">
             <span className="tag tag-gray">未翻译 {unTranslated}</span>
             <span className="tag tag-orange">待校对 {unProoved}</span>
-            <span className="tag tag-green">已完成 {prooved}</span>
+            <span className="tag tag-green">已校对 {prooved}</span>
           </div>
         </div>
       </div>
-      {/* 批量操作（仅校对模式可见） */}
-      {isProofMode && (
-        <div className="list-actions">
-          <button
-            className="action-button action-button--danger"
-            onClick={(e) => {
-              e.stopPropagation();
-              setConfirmVisible(true);
-            }}
-          >
-            确认校对所有单元
-          </button>
-        </div>
-      )}
+      {/* 列表内容 */}
 
       {/* 确认对话框 */}
       <ConfirmDialogBox
         visible={!!confirmVisible}
         title="确认校对所有单元"
-        description="此操作会将所有单元标记为已校对，是否继续？"
+        description="此操作会将所有单元标记为已校对，是否继续？\n快捷键：Ctrl+P"
         confirmText="确认"
         cancelText="取消"
         onConfirm={() => {
@@ -141,7 +139,8 @@ export const UnitList: React.FC<UnitListProps> = ({ page, onUnitClick, selectedU
                   {hasTranslated ? (
                     <>
                       <div className="translated-row">
-                        <div className="translated-text">{unit.translatedText}</div>
+                        <div className={`translated-text ${hasProoved ? "translated-text--muted" : ""}`}>{unit.translatedText}</div>
+                        {/*
                         <button
                           className="copy-button"
                           title="复制到校对文本"
@@ -151,10 +150,11 @@ export const UnitList: React.FC<UnitListProps> = ({ page, onUnitClick, selectedU
                           }}
                         >
                           <svg viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                            <rect x="9" y="9" width="11" height="11" rx="2" />
-                            <rect x="4" y="4" width="11" height="11" rx="2" />
+                            <rect x="9" y="9" width="10" height="10" rx="2" />
+                            <rect x="4" y="4" width="10" height="10" rx="2" />
                           </svg>
                         </button>
+                        */}
                       </div>
 
                       {hasProoved ? <div className="divider-line" /> : null}
@@ -182,6 +182,7 @@ export const UnitList: React.FC<UnitListProps> = ({ page, onUnitClick, selectedU
           return (
             <div
               key={unit.id}
+              data-unit-id={unit.id}
               className={`unit-item ${statusClass} ${isSelected ? "selected" : ""}`}
               onClick={() => handleUnitClick(unit.id)}
             >
@@ -194,6 +195,31 @@ export const UnitList: React.FC<UnitListProps> = ({ page, onUnitClick, selectedU
             </div>
           );
         })}
+
+        {/* 将批量确认作为列表最后一项展示（仅在校对模式且存在单元时） */}
+        {isProofMode && page.units.length > 0 ? (
+          <div
+            className={`unit-item bulk-action unit-item--transparent`}
+            onClick={(e) => {
+              e.stopPropagation();
+              setConfirmVisible(true);
+            }}
+          >
+            <div className={`unit-index`} />
+            <div className="unit-content">
+              <button
+                className="action-button action-button--danger"
+                title={"确认校对所有单元 (Ctrl+P)"}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setConfirmVisible(true);
+                }}
+              >
+                确认校对所有单元
+              </button>
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );

@@ -1,5 +1,7 @@
 pub mod compress;
-pub mod specail_symbols;
+pub mod http;
+pub mod image;
+pub mod specail_symbol;
 
 fn get_ipc_request_id() -> u32 {
     rand::random::<u32>() % 10000

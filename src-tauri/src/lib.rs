@@ -4,7 +4,9 @@ use tauri::{App, Manager as _};
 use tracing::Level;
 
 mod compress;
+mod http;
 mod ipc;
+mod local_image;
 mod repository;
 mod result_trace;
 
@@ -66,8 +68,15 @@ pub fn run() {
             ipc::compress::compress_image,
             ipc::compress::open_compress_dir,
             ipc::compress::select_image_files,
-            ipc::specail_symbols::get_special_symbols,
-            ipc::specail_symbols::save_specail_symbols
+            ipc::specail_symbol::get_special_symbols,
+            ipc::specail_symbol::save_specail_symbols,
+            ipc::image::proxy_local_image,
+            ipc::image::proxy_remote_image,
+            ipc::http::proxy_get,
+            ipc::http::proxy_post,
+            ipc::http::proxy_put,
+            ipc::http::proxy_patch,
+            ipc::http::proxy_delete
         ])
         .run(tauri::generate_context!())
         .expect("无法启动 Tauri 应用程序");

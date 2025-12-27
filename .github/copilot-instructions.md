@@ -24,6 +24,8 @@
 
 - 错误提示（所有不可恢复错误均使用这个进行报错）： /src/components/NotificationToast.tsx（注意这是全局的，详情参考其 export 的函数）
 
+- 滚动条样式： /src/styles/scrollbar.css
+
 ## 注释相关要求
 
 - 所有前端注释均使用中文，后端注释均使用英文。

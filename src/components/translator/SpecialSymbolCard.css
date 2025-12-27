@@ -1,0 +1,134 @@
+.special-symbol-card-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.special-symbol-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+  width: 90%;
+  max-width: 520px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.special-symbol-card .card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f3f4f6;
+  flex-shrink: 0;
+}
+
+.special-symbol-card .card-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.special-symbol-card .close-button {
+  background: transparent;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+  color: #6b7280;
+}
+
+.special-symbol-card .close-button:hover {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.special-symbol-card .close-button:active {
+  background-color: #e5e7eb;
+}
+
+.special-symbol-card .card-content {
+  padding: 12px 16px;
+  overflow-y: auto;
+  flex: 1;
+  scrollbar-width: thin;
+  scrollbar-color: #e5e7eb transparent;
+}
+
+@import "../../styles/scrollbar.css";
+
+/* apply shared scrollbar helper class to the scrollable area */
+.card-content {
+  /* ensure scrollbar hint for Firefox and avoid empty-ruleset lint */
+  scrollbar-width: thin;
+  scrollbar-color: #e5e7eb transparent;
+}
+
+.symbol-section-compact {
+  margin-bottom: 20px;
+}
+
+.symbol-section-compact:last-child {
+  margin-bottom: 0;
+}
+
+.section-header-compact {
+  margin-bottom: 10px;
+}
+
+.section-title-compact {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.symbol-grid-compact {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+  gap: 8px;
+}
+
+.symbol-item-compact {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 44px;
+}
+
+.symbol-item-compact:hover {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
+  transform: translateY(-1px);
+}
+
+.symbol-item-compact:active {
+  background-color: #e5e7eb;
+  transform: translateY(0);
+}
+
+.symbol-char-compact {
+  font-size: 18px;
+  color: #1f2937;
+  user-select: none;
+}

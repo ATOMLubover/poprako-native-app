@@ -23,3 +23,12 @@
 .stage-image.no-transition {
   transition: none;
 }
+
+/* 图片加载中的占位容器 */
+.image-layer-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+}

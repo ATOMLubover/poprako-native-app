@@ -4,6 +4,7 @@ use crate::{
     result_trace::ResultTrace,
 };
 
+/// Get the list of special symbols stored in the repository.
 #[tauri::command]
 #[tracing::instrument]
 pub async fn get_special_symbols() -> Result<Vec<String>, String> {
@@ -27,6 +28,7 @@ pub async fn get_special_symbols() -> Result<Vec<String>, String> {
     Ok(symbols)
 }
 
+/// Save the provided list of special symbols to the repository.
 #[tauri::command]
 #[tracing::instrument]
 pub async fn save_specail_symbols(symbols: Vec<String>) -> Result<(), String> {

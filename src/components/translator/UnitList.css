@@ -87,7 +87,7 @@
   padding: 6px 20px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 /* 批量操作按钮 */
@@ -103,6 +103,7 @@
 
 .action-button--danger{
   padding: 6px 10px;
+  margin: 6px 10px;
   border-radius: 8px;
   border: none;
   background: #ffffff;
@@ -145,20 +146,46 @@
   display: flex;
   align-items: stretch;
   width: 100%;
-  border-radius: 10px;
+  border-radius: 4px;
   overflow: hidden;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 2px solid var(--border-item);
+  border: 1px solid var(--border-item);
   flex-shrink: 0;
   cursor: pointer;
   position: relative;
   background-color: #fff;
 }
 
+/* bulk action item: center its content */
+.unit-item.bulk-action .unit-content,
+.unit-item.bulk-action .unit-content > * {
+  justify-content: center;
+}
+
+/* 透明包装变种：用于仅作为容器的 unit-item（无边框、无背景、无 hover 效果） */
+.unit-item.unit-item--transparent {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  transform: none;
+}
+
+.unit-item.unit-item--transparent .unit-content {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.unit-item.unit-item--transparent:hover {
+  transform: none;
+  border-color: transparent;
+  background: transparent;
+}
+
 .unit-item:hover {
-  transform: translateX(-4px);
+  transform: translateX(-3px);
   border-color: #dcfce7;
-  box-shadow: -2px 4px 12px rgba(0, 0, 0, 0.06);
   z-index: 10;
 }
 
@@ -185,7 +212,8 @@
 
 .unit-content {
   flex-grow: 1;
-  padding: 12px;
+  padding: 6px;
+  padding-left: 12px;
   display: flex;
   align-items: center;
 }
@@ -224,14 +252,15 @@
 
 .unit-item.selected {
   border: 1px solid #7dd3fc;
-  transform: translateX(-2px);
+  border-right-width: 2px;
+  transform: translateX(-4px);
 }
 
 .unit-content-dual {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .translated-text,
@@ -241,10 +270,24 @@
   color: #374151;
   word-break: break-word;
   white-space: pre-line;
+  padding: 0;
+  margin: 0;
 }
 
 .translated-text {
   color: #6b7280;
+}
+
+/* 当存在已校对文本时，已翻译文本变灰并斜体 */
+.translated-text--muted {
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* 提高优先级，覆盖更具体的选择器 */
+.unit-content-dual .translated-row .translated-text.translated-text--muted {
+  color: #9ca3af;
+  font-style: italic;
 }
 
 /* Proof mode: translated row with right-aligned square copy button */
@@ -252,7 +295,7 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .unit-content-dual .translated-row {
@@ -269,12 +312,11 @@
 }
 
 .copy-button {
-  width: 20px;
-  height: 20px;
-  min-width: 20px;
-  min-height: 20px;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  min-height: 18px;
   border-radius: 4px;
-  border: 1px solid #e5e7eb;
   background: #ffffff;
   display: inline-flex;
   align-items: center;
@@ -296,10 +338,11 @@
 .divider-line {
   height: 1px;
   background-color: #d1d5db;
-  margin: 0 -4px;
+  margin: 0 -2px;
 }
 
 .unit-item.selected {
-  border: 2px solid #aadbb6;
-  transform: translateX(-2px);
+  border: 1px solid #aadbb6;
+  border-right-width: 2px;
+  transform: translateX(-4px);
 }

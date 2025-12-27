@@ -1,4 +1,3 @@
-import React from "react";
 import type { SVGProps } from "react";
 import { Settings as LucideSettings, TreePine as LucideTreePine, Clock as LucideClock, Users as LucideUsers, Tag as LucideTag, Database as LucideDatabase, Image as LucideImage, Type as LucideType, Star as LucideStar } from "lucide-react";
 

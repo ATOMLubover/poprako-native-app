@@ -1,0 +1,16 @@
+/* Shared scrollbar styles used across the app */
+/* Matches other list scrollbars: 6px width, rounded light-gray thumb */
+.app-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.app-scrollbar::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 10px;
+}
+
+/* Firefox */
+.app-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #e5e7eb transparent;
+}

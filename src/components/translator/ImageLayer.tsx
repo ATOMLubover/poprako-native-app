@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import "./ImageLayer.css";
+import { getLocalImage, getRemoteImage } from "../../store/image";
+import DotLoadSpinner from "../DotLoadSpinner";
 
 export type ImageLayerHandle = {
   resetView: () => void;
@@ -32,6 +34,10 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
   
   // 图片的自然尺寸
   const [naturalSize, setNaturalSize] = useState({ width: 0, height: 0 });
+  
+  // 前端最终用于 <img> 的 src（可能是原始 URL，也可能是 base64 data URL）
+  const [srcToUse, setSrcToUse] = useState<string>("");
+  const [isLoadingImage, setIsLoadingImage] = useState(false);
   
   // 初始适应缩放比例
   const [fitScale, setFitScale] = useState(1);
@@ -106,6 +112,71 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
       setUserOffset({ x: 0, y: 0 });
     },
   }));
+
+  // 判断是否为本地操作系统绝对路径
+  const isAbsoluteOsPath = (p: string) => {
+    if (!p) return false;
+    if (p.startsWith("file://")) return true;
+    // Windows: C:\ or C:/
+    if (/^[a-zA-Z]:[\\\/]/.test(p)) return true;
+    // Unix: /foo/bar
+    if (p.startsWith("/")) return true;
+    // UNC path like \\\\server\\share
+    if (p.startsWith("\\\\")) return true;
+    return false;
+  };
+
+  // 当 imageUrl 改变时：如果是本地绝对路径则通过 IPC 获取 base64 data URL；否则直接使用
+  useEffect(() => {
+    let cancelled = false;
+
+    if (isAbsoluteOsPath(imageUrl)) {
+      setIsLoadingImage(true);
+      setSrcToUse("");
+
+      getLocalImage(imageUrl)
+        .then((result) => {
+          if (!cancelled) {
+            setSrcToUse(result.objectUrl);
+            setIsLoadingImage(false);
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to load local image:", err);
+          if (!cancelled) {
+            setSrcToUse("");
+            setIsLoadingImage(false);
+          }
+        });
+    } else if (/^https?:\/\//i.test(imageUrl)) {
+      // remote URL: try proxying via IPC to avoid CORS and return data URL
+      setIsLoadingImage(true);
+      setSrcToUse("");
+
+      getRemoteImage(imageUrl, {})
+        .then((result) => {
+          if (!cancelled) {
+            setSrcToUse(result.objectUrl);
+            setIsLoadingImage(false);
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to proxy remote image:", err);
+          if (!cancelled) {
+            // fallback to direct URL
+            setSrcToUse(imageUrl);
+            setIsLoadingImage(false);
+          }
+        });
+    } else {
+      setSrcToUse(imageUrl);
+      setIsLoadingImage(false);
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [imageUrl]);
 
   // 图片加载完成
   const handleImageLoaded = (e: React.SyntheticEvent<HTMLImageElement>) => {
@@ -203,8 +274,10 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
     };
   }, []);
 
+  
+
   // 鼠标滚轮缩放（保持鼠标在画布上的绝对百分比位置不变）
-  const handleWheel = (e: React.WheelEvent) => {
+  const handleWheelNative = (e: WheelEvent) => {
     e.preventDefault();
 
     if (!containerRef.current || naturalSize.width === 0) return;
@@ -217,8 +290,8 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
 
     // 计算鼠标在容器中的位置
     const rect = containerRef.current.getBoundingClientRect();
-    const mouseXInContainer = e.clientX - rect.left;
-    const mouseYInContainer = e.clientY - rect.top;
+    const mouseXInContainer = (e as WheelEvent & { clientX: number }).clientX - rect.left;
+    const mouseYInContainer = (e as WheelEvent & { clientY: number }).clientY - rect.top;
 
     // 当前图片的显示尺寸
     const currentWidth = naturalSize.width * fitScale * userScale;
@@ -258,6 +331,20 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
     }
   };
 
+  // Attach native wheel listener as non-passive so we can call preventDefault()
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const onWheel = (ev: WheelEvent) => handleWheelNative(ev);
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+
+    return () => {
+      el.removeEventListener("wheel", onWheel as EventListener);
+    };
+  }, [containerRef, naturalSize, fitScale, userScale, userOffset]);
+
   // 计算最终渲染尺寸（不使用CSS scale，直接设置width/height）
   const renderWidth = naturalSize.width * fitScale * userScale;
   const renderHeight = naturalSize.height * fitScale * userScale;
@@ -270,7 +357,7 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
-      onWheel={handleWheel}
+        /* wheel is attached as a native non-passive listener to allow preventDefault */
       onPointerDown={(e) => {
         // Handle right-button presses at pointer-down to ensure outbox creation
         // still works even if contextmenu handling or click bubbling is interrupted.
@@ -331,20 +418,28 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
         }
       }}
     >
-      <img
-        ref={imageRef}
-        src={imageUrl}
-        alt="漫画页"
-        className={`stage-image ${isDragging ? 'no-transition' : ''}`}
-        onLoad={handleImageLoaded}
-        draggable={false}
-        style={{
-          width: `${renderWidth}px`,
-          height: `${renderHeight}px`,
-          transform: `translate(${userOffset.x}px, ${userOffset.y}px)`,
-          cursor: isDragging ? "grabbing" : "default",
-        }}
-      />
+      {isLoadingImage && (
+        <div className="image-layer-loading">
+          <DotLoadSpinner />
+        </div>
+      )}
+
+      {srcToUse && (
+        <img
+          ref={imageRef}
+          src={srcToUse}
+          alt="漫画页"
+          className={`stage-image ${isDragging ? 'no-transition' : ''}`}
+          onLoad={handleImageLoaded}
+          draggable={false}
+          style={{
+            width: `${renderWidth}px`,
+            height: `${renderHeight}px`,
+            transform: `translate(${userOffset.x}px, ${userOffset.y}px)`,
+            cursor: isDragging ? "grabbing" : "default",
+          }}
+        />
+      )}
     </div>
   );
 });

@@ -8,37 +8,7 @@ import { createPortal } from "react-dom";
 
 type Mode = "normal" | "select";
 
-type SymbolSection = {
-  title: string;
-  symbols: string[];
-};
-
-const SYMBOL_SECTIONS: SymbolSection[] = [
-  {
-    title: "星形与爱心",
-    symbols: ["★", "☆", "❤", "♡","❈", "✿", "❀"],
-  },
-
-  {
-    title: "状态与标记",
-    symbols: ["✔", "✘", "●", "○", "✕"],
-  },
-
-  {
-    title: "音乐符号",
-    symbols: ["♩", "♪", "♫", "♬", "♯", "♭", "♮"],
-  },
-
-  {
-    title: "引号（成对）",
-    symbols: ["『』", "「」", "【】", "〈〉"],
-  },
-
-  {
-    title: "其他",
-    symbols: ["©", "®", "♂", "♀", "♁", "▶", "◀", "§"],
-  },
-];
+import { SYMBOL_SECTIONS } from "../models/specialSymbols";
 
 const MAX_CUSTOM_SYMBOLS = 15;
 const LONG_PRESS_DURATION = 360;
