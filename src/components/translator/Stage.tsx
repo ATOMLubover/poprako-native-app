@@ -8,6 +8,8 @@ import type { TranslatorMode } from "./Translator";
 
 export type StageHandle = {
   resetView: () => void;
+  // 将指定 unit 的 marker 移动到视图中间
+  centerUnit: (unitId: string) => void;
 };
 
 type StageProps = {
@@ -38,6 +40,14 @@ export const Stage = forwardRef<StageHandle, StageProps>(({ page, mode, selected
   useImperativeHandle(ref, () => ({
     resetView() {
       imageLayerRef.current?.resetView();
+    },
+    centerUnit(unitId: string) {
+      const u = page.units.find((x) => x.id === unitId);
+      if (!u) return;
+
+      if (typeof imageLayerRef.current?.centerOn === "function") {
+        imageLayerRef.current.centerOn(u.x, u.y);
+      }
     },
   }));
 

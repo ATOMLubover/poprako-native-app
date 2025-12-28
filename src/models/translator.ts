@@ -35,8 +35,8 @@ export type Project = {
   id: string;
   author: string;
   title: string;
-  localPath?: string; // 项目在本地的存储路径（可选）
-  remoteUrl?: string; // 项目的远程 URL 地址（可选）
+  localImageDir?: string; // 项目在本地的存储路径（可选）
+  relatedRemoteComicId?: string; // 关联的漫画 ID（可选），当项目关联在线漫画时存在
   unitCount: number; // 翻校单元总数量
   translatedUnitCount: number; // 已翻译的翻校单元数量
   proovedUnitCount: number; // 已校对的翻校单元数量

@@ -7,6 +7,7 @@ mod compress;
 mod http;
 mod ipc;
 mod local_image;
+mod model;
 mod repository;
 mod result_trace;
 

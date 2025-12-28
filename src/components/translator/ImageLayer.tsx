@@ -5,6 +5,8 @@ import DotLoadSpinner from "../DotLoadSpinner";
 
 export type ImageLayerHandle = {
   resetView: () => void;
+  // 将图片上的相对点（0-1）平移到容器中心
+  centerOn: (relativeX: number, relativeY: number) => void;
 };
 
 type ImageLayerProps = {
@@ -110,6 +112,21 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
 
       setUserScale(1);
       setUserOffset({ x: 0, y: 0 });
+    },
+    centerOn(relativeX: number, relativeY: number) {
+      if (!containerRef.current || naturalSize.width === 0) return;
+      const renderWidth = naturalSize.width * fitScale * userScale;
+      const renderHeight = naturalSize.height * fitScale * userScale;
+
+      const newOffsetX = renderWidth * (0.5 - relativeX);
+      const newOffsetY = renderHeight * (0.5 - relativeY);
+
+      setUserOffset({ x: newOffsetX, y: newOffsetY });
+
+      const info = computeRenderInfo(userScale, { x: newOffsetX, y: newOffsetY });
+      if (info) {
+        onRenderUpdate(info);
+      }
     },
   }));
 

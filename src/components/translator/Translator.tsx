@@ -21,6 +21,8 @@ export type TranslatorProps = {
   isOffline: boolean;
   currentPageIndex: number;
   selectedUnitId?: string | null;
+  isMeTranslator?: boolean;
+  isMeProofreader?: boolean;
   onRequestPage: (pageIndex: number) => void;
   onUnitSave: (unit: Partial<Unit> & { id: string }) => void;
   onUnitRemove: (unitId: string) => void;
@@ -133,12 +135,17 @@ export const Translator: React.FC<TranslatorProps> = ({
   mode,
   currentPageIndex,
   selectedUnitId,
+  isMeTranslator: isMeTranslatorProp,
+  isMeProofreader: isMeProofreaderProp,
   onRequestPage,
   onUnitSelect,
   onUnitSave,
   onUnitRemove,
   onRearrangeUnits,
 }) => {
+  // Ensure `isMeProofreader` implicitly includes `isMeTranslator`.
+  const isMeProofreader = isMeProofreaderProp ?? false;
+  const isMeTranslator = isMeProofreader ? true : (isMeTranslatorProp ?? false);
   const { customSymbols, loadCustomSymbolsIfNeeded } = useSpecialSymbolsStore();
   const { showToast } = useToast();
   // `mode` prop is treated as initial mode only; Translator manages its own mode thereafter
@@ -175,9 +182,6 @@ export const Translator: React.FC<TranslatorProps> = ({
     setPageInput((currentPageIndex + 1).toString());
   }, [currentPageIndex]);
 
-  // 批量操作：复制已翻译文本到校对文本（仅当没有校对文本时）
-  
-
   // 批量操作：确认校对所有单元（设 isProoved = true）
   const handleBulkConfirmProofAll = () => {
     for (const u of currentPage.units) {
@@ -211,6 +215,13 @@ export const Translator: React.FC<TranslatorProps> = ({
       }, 0);
     }
   }, [selectedUnitId]);
+
+  // 当切换选中单元时，如果处于重定位模式则将画布居中到该单元
+  useEffect(() => {
+    if (isRepositionMode && selectedUnitId) {
+      stageRef.current?.centerUnit(selectedUnitId);
+    }
+  }, [selectedUnitId, isRepositionMode]);
 
   // 处理创建新unit
   const handleUnitCreate = (unit: Omit<Unit, "id" | "indexInPage">) => {
@@ -246,8 +257,14 @@ export const Translator: React.FC<TranslatorProps> = ({
 
   // 重定位模式切换（占位）
   const handleRepositionToggle = () => {
-    setIsRepositionMode((s) => !s);
-    showToast("success", `重定位模式 ${!isRepositionMode ? "已开启" : "已关闭"}`);
+    const next = !isRepositionMode;
+    setIsRepositionMode(next);
+    showToast("success", `重定位模式 ${next ? "已开启" : "已关闭"}`);
+
+    // 如果开启并且已有选中单元，则将该单元居中
+    if (next && selectedUnit) {
+      stageRef.current?.centerUnit(selectedUnit.id);
+    }
   };
 
   // 页码输入处理
@@ -314,6 +331,14 @@ export const Translator: React.FC<TranslatorProps> = ({
         toggleMode();
       },
       description: "切换模式 (Ctrl+M)",
+    },
+    {
+      key: "l",
+      ctrl: true,
+      handler: () => {
+        handleRepositionToggle();
+      },
+      description: "切换重定位模式 (Ctrl+L)",
     },
     {
       key: "p",
@@ -414,7 +439,7 @@ export const Translator: React.FC<TranslatorProps> = ({
 
   return (
     <>
-      <div className="translator-container">
+      <div className="translator-container" data-is-me-translator={isMeTranslator} data-is-me-proofreader={isMeProofreader}>
       {/* 顶部栏 */}
       <div className="translator-header">
         <div className="project-info">
@@ -440,7 +465,7 @@ export const Translator: React.FC<TranslatorProps> = ({
         </div>
 
         <div className="header-toolbox" style={{ marginLeft: 'auto' }}>
-          <div className="toolbox-pill" aria-label="翻译模式" title="翻译模式">
+          <div className="toolbox-pill" aria-label="翻译模式" title="翻译模式（Ctrl+M）">
             <div
               role="button"
               tabIndex={0}
@@ -463,7 +488,7 @@ export const Translator: React.FC<TranslatorProps> = ({
             </div>
           </div>
 
-          <div className="toolbox-pill" aria-label="校对模式" title="校对模式">
+          <div className="toolbox-pill" aria-label="校对模式" title="校对模式（Ctrl+M）">
             <div
               role="button"
               tabIndex={0}
@@ -519,8 +544,24 @@ export const Translator: React.FC<TranslatorProps> = ({
 
           <div
             className="toolbox-pill"
+            aria-label="导出"
+            title="导出"
+            onClick={() => {
+              // TODO: implement export functionality
+            }}
+            style={{ cursor: "pointer" }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+          </div>
+
+          <div
+            className="toolbox-pill"
             aria-label="重定位模式"
-            title="切换重定位模式"
+            title="切换重定位模式（Ctrl+L）"
             onClick={handleRepositionToggle}
             style={{ cursor: "pointer" }}
           >
@@ -641,7 +682,7 @@ export const Translator: React.FC<TranslatorProps> = ({
             />
           </div>
 
-          {selectedUnit && (
+          {selectedUnit && isMeProofreader && (
             <div className="sidebar-editor">
               <Editor
                 ref={editorRef}

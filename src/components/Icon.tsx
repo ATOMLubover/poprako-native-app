@@ -106,6 +106,14 @@ export default function Icon({ name, size = 19, className }: IconProps) {
           <path d="M12 12l11-5v6l-11 5-11-5V7l11 5z" />
         </svg>
       );
+    case "proofread":
+      return (
+        <svg {...svgProps}>
+          <path d="M12 20h9" />
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+          <path d="M15 5l3 3" />
+        </svg>
+      );
     case "power":
       return (
         <svg {...svgProps}>

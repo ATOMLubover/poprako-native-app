@@ -4,12 +4,12 @@ import TermbasePage from "./TermbasePage";
 import TagPoolPage from "./TagPoolPage";
 import { CompressorPage } from "./CompressorPage";
 import SpecialSymbolPage from "./SpecialSymbolPage";
-import { Translator } from "../components/translator/Translator";
-import { useToast } from "../components/NotificationToast";
-import type { Page, Project, Unit } from "../models/translator";
+import TranslatorWorkspacePage from "./TranslatorWorkspacePage";
 import "./PanelView.css";
+import ProjectList from "../components/translator/ProjectList";
+import type { Project } from "../models/translator";
 
-type MenuItem = "draft-board" | "team-list" | "tag-pool" | "termbase-pool" | "font-repo" | "compressor-helper" | "special-symbols" | "settings";
+type MenuItem = "draft-board" | "team-list" | "tag-pool" | "termbase-pool" | "font-repo" | "compressor-helper" | "special-symbols" | "translator-workspace" | "settings";
 
 
 type NavItem = {
@@ -60,6 +60,7 @@ export default function PanelView() {
   const navItems: NavItem[] = [
     { id: "draft-board", icon: "pencil", label: "草稿板" },
     { id: "team-list", icon: "users", label: "汉化组" },
+    { id: "translator-workspace", icon: "proofread", label: "翻校工作区" },
     { id: "tag-pool", icon: "tag", label: "标签池" },
     { id: "termbase-pool", icon: "database", label: "术语库" },
     { id: "font-repo", icon: "font", label: "字体仓库" },
@@ -75,6 +76,8 @@ export default function PanelView() {
         return (
           <DraftBoard />
         );
+      case "translator-workspace":
+        return <TranslatorWorkspacePage />;
       case "team-list":
         return <div>汉化组列表页面开发中</div>;
       case "tag-pool":
@@ -149,6 +152,8 @@ export default function PanelView() {
 }
 
 function DraftBoard() {
+  /*
+  // 原 DraftBoard 实现已被注释，保留以便后续恢复测试用例
   const [project, setProject] = useState<Project>({
     id: "proj-001",
     author: "白杨汉化组",
@@ -367,6 +372,8 @@ function DraftBoard() {
         isLoading={false}
         mode="proofread"
         isOffline={false}
+        isMeTranslator={true}
+        isMeProofreader={false}
         currentPageIndex={currentPageIndex}
         selectedUnitId={selectedUnitId}
         onRequestPage={(idx) => setCurrentPageIndex(Math.min(Math.max(idx, 0), pages.length - 1))}
@@ -375,6 +382,59 @@ function DraftBoard() {
         onUnitSelect={handleUnitSelect}
         onRearrangeUnits={rearrangeUnits}
       />
+    </div>
+  );
+  */
+
+  const mockProjects: Project[] = [
+    {
+      id: "mock-proj-001",
+      author: "白杨组",
+      title: "本地项目一",
+      pageCount: 12,
+      unitCount: 240,
+      translatedUnitCount: 180,
+      proovedUnitCount: 40,
+    },
+    {
+      id: "mock-proj-002",
+      author: "远程组",
+      title: "云端漫画二",
+      pageCount: 8,
+      unitCount: 160,
+      translatedUnitCount: 120,
+      proovedUnitCount: 60,
+      relatedRemoteComicId: "comic-002",
+    },
+    {
+      id: "mock-proj-003",
+      author: "白杨组",
+      title: "测试项目三",
+      pageCount: 5,
+      unitCount: 90,
+      translatedUnitCount: 40,
+      proovedUnitCount: 10,
+    },
+    {
+      id: "mock-proj-004",
+      author: "合作组",
+      title: "联名项目四",
+      pageCount: 20,
+      unitCount: 360,
+      translatedUnitCount: 200,
+      proovedUnitCount: 80,
+      relatedRemoteComicId: "comic-004",
+    },
+  ];
+
+  return (
+    <div style={{ height: "100%", width: "100%", display: "flex", padding: 12, boxSizing: "border-box" }}>
+      <div style={{ flex: 1, minHeight: 0 }}>
+        <ProjectList
+          projects={mockProjects}
+          title="项目列表"
+        />
+      </div>
     </div>
   );
 }
