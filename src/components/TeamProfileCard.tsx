@@ -14,8 +14,8 @@ export default function TeamProfileCard({ initial }: Props) {
     comicNum: 158,
     isHidden: false,
     tags: [
-      { tagId: "tt-1", name: "汉化" },
-      { tagId: "tt-2", name: "翻译" },
+      { tagId: "tt-1", name: "汉化", isPinned: false, likedNum: 0 },
+      { tagId: "tt-2", name: "翻译", isPinned: false, likedNum: 0 },
     ],
   };
 

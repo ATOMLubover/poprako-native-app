@@ -23,9 +23,9 @@ export default function UserProfileCard({
     userId: "u-0001",
     nickname: "林深时见鹿",
     tags: [
-      { tagId: "t-001", name: "黑长直" },
-      { tagId: "t-002", name: "萝莉" },
-      { tagId: "t-003", name: "纯爱" },
+      { tagId: "t-001", name: "黑长直", isPinned: false, likedNum: 0 },
+      { tagId: "t-002", name: "萝莉", isPinned: false, likedNum: 0 },
+      { tagId: "t-003", name: "纯爱", isPinned: false, likedNum: 0 },
     ],
     avatarUrl: "https://placehold.co/72x72/81C784/ffffff?text=L",
     signature: "树深时见鹿，溪午不闻钟。",

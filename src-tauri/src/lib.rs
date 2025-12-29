@@ -41,6 +41,11 @@ static APP_DATA_DIR: RwLock<Option<PathBuf>> = RwLock::new(None);
 static APP_CACHE_DIR: RwLock<Option<PathBuf>> = RwLock::new(None);
 static APP_DB_PATH: RwLock<Option<PathBuf>> = RwLock::new(None);
 
+static BIN_SUB_DIR: &str = "bin";
+static STORAGE_SUB_DIR: &str = "storage";
+
+static DB_SUB_PATH: &str = "data.db";
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -80,7 +85,7 @@ pub fn run() {
             ipc::http::proxy_patch,
             ipc::http::proxy_delete,
             ipc::project::get_projects,
-            ipc::project::create_project,
+            ipc::project::create_local_project,
             ipc::project::update_project,
             ipc::project::get_project_pages,
             ipc::project::create_project_page,
@@ -91,6 +96,7 @@ pub fn run() {
             ipc::project::update_page_unit,
             ipc::project::delete_page_unit,
             ipc::project::select_project_dir,
+            ipc::project::export_poprako_project,
         ])
         .run(tauri::generate_context!())
         .expect("无法启动 Tauri 应用程序");
@@ -149,13 +155,13 @@ fn init_data_dir(app: &App) -> Result<(), String> {
         .map_err(|e| format!("无法创建 data 目录 {:?}: {}", data_dir, e))?;
 
     // Create storage directory.
-    let storage_dir = data_dir.join("storage");
+    let storage_dir = data_dir.join(STORAGE_SUB_DIR);
 
     std::fs::create_dir_all(&storage_dir)
         .map_err(|e| format!("无法创建 storage 目录 {:?}: {}", storage_dir, e))?;
 
     // Create binary directory.
-    let bin_dir = data_dir.join("bin");
+    let bin_dir = data_dir.join(BIN_SUB_DIR);
 
     std::fs::create_dir_all(&bin_dir)
         .map_err(|e| format!("无法创建 bin 目录 {:?}: {}", bin_dir, e))?;
@@ -214,7 +220,7 @@ fn init_database_path(app: &App) -> Result<(), String> {
         .app_data_dir()
         .map_err(|e| format!("无法获取应用 data 目录: {}", e))?;
 
-    let database_path = data_dir.join("repository.db");
+    let database_path = data_dir.join(STORAGE_SUB_DIR).join(DB_SUB_PATH);
 
     // Create the DB file if it does not already exist. If it exists, ignore.
     if !database_path.exists() {
