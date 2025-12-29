@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./Marker.css";
-import type { Unit } from "../../models/translator";
+import type { Unit } from "../../models/project";
 import type { TranslatorMode } from "./Translator";
 import ConfirmDialogBox from "../ConfirmDialogBox";
 

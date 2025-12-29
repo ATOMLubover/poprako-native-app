@@ -1,6 +1,6 @@
-use serde::{Deserialize, Serialize};
+use sqlx::FromRow;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(FromRow)]
 pub struct Project {
     pub id: String,
     pub author: String,
@@ -15,16 +15,18 @@ pub struct Project {
     pub page_count: u32,                 // 漫画页总数量
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(FromRow)]
 pub struct LocalPage {
     pub id: String,
+    pub project_id: String,
+    pub index_in_project: u32,
     pub local_image_path: String,
-    pub units: Vec<LocalUnit>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(FromRow)]
 pub struct LocalUnit {
     pub id: String,
+    pub page_id: String,
     pub x: f64,
     pub y: f64,
     pub index_in_page: u32,

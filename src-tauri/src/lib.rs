@@ -8,6 +8,7 @@ mod http;
 mod ipc;
 mod local_image;
 mod model;
+mod project;
 mod repository;
 mod result_trace;
 
@@ -77,7 +78,19 @@ pub fn run() {
             ipc::http::proxy_post,
             ipc::http::proxy_put,
             ipc::http::proxy_patch,
-            ipc::http::proxy_delete
+            ipc::http::proxy_delete,
+            ipc::project::get_projects,
+            ipc::project::create_project,
+            ipc::project::update_project,
+            ipc::project::get_project_pages,
+            ipc::project::create_project_page,
+            ipc::project::update_project_page,
+            ipc::project::delete_project_page,
+            ipc::project::get_page_units,
+            ipc::project::create_page_unit,
+            ipc::project::update_page_unit,
+            ipc::project::delete_page_unit,
+            ipc::project::select_project_dir,
         ])
         .run(tauri::generate_context!())
         .expect("无法启动 Tauri 应用程序");

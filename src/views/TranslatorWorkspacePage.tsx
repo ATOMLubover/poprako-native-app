@@ -1,7 +1,7 @@
 import { useState } from "react";
-import ProjectList from "../components/translator/ProjectList";
+import ProjectList from "../components/project/ProjectList";
 import NatureButton from "../components/NatureButton";
-import type { Project } from "../models/translator";
+import type { Project } from "../models/project";
 import "./TranslatorWorkspacePage.css";
 
 export default function TranslatorWorkspacePage() {

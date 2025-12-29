@@ -44,3 +44,24 @@ export type Project = {
   outboxUnitCount?: number; // 框外单元总数量
   pageCount: number; // 漫画页总数量
 };
+
+// 新建本地项目时使用的类型
+export type NewLocalProject = {
+  author: string;
+  title: string;
+  localImageDir: string;
+};
+
+// 从远程漫画创建新项目时使用的类型
+export type NewRemoteProject = {
+  id: string;
+  author: string;
+  title: string;
+  relatedRemoteComicId: string;
+  unitCount: number;
+  translatedUnitCount: number;
+  proovedUnitCount: number;
+  inboxUnitCount?: number;
+  outboxUnitCount?: number;
+  pageCount: number;
+};

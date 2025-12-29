@@ -1,7 +1,7 @@
 import React from "react";
 import "./MarkerOverlay.css";
 import { Marker } from "./Marker";
-import type { Unit } from "../../models/translator";
+import type { Unit } from "../../models/project";
 import type { TranslatorMode } from "./Translator";
 
 type MarkerOverlayProps = {

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./UnitList.css";
-import type { Page } from "../../models/translator";
+import type { Page } from "../../models/project";
 import ConfirmDialogBox from "../ConfirmDialogBox";
 
 type UnitListProps = {

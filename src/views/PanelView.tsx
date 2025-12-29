@@ -6,8 +6,8 @@ import { CompressorPage } from "./CompressorPage";
 import SpecialSymbolPage from "./SpecialSymbolPage";
 import TranslatorWorkspacePage from "./TranslatorWorkspacePage";
 import "./PanelView.css";
-import ProjectList from "../components/translator/ProjectList";
-import type { Project } from "../models/translator";
+import ProjectList from "../components/project/ProjectList";
+import type { Project } from "../models/project";
 
 type MenuItem = "draft-board" | "team-list" | "tag-pool" | "termbase-pool" | "font-repo" | "compressor-helper" | "special-symbols" | "translator-workspace" | "settings";
 

@@ -8,7 +8,7 @@ import { useSpecialSymbolsStore } from "../../store/specialSymbols";
 import ConfirmDialogBox from "../ConfirmDialogBox";
 import { useToast } from "../NotificationToast";
 import { RefreshCw } from "lucide-react";
-import type { Project, Page, Unit } from "../../models/translator";
+import type { Project, Page, Unit } from "../../models/project";
 import { SpecialSymbolCard } from "./SpecialSymbolCard";
 
 export type TranslatorMode = "translate" | "proofread" | "read";
@@ -28,6 +28,9 @@ export type TranslatorProps = {
   onUnitRemove: (unitId: string) => void;
   onUnitSelect?: (unitId: string | null) => void;
   onRearrangeUnits?: (unitId: string, targetIndex: number) => void;
+  // 父组件可注入该回调以接收强制刷新通知
+  // TODO: 在父组件 TranslatorPage 内注入一个空实现以便后续实现刷新逻辑
+  onFlush?: () => void;
   // `mode` is used as initial mode only; Translator owns its internal mode state
 };
 
@@ -138,6 +141,7 @@ export const Translator: React.FC<TranslatorProps> = ({
   isMeTranslator: isMeTranslatorProp,
   isMeProofreader: isMeProofreaderProp,
   onRequestPage,
+  onFlush,
   onUnitSelect,
   onUnitSave,
   onUnitRemove,
@@ -249,6 +253,13 @@ export const Translator: React.FC<TranslatorProps> = ({
       // 由 Translator 自己发起刷新：重新请求当前页（即使索引相同）
       onRequestPage(currentPageIndex);
       showToast("success", "已刷新当前页");
+      return;
+    }
+
+    // 如果父组件提供了 onFlush，则调用以通知父组件执行更强的刷新/重载逻辑
+    if (typeof onFlush === "function") {
+      onFlush();
+      showToast("success", "已通知父组件执行强制刷新");
       return;
     }
 

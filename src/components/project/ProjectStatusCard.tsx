@@ -2,7 +2,7 @@ import "./ProjectStatusCard.css";
 import ProgressBar from "../ProgressBar";
 import NatureButton from "../NatureButton";
 import { Type, Check, Cloud, HardDrive, FileText, Layers } from "lucide-react";
-import type { Project } from "../../models/translator";
+import type { Project } from "../../models/project";
 
 type ProjectStatusCardProps = {
   project: Project;

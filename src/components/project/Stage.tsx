@@ -2,9 +2,9 @@ import React, { useState, useRef, forwardRef, useImperativeHandle } from "react"
 import "./Stage.css";
 import ImageLayer, { type ImageLayerHandle } from "./ImageLayer.tsx";
 import MarkerOverlay from "./MarkerOverlay.tsx";
-import DotLoadSpinner from "../DotLoadSpinner";
-import type { Page, Unit } from "../../models/translator";
-import type { TranslatorMode } from "./Translator";
+import DotLoadSpinner from "../DotLoadSpinner.tsx";
+import type { Page, Unit } from "../../models/project.ts";
+import type { TranslatorMode } from "./Translator.tsx";
 
 export type StageHandle = {
   resetView: () => void;

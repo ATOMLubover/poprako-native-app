@@ -2,6 +2,7 @@ use std::sync::Mutex;
 
 use sqlx::{sqlite::SqlitePoolOptions, SqlitePool};
 
+pub mod project;
 pub mod special_symbol;
 
 use crate::APP_DB_PATH;

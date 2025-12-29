@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import ProjectStatusCard from "./ProjectStatusCard";
-import type { Project } from "../../models/translator";
+import type { Project } from "../../models/project";
 
 const ArrowButton: React.FC<{ direction: "prev" | "next" }> = ({ direction }) => {
   const isPrev = direction === "prev";
