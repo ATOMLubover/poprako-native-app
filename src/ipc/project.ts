@@ -1,11 +1,11 @@
 import { invoke } from "@tauri-apps/api/core";
 import type { Project, Page, Unit } from "../models/project";
 
-// 后端 DTO 定义（snake_case）
-type BackendUnit = {
+// 非导出的原始后端 DTO（snake_case），用于接收 Rust 返回的 JSON
+type RawUnit = {
   id: string;
-  x: number;
-  y: number;
+  x_coordinate: number;
+  y_coordinate: number;
   index_in_page: number;
   is_inbox: boolean;
   translated_text?: string | null;
@@ -14,21 +14,36 @@ type BackendUnit = {
   comment?: string | null;
 };
 
-type BackendPage = {
+type RawPage = {
   id: string;
   local_image_path?: string | null;
-  units?: BackendUnit[];
+  units?: RawUnit[];
 };
 
-// 将前端 Page -> 后端 LocalPage DTO（字段映射）
-function toBackendPage(page: Page): BackendPage {
+type RawProject = {
+  id: string;
+  author: string;
+  title: string;
+  local_image_dir?: string | null;
+  related_comic_id?: string | null;
+  unit_count: number;
+  translated_unit_count: number;
+  prooved_unit_count: number;
+  inbox_unit_count?: number | null;
+  outbox_unit_count?: number | null;
+  page_count: number;
+  updated_at?: string | null;
+};
+
+// 将前端 Page -> 后端 RawPage DTO（字段映射）
+function toRawPage(page: Page): RawPage {
   return {
     id: page.id,
     local_image_path: page.localImageUrl ?? page.remoteImageUrl ?? undefined,
     units: (page.units || []).map((u) => ({
       id: u.id,
-      x: u.x,
-      y: u.y,
+      x_coordinate: u.x,
+      y_coordinate: u.y,
       index_in_page: u.indexInPage,
       is_inbox: u.isInbox,
       translated_text: u.translatedText ?? null,
@@ -39,22 +54,22 @@ function toBackendPage(page: Page): BackendPage {
   };
 }
 
-// 将后端 LocalPage -> 前端 Page DTO
-function fromBackendPage(p: BackendPage): Page {
+// 将后端 RawPage -> 前端 Page DTO
+function fromRawPage(p: RawPage): Page {
   return {
     id: p.id,
     localImageUrl: p.local_image_path ?? undefined,
     remoteImageUrl: undefined,
-    units: (p.units || []).map(fromBackendUnit),
+    units: (p.units || []).map(fromRawUnit),
   };
 }
 
-// 将后端 LocalUnit -> 前端 Unit DTO
-function fromBackendUnit(u: BackendUnit): Unit {
+// 将后端 RawUnit -> 前端 Unit DTO
+function fromRawUnit(u: RawUnit): Unit {
   return {
     id: u.id,
-    x: u.x,
-    y: u.y,
+    x: u.x_coordinate,
+    y: u.y_coordinate,
     indexInPage: u.index_in_page,
     isInbox: u.is_inbox,
     translatedText: u.translated_text ?? undefined,
@@ -64,12 +79,50 @@ function fromBackendUnit(u: BackendUnit): Unit {
   };
 }
 
-// 获取项目列表
-export async function getProjects(offset = 0, limit = 10): Promise<Project[]> {
-  try {
-    const list = await invoke<Project[]>("get_projects", { offset, limit });
+// RawProject <-> frontend Project 转换
+function fromRawProject(r: RawProject): Project {
+  return {
+    id: r.id,
+    author: r.author,
+    title: r.title,
+    localImageDir: r.local_image_dir ?? undefined,
+    relatedRemoteComicId: r.related_comic_id ?? undefined,
+    unitCount: r.unit_count,
+    translatedUnitCount: r.translated_unit_count,
+    proovedUnitCount: r.prooved_unit_count,
+    inboxUnitCount: r.inbox_unit_count ?? undefined,
+    outboxUnitCount: r.outbox_unit_count ?? undefined,
+    pageCount: r.page_count,
+  };
+}
 
-    return list;
+function toRawProject(p: Project): RawProject {
+  return {
+    id: p.id,
+    author: p.author,
+    title: p.title,
+    local_image_dir: p.localImageDir ?? null,
+    related_comic_id: p.relatedRemoteComicId ?? null,
+    unit_count: p.unitCount,
+    translated_unit_count: p.translatedUnitCount,
+    prooved_unit_count: p.proovedUnitCount,
+    inbox_unit_count: p.inboxUnitCount ?? null,
+    outbox_unit_count: p.outboxUnitCount ?? null,
+    page_count: p.pageCount,
+    updated_at: undefined,
+  };
+}
+
+// 获取项目列表
+export async function getProjects(): Promise<Project[]> {
+  try {
+    const raws = await invoke<RawProject[]>("get_projects");
+
+    if (!Array.isArray(raws) || raws.length === 0) {
+      return [];
+    }
+
+    return raws.map(fromRawProject);
   } catch (e) {
     throw new Error((e as Error).message || String(e));
   }
@@ -78,8 +131,10 @@ export async function getProjects(offset = 0, limit = 10): Promise<Project[]> {
 // 创建本地项目
 export async function createProject(project: Project): Promise<void> {
   try {
-    // 将前端字段直接传递给后端 create_project（后端 model 使用 snake_case）
-    await invoke<void>("create_project", { project });
+    // 将前端字段转换为后端 snake_case 的 RawProject 并调用后端 create_local_project
+    const raw = toRawProject(project);
+
+    await invoke<void>("create_local_project", { project: raw });
 
     return;
   } catch (e) {
@@ -90,7 +145,9 @@ export async function createProject(project: Project): Promise<void> {
 // 更新项目
 export async function updateProject(project: Project): Promise<void> {
   try {
-    await invoke<void>("update_project", { project });
+    const raw = toRawProject(project);
+
+    await invoke<void>("update_project", { project: raw });
 
     return;
   } catch (e) {
@@ -101,30 +158,28 @@ export async function updateProject(project: Project): Promise<void> {
 // 获取某项目的页面列表（含单元）
 export async function getProjectPages(projectId: string): Promise<Page[]> {
   try {
-    const pages = await invoke<any[]>("get_project_pages", {
+    const pages = await invoke<RawPage[]>("get_project_pages", {
       project_id: projectId,
     });
 
-    return (pages || []).map(fromBackendPage);
+    return (pages || []).map(fromRawPage);
   } catch (e) {
     throw new Error((e as Error).message || String(e));
   }
 }
 
 // 创建项目页面（同时创建页面内单元）
-export async function createProjectPage(
+export async function createProjectPages(
   projectId: string,
-  indexInProject: number,
-  page: Page
+  pages: Page[]
 ): Promise<void> {
   try {
-    const payload = {
-      project_id: projectId,
-      index_in_project: indexInProject,
-      page: toBackendPage(page),
-    };
+    const rawPages = (pages || []).map((p) => toRawPage(p));
 
-    await invoke<void>("create_project_page", payload);
+    await invoke<void>("create_project_pages", {
+      project_id: projectId,
+      pages: rawPages,
+    });
 
     return;
   } catch (e) {
@@ -133,19 +188,17 @@ export async function createProjectPage(
 }
 
 // 更新项目页面（以及页面内单元）
-export async function updateProjectPage(
+export async function updateProjectPages(
   projectId: string,
-  indexInProject: number,
-  page: Page
+  pages: Page[]
 ): Promise<void> {
   try {
-    const payload = {
-      project_id: projectId,
-      index_in_project: indexInProject,
-      page: toBackendPage(page),
-    };
+    const rawPages = (pages || []).map((p) => toRawPage(p));
 
-    await invoke<void>("update_project_page", payload);
+    await invoke<void>("update_project_pages", {
+      project_id: projectId,
+      pages: rawPages,
+    });
 
     return;
   } catch (e) {
@@ -154,9 +207,9 @@ export async function updateProjectPage(
 }
 
 // 删除页面
-export async function deleteProjectPage(pageId: string): Promise<void> {
+export async function deleteProjectPages(pageIds: string[]): Promise<void> {
   try {
-    await invoke<void>("delete_project_page", { page_id: pageId });
+    await invoke<void>("delete_project_pages", { page_ids: pageIds });
 
     return;
   } catch (e) {
@@ -167,36 +220,38 @@ export async function deleteProjectPage(pageId: string): Promise<void> {
 // 获取页面单元列表
 export async function getPageUnits(pageId: string): Promise<Unit[]> {
   try {
-    const units = await invoke<any[]>("get_page_units", { page_id: pageId });
+    const units = await invoke<RawUnit[]>("get_page_units", {
+      page_id: pageId,
+    });
 
-    return (units || []).map(fromBackendUnit);
+    return (units || []).map(fromRawUnit);
   } catch (e) {
     throw new Error((e as Error).message || String(e));
   }
 }
 
 // 创建页面单元
-export async function createPageUnit(
+export async function createPageUnits(
   pageId: string,
-  unit: Unit
+  units: Unit[]
 ): Promise<void> {
   try {
-    const payload = {
-      page_id: pageId,
-      unit: {
-        id: unit.id,
-        x: unit.x,
-        y: unit.y,
-        index_in_page: unit.indexInPage,
-        is_inbox: unit.isInbox,
-        translated_text: unit.translatedText ?? null,
-        is_prooved: unit.isProoved,
-        prooved_text: unit.proovedText ?? null,
-        comment: unit.comment ?? null,
-      },
-    };
+    const rawUnits = (units || []).map((u) => ({
+      id: u.id,
+      x_coordinate: u.x,
+      y_coordinate: u.y,
+      index_in_page: u.indexInPage,
+      is_inbox: u.isInbox,
+      translated_text: u.translatedText ?? null,
+      is_prooved: u.isProoved,
+      prooved_text: u.proovedText ?? null,
+      comment: u.comment ?? null,
+    }));
 
-    await invoke<void>("create_page_unit", payload);
+    await invoke<void>("create_page_units", {
+      page_id: pageId,
+      units: rawUnits,
+    });
 
     return;
   } catch (e) {
@@ -205,27 +260,27 @@ export async function createPageUnit(
 }
 
 // 更新页面单元
-export async function updatePageUnit(
+export async function updatePageUnits(
   pageId: string,
-  unit: Unit
+  units: Unit[]
 ): Promise<void> {
   try {
-    const payload = {
-      page_id: pageId,
-      unit: {
-        id: unit.id,
-        x: unit.x,
-        y: unit.y,
-        index_in_page: unit.indexInPage,
-        is_inbox: unit.isInbox,
-        translated_text: unit.translatedText ?? null,
-        is_prooved: unit.isProoved,
-        prooved_text: unit.proovedText ?? null,
-        comment: unit.comment ?? null,
-      },
-    };
+    const rawUnits = (units || []).map((u) => ({
+      id: u.id,
+      x_coordinate: u.x,
+      y_coordinate: u.y,
+      index_in_page: u.indexInPage,
+      is_inbox: u.isInbox,
+      translated_text: u.translatedText ?? null,
+      is_prooved: u.isProoved,
+      prooved_text: u.proovedText ?? null,
+      comment: u.comment ?? null,
+    }));
 
-    await invoke<void>("update_page_unit", payload);
+    await invoke<void>("update_page_units", {
+      page_id: pageId,
+      units: rawUnits,
+    });
 
     return;
   } catch (e) {
@@ -234,9 +289,9 @@ export async function updatePageUnit(
 }
 
 // 删除页面单元
-export async function deletePageUnit(unitId: string): Promise<void> {
+export async function deletePageUnits(unitIds: string[]): Promise<void> {
   try {
-    await invoke<void>("delete_page_unit", { unit_id: unitId });
+    await invoke<void>("delete_page_units", { unit_ids: unitIds });
 
     return;
   } catch (e) {
@@ -255,17 +310,43 @@ export async function selectProjectDir(): Promise<string | undefined> {
   }
 }
 
+// 打开对话框以选择 Poprako 项目存档（zip 文件）或文件夹，返回所选路径（可能为 undefined）
+export async function selectPoprakoArchivedPath(): Promise<string | undefined> {
+  try {
+    const path = await invoke<string | null | undefined>(
+      "select_poprako_archived_path"
+    );
+
+    return path ?? undefined;
+  } catch (e) {
+    throw new Error((e as Error).message || String(e));
+  }
+}
+
+// 导入 Poprako 项目（支持 zip 或 文件夹）
+export async function importPoprakoProject(projectPath: string): Promise<void> {
+  try {
+    await invoke<void>("import_poprako_project", { project_path: projectPath });
+
+    return;
+  } catch (e) {
+    throw new Error((e as Error).message || String(e));
+  }
+}
+
 export default {
   getProjects,
   createProject,
   updateProject,
   getProjectPages,
-  createProjectPage,
-  updateProjectPage,
-  deleteProjectPage,
+  createProjectPages,
+  updateProjectPages,
+  deleteProjectPages,
   getPageUnits,
-  createPageUnit,
-  updatePageUnit,
-  deletePageUnit,
+  createPageUnits,
+  updatePageUnits,
+  deletePageUnits,
   selectProjectDir,
+  selectPoprakoArchivedPath,
+  importPoprakoProject,
 };

@@ -1,7 +1,7 @@
 CREATE TABLE local_unit_tbl (
     id TEXT PRIMARY KEY,
     
-    page_id TEXT NOT NULL REFERENCES page_tbl(id),
+    page_id TEXT NOT NULL REFERENCES page_tbl(id) ON DELETE CASCADE,
     index_in_page INTEGER NOT NULL,
 
     x_coordinate REAL NOT NULL,

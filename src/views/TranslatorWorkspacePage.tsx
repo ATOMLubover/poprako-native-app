@@ -1,12 +1,39 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ProjectList from "../components/project/ProjectList";
 import NatureButton from "../components/NatureButton";
 import type { Project } from "../models/project";
+import { getProjects } from "../store/project";
 import "./TranslatorWorkspacePage.css";
 
 export default function TranslatorWorkspacePage() {
   const [searchKeyword, setSearchKeyword] = useState<string>("");
-  const [allProjects] = useState<Project[]>(__mockGenerateProjects());
+  const [allProjects, setAllProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    let mounted = true;
+
+    setLoading(true);
+
+    getProjects()
+      .then((ps) => {
+        if (!mounted) return;
+
+        setAllProjects(ps || []);
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (!mounted) return;
+
+        setError((err as Error).message || String(err));
+        setLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const filteredProjects = searchKeyword.trim() === ""
     ? allProjects
@@ -69,63 +96,18 @@ export default function TranslatorWorkspacePage() {
 
       {/* 第三行：项目列表容器 */}
       <div className="twp-list-container">
-        <ProjectList
-          projects={filteredProjects}
-          onAct={handleActProject}
-          onSync={handleSyncProject}
-        />
+        {loading && <div className="twp-loading">加载中…</div>}
+
+        {error && <div className="twp-error">加载项目失败：{error}</div>}
+
+        {!loading && !error && (
+          <ProjectList
+            projects={filteredProjects}
+            onAct={handleActProject}
+            onSync={handleSyncProject}
+          />
+        )}
       </div>
     </div>
   );
-}
-
-function __mockGenerateProjects(): Project[] {
-  return [
-    {
-      id: "proj-001",
-      author: "白杨组",
-      title: "本地项目一",
-      pageCount: 12,
-      unitCount: 240,
-      translatedUnitCount: 180,
-      proovedUnitCount: 40,
-    },
-    {
-      id: "proj-002",
-      author: "远程组",
-      title: "云端漫画二",
-      pageCount: 8,
-      unitCount: 160,
-      translatedUnitCount: 120,
-      proovedUnitCount: 60,
-      relatedRemoteComicId: "comic-002",
-    },
-    {
-      id: "proj-003",
-      author: "白杨组",
-      title: "测试项目三",
-      pageCount: 5,
-      unitCount: 90,
-      translatedUnitCount: 40,
-      proovedUnitCount: 10,
-    },
-    {
-      id: "proj-005",
-      author: "白杨组",
-      title: "完结项目五",
-      pageCount: 15,
-      unitCount: 300,
-      translatedUnitCount: 300,
-      proovedUnitCount: 300,
-    },
-    {
-      id: "proj-006",
-      author: "新人组",
-      title: "练习项目六",
-      pageCount: 3,
-      unitCount: 50,
-      translatedUnitCount: 10,
-      proovedUnitCount: 2,
-    },
-  ];
 }

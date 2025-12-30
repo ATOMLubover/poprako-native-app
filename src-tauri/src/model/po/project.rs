@@ -49,7 +49,7 @@ pub struct LocalProject {
     pub author: String,
     pub title: String,
 
-    pub local_image_dir: Option<String>,
+    pub local_image_dir: String,
     pub related_comic_id: Option<String>,
 
     pub unit_count: u32,

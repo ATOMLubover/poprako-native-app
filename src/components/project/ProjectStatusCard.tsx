@@ -1,4 +1,6 @@
 import "./ProjectStatusCard.css";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import ProgressBar from "../ProgressBar";
 import NatureButton from "../NatureButton";
 import { Type, Check, Cloud, HardDrive, FileText, Layers } from "lucide-react";
@@ -30,6 +32,51 @@ export default function ProjectStatusCard({ project, onAct, onSync }: ProjectSta
 
   const translatedCount = project.translatedUnitCount;
   const proovedCount = project.proovedUnitCount;
+  // 下拉菜单开关状态
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const buttonRef = useRef<HTMLElement | null>(null);
+  const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+
+  // 点击外部时关闭下拉菜单
+  useEffect(() => {
+    function handleDocClick(e: MouseEvent) {
+      const target = e.target as Node;
+
+      if (menuRef.current && menuRef.current.contains(target)) {
+        return;
+      }
+
+      if (buttonRef.current && buttonRef.current.contains(target)) {
+        return;
+      }
+
+      setMenuOpen(false);
+    }
+
+    if (menuOpen) {
+      document.addEventListener("click", handleDocClick);
+    }
+
+    return () => {
+      document.removeEventListener("click", handleDocClick);
+    };
+  }, [menuOpen]);
+
+  // 占位的动作回调（可由调用方提供具体实现）
+  function handleExport() {
+    // TODO: 导出逻辑
+  }
+
+  function handleModify() {
+    // TODO: 修改逻辑
+  }
+
+  function handleSync() {
+    if (onSync) {
+      onSync(project);
+    }
+  }
 
   return (
     <div className="psc-root">
@@ -92,15 +139,88 @@ export default function ProjectStatusCard({ project, onAct, onSync }: ProjectSta
               if (onAct) onAct(project);
             }}
           >开始</NatureButton>
-          {remote ? (
-            <NatureButton
-              variant="cloud"
-              minWidth={56}
-              onClick={() => {
-                if (onSync) onSync(project);
-              }}
-            >同步</NatureButton>
-          ) : null}
+
+          <div className="psc-extra">
+            <div ref={buttonRef as any} style={{ display: "inline-block" }}>
+              <NatureButton
+                variant="cloud"
+                minWidth={40}
+                onClick={() => {
+                  if (!menuOpen && buttonRef.current) {
+                    const rect = buttonRef.current.getBoundingClientRect();
+                    setPos({ left: rect.left + rect.width / 2, top: rect.bottom });
+                  }
+
+                  setMenuOpen((s) => !s);
+                }}
+              >⋯</NatureButton>
+            </div>
+
+            {menuOpen && pos
+              ? createPortal(
+                <div
+                  ref={menuRef}
+                  className="psc-dropdown"
+                  role="menu"
+                  aria-hidden={!menuOpen}
+                  style={{
+                    position: "fixed",
+                    left: pos.left,
+                    top: pos.top + 8,
+                    transform: "translateX(-50%)",
+                    zIndex: 9999,
+                  }}
+                >
+                  {remote ? (
+                    <>
+                      <div
+                        className="psc-dropdown-item"
+                        onClick={() => {
+                          handleSync();
+                          setMenuOpen(false);
+                        }}
+                      >
+                        同步
+                      </div>
+
+                      <div
+                        className="psc-dropdown-item"
+                        onClick={() => {
+                          handleExport();
+                          setMenuOpen(false);
+                        }}
+                      >
+                        导出
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div
+                        className="psc-dropdown-item"
+                        onClick={() => {
+                          handleExport();
+                          setMenuOpen(false);
+                        }}
+                      >
+                        导出
+                      </div>
+
+                      <div
+                        className="psc-dropdown-item"
+                        onClick={() => {
+                          handleModify();
+                          setMenuOpen(false);
+                        }}
+                      >
+                        修改
+                      </div>
+                    </>
+                  )}
+                </div>,
+                document.body,
+              )
+              : null}
+          </div>
         </div>
       </div>
     </div>

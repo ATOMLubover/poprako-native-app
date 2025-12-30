@@ -20,6 +20,18 @@
   justify-content: flex-end;
 }
 
+/* centered header variant for creators that need a centered title */
+.tbc-header-centered {
+  justify-content: center;
+}
+
+.tbc-header-centered h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+}
+
 .tbc-actions {
   display: flex;
   gap: 8px;

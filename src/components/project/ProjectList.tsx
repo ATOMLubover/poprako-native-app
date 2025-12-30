@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import ProjectStatusCard from "./ProjectStatusCard";
+import LocalProjectCreator from "./LocalProjectCreator";
+import NatureButton from "../NatureButton";
+import { Plus } from "lucide-react";
 import type { Project } from "../../models/project";
 
 const ArrowButton: React.FC<{ direction: "prev" | "next" }> = ({ direction }) => {
@@ -69,6 +72,7 @@ type ProjectListProps = {
   projects: Project[];
   onAct?: (project: Project) => void;
   onSync?: (project: Project) => void;
+  onRefresh?: () => void;
   title?: string;
 };
 
@@ -82,8 +86,9 @@ type ProjectListProps = {
  * - 如果当前页的项数 < pageSize，禁用下一页按钮（确定无下一页）
  * - 如果当前页的项数 === pageSize，允许点击下一页（试探是否还有数据）
  */
-export default function ProjectList({ projects, onAct, onSync, title }: ProjectListProps) {
+export default function ProjectList({ projects, onAct, onSync, onRefresh, title }: ProjectListProps) {
   const [page, setPage] = useState<number>(0);
+  const [showCreator, setShowCreator] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const templateRef = useRef<HTMLDivElement>(null);
 
@@ -101,21 +106,56 @@ export default function ProjectList({ projects, onAct, onSync, title }: ProjectL
 
   const isNextPageDisabled = capacity > 0 && pageProjects.length < capacity;
 
+  function handleCreatorSave() {
+    setShowCreator(false);
+
+    if (onRefresh) {
+      onRefresh();
+    }
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8, height: "100%" }}>
-      {title ? <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>{title}</h3> : null}
+      {title ? (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>{title}</h3>
+          <NatureButton variant="mist" minWidth={90} onClick={() => setShowCreator(true)}>
+            <Plus size={16} style={{ marginRight: 4 }} />
+            新建
+          </NatureButton>
+        </div>
+      ) : null}
 
       <div ref={containerRef} style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", gap: 6 }}>
-        {/* 隐藏的测量模板 */}
+        {/* 隐藏的测量模板（如果没有项目则用固定高度占位，避免传入 undefined 导致运行时访问错误） */}
         <div ref={templateRef} style={{ visibility: "hidden", position: "absolute" }}>
-          <ProjectStatusCard project={projects[0]} />
+          {projects.length > 0 ? (
+            <ProjectStatusCard project={projects[0]} />
+          ) : (
+            <div style={{ width: 1, height: 56 }} />
+          )}
         </div>
 
-        {pageProjects.map((project) => (
-          <div key={project.id} style={{ height: itemHeight }}>
-            <ProjectStatusCard project={project} onAct={onAct} onSync={onSync} />
+        {projects.length === 0 ? (
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#9ca3af",
+              fontSize: 14,
+            }}
+          >
+            暂时没有项目哦？
           </div>
-        ))}
+        ) : (
+          pageProjects.map((project) => (
+            <div key={project.id} style={{ height: itemHeight }}>
+              <ProjectStatusCard project={project} onAct={onAct} onSync={onSync} />
+            </div>
+          ))
+        )}
 
         <div style={{ display: "flex", justifyContent: "center", marginTop: 8 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -168,6 +208,34 @@ export default function ProjectList({ projects, onAct, onSync, title }: ProjectL
           </div>
         </div>
       </div>
+
+      {showCreator ? (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(6, 10, 8, 0.45)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 160,
+          }}
+          onClick={() => setShowCreator(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: "92%",
+              maxHeight: "86%",
+            }}
+          >
+            <LocalProjectCreator
+              onSave={handleCreatorSave}
+              onCancel={() => setShowCreator(false)}
+            />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

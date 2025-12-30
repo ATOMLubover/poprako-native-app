@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Icon from "../components/Icon";
 import TermbasePage from "./TermbasePage";
 import TagPoolPage from "./TagPoolPage";
@@ -7,6 +7,7 @@ import SpecialSymbolPage from "./SpecialSymbolPage";
 import TranslatorWorkspacePage from "./TranslatorWorkspacePage";
 import "./PanelView.css";
 import ProjectList from "../components/project/ProjectList";
+import { getProjects } from "../store/project";
 import type { Project } from "../models/project";
 
 type MenuItem = "draft-board" | "team-list" | "tag-pool" | "termbase-pool" | "font-repo" | "compressor-helper" | "special-symbols" | "translator-workspace" | "settings";
@@ -427,14 +428,28 @@ function DraftBoard() {
     },
   ];
 
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  async function loadProjects() {
+    try {
+      setLoading(true);
+      const data = await getProjects();
+      setProjects(data);
+    } catch (e) {
+      console.error("Load projects failed", e);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadProjects();
+  }, []);
+
   return (
     <div style={{ height: "100%", width: "100%", display: "flex", padding: 12, boxSizing: "border-box" }}>
-      <div style={{ flex: 1, minHeight: 0 }}>
-        <ProjectList
-          projects={mockProjects}
-          title="项目列表"
-        />
-      </div>
+      
     </div>
   );
 }

@@ -9,6 +9,8 @@
   align-items: center;
   gap: 16px;
   padding: 12px 16px;
+  margin-left: 10px;
+  margin-right: 10px;
   background: #ffffff;
   /* subtle "mist" border */
   border: 1px solid var(--accent-mist-border, #edf2f7);
@@ -18,10 +20,11 @@
 }
 
 .psc-root:hover {
-  /* slightly stronger mist border on hover */
-  border-color: var(--accent-mist-border-hover, #bce0bd);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+  /* slightly stronger mist border on hover and subtle scale up */
+  border-color: var(--accent-mist-border-hover, #7bb77d);
+  transform: scale(1.003);
+  border-width: 1px;
+  transform-origin: center;
 }
 
 .psc-left {
@@ -136,4 +139,38 @@
   font-weight: 800;
   font-size: 11px;
   color: #374151;
+}
+
+/* 下拉菜单样式：用于右侧的点点点按钮 */
+.psc-extra {
+  position: relative;
+  display: inline-block;
+}
+
+.psc-dropdown {
+  /* positioned via inline styles when rendered in portal */
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: 0 12px 28px rgba(2,6,23,0.06);
+  border-radius: 10px;
+  padding: 4px 0;
+  min-width: 90px;
+  overflow: hidden;
+}
+
+.psc-dropdown-item {
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #111827;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.psc-dropdown-item:hover {
+  /* mimic NatureButton subtle hover (cloud/mist feel) */
+  background-color: rgba(15, 23, 42, 0.03);
 }

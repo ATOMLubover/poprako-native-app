@@ -88,15 +88,17 @@ pub fn run() {
             ipc::project::create_local_project,
             ipc::project::update_project,
             ipc::project::get_project_pages,
-            ipc::project::create_project_page,
-            ipc::project::update_project_page,
-            ipc::project::delete_project_page,
+            ipc::project::create_project_pages,
+            ipc::project::update_project_pages,
+            ipc::project::delete_project_pages,
             ipc::project::get_page_units,
-            ipc::project::create_page_unit,
-            ipc::project::update_page_unit,
-            ipc::project::delete_page_unit,
+            ipc::project::create_page_units,
+            ipc::project::update_page_units,
+            ipc::project::delete_page_units,
             ipc::project::select_project_dir,
+            ipc::project::select_poprako_archived_path,
             ipc::project::export_poprako_project,
+            ipc::project::import_poprako_project,
         ])
         .run(tauri::generate_context!())
         .expect("无法启动 Tauri 应用程序");
