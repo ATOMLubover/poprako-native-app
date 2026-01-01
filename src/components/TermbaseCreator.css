@@ -131,6 +131,19 @@
   -webkit-user-select: none;
   cursor: default;
   background-color: #fbfcfd;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  direction: ltr;
+}
+
+/* Placeholder (no value) should be left-aligned; when a value exists, show the tail on the right */
+.tbc-input.tbc-preview:placeholder-shown {
+  text-align: left;
+}
+
+.tbc-input.tbc-preview:not(:placeholder-shown) {
+  text-align: right;
 }
 
 .tbc-input:focus,

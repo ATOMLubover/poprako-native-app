@@ -1,4 +1,5 @@
 .twp-root {
+  position: relative;
   height: 100%;
   width: 100%;
   display: flex;
@@ -7,7 +8,7 @@
   padding: 24px;
   box-sizing: border-box;
   background-color: #fafbfc;
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* 第一行：标题 */
@@ -61,4 +62,38 @@
   flex: 1;
   min-height: 0;
   overflow: hidden;
+}
+
+/* 渐入动效 */
+.twp-fade-in {
+  animation: twpFadeIn 360ms cubic-bezier(.2,.9,.2,1) both;
+}
+
+@keyframes twpFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.996);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 右下角背景图标 */
+.twp-bg-icon {
+  position: absolute;
+  right: -20px;
+  bottom: -10px;
+  width: 230px;
+  height: 230px;
+  color: #3d403d;
+  opacity: 0.06;
+  transform: rotate(-15deg);
+  z-index: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

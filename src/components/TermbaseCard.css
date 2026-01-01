@@ -17,8 +17,8 @@
 }
 
 .termbase-card {
-  max-width: 280px;
-  min-width: 280px;
+  max-width: 260px;
+  min-width: 260px;
   margin-left: 3px;
   margin-right: 3px;
   background-color: var(--card-bg);

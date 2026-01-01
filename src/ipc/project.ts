@@ -93,6 +93,7 @@ function fromRawProject(r: RawProject): Project {
     inboxUnitCount: r.inbox_unit_count ?? undefined,
     outboxUnitCount: r.outbox_unit_count ?? undefined,
     pageCount: r.page_count,
+    updatedAt: r.updated_at ?? undefined,
   };
 }
 
@@ -109,7 +110,8 @@ function toRawProject(p: Project): RawProject {
     inbox_unit_count: p.inboxUnitCount ?? null,
     outbox_unit_count: p.outboxUnitCount ?? null,
     page_count: p.pageCount,
-    updated_at: undefined,
+    // Ensure backend receives a valid updated_at. Use provided value or current time.
+    updated_at: p.updatedAt ?? new Date().toISOString(),
   };
 }
 
@@ -159,7 +161,7 @@ export async function updateProject(project: Project): Promise<void> {
 export async function getProjectPages(projectId: string): Promise<Page[]> {
   try {
     const pages = await invoke<RawPage[]>("get_project_pages", {
-      project_id: projectId,
+      projectId: projectId,
     });
 
     return (pages || []).map(fromRawPage);
@@ -177,7 +179,7 @@ export async function createProjectPages(
     const rawPages = (pages || []).map((p) => toRawPage(p));
 
     await invoke<void>("create_project_pages", {
-      project_id: projectId,
+      projectId: projectId,
       pages: rawPages,
     });
 
@@ -196,7 +198,7 @@ export async function updateProjectPages(
     const rawPages = (pages || []).map((p) => toRawPage(p));
 
     await invoke<void>("update_project_pages", {
-      project_id: projectId,
+      projectId: projectId,
       pages: rawPages,
     });
 
@@ -209,7 +211,7 @@ export async function updateProjectPages(
 // 删除页面
 export async function deleteProjectPages(pageIds: string[]): Promise<void> {
   try {
-    await invoke<void>("delete_project_pages", { page_ids: pageIds });
+    await invoke<void>("delete_project_pages", { pageIds: pageIds });
 
     return;
   } catch (e) {
@@ -221,7 +223,7 @@ export async function deleteProjectPages(pageIds: string[]): Promise<void> {
 export async function getPageUnits(pageId: string): Promise<Unit[]> {
   try {
     const units = await invoke<RawUnit[]>("get_page_units", {
-      page_id: pageId,
+      pageId: pageId,
     });
 
     return (units || []).map(fromRawUnit);
@@ -249,7 +251,7 @@ export async function createPageUnits(
     }));
 
     await invoke<void>("create_page_units", {
-      page_id: pageId,
+      pageId: pageId,
       units: rawUnits,
     });
 
@@ -278,7 +280,7 @@ export async function updatePageUnits(
     }));
 
     await invoke<void>("update_page_units", {
-      page_id: pageId,
+      pageId: pageId,
       units: rawUnits,
     });
 
@@ -291,7 +293,7 @@ export async function updatePageUnits(
 // 删除页面单元
 export async function deletePageUnits(unitIds: string[]): Promise<void> {
   try {
-    await invoke<void>("delete_page_units", { unit_ids: unitIds });
+    await invoke<void>("delete_page_units", { unitIds: unitIds });
 
     return;
   } catch (e) {
@@ -300,11 +302,11 @@ export async function deletePageUnits(unitIds: string[]): Promise<void> {
 }
 
 // 打开文件/目录选择对话框以选择项目目录
-export async function selectProjectDir(): Promise<string | undefined> {
+export async function selectProjectDir(): Promise<string[]> {
   try {
-    const path = await invoke<string | null | undefined>("select_project_dir");
+    const res = await invoke<string[]>("select_project_dir");
 
-    return path ?? undefined;
+    return res || [];
   } catch (e) {
     throw new Error((e as Error).message || String(e));
   }
@@ -326,7 +328,7 @@ export async function selectPoprakoArchivedPath(): Promise<string | undefined> {
 // 导入 Poprako 项目（支持 zip 或 文件夹）
 export async function importPoprakoProject(projectPath: string): Promise<void> {
   try {
-    await invoke<void>("import_poprako_project", { project_path: projectPath });
+    await invoke<void>("import_poprako_project", { projectPath: projectPath });
 
     return;
   } catch (e) {

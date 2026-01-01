@@ -43,6 +43,7 @@ export type Project = {
   inboxUnitCount?: number; // 框内单元总数量
   outboxUnitCount?: number; // 框外单元总数量
   pageCount: number; // 漫画页总数量
+  updatedAt?: string; // 最后更新时间（ISO 8601 格式，可选）
 };
 
 // 新建本地项目时使用的类型

@@ -84,7 +84,8 @@ pub async fn get_cached_projects() -> Result<Vec<CachedProject>, String> {
             prooved_unit_count, 
             inbox_unit_count, 
             outbox_unit_count, 
-            page_count
+            page_count,
+            updated_at
          FROM cached_project_tbl
          ORDER BY created_at DESC
         "#,
@@ -111,7 +112,8 @@ pub async fn get_local_projects() -> Result<Vec<LocalProject>, String> {
             prooved_unit_count, 
             inbox_unit_count, 
             outbox_unit_count, 
-            page_count
+            page_count,
+            updated_at
          FROM local_project_tbl
          ORDER BY created_at DESC
         "#,
@@ -138,6 +140,71 @@ pub async fn create_local_project(project: &NewLocalProject) -> Result<(), Strin
     .await
     .trace_error("创建本地项目时失败")
     .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+/// Create a local project and associated pages in a single transaction.
+pub async fn create_local_project_with_pages(
+    project: &NewLocalProject,
+    pages: &[LocalPage],
+) -> Result<(), String> {
+    let mut tx = (&*LOCAL_DB)
+        .begin()
+        .await
+        .trace_error("开始创建本地项目事务失败")
+        .map_err(|e| e.to_string())?;
+
+    sqlx::query(
+        "INSERT INTO local_project_tbl (id, author, title, local_image_dir, page_count)
+         VALUES (?, ?, ?, ?, ?)",
+    )
+    .bind(&project.id)
+    .bind(&project.author)
+    .bind(&project.title)
+    .bind(&project.local_image_dir)
+    .bind(project.page_count)
+    .execute(tx.as_mut())
+    .await
+    .trace_error("创建本地项目时失败")
+    .map_err(|e| e.to_string())?;
+
+    if !pages.is_empty() {
+        for page in pages.iter() {
+            sqlx::query(
+                "INSERT INTO local_page_tbl (id, project_id, index_in_project, local_image_path)
+                 VALUES (?, ?, ?, ?)",
+            )
+            .bind(&page.id)
+            .bind(&page.project_id)
+            .bind(page.index_in_project)
+            .bind(&page.local_image_path)
+            .execute(tx.as_mut())
+            .await
+            .trace_error("批量创建项目页时失败")
+            .map_err(|e| e.to_string())?;
+        }
+
+        // update page_count to pages.len() (or increment if needed)
+        let add_pages = pages.len() as i64;
+
+        sqlx::query(
+            "UPDATE local_project_tbl
+             SET page_count = page_count + ?, updated_at = CURRENT_TIMESTAMP
+             WHERE id = ?",
+        )
+        .bind(add_pages)
+        .bind(&project.id)
+        .execute(tx.as_mut())
+        .await
+        .trace_error("更新项目页计数时失败")
+        .map_err(|e| e.to_string())?;
+    }
+
+    tx.commit()
+        .await
+        .trace_error("提交创建本地项目事务失败")
+        .map_err(|e| e.to_string())?;
 
     Ok(())
 }

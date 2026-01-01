@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS unit_tbl;
+DROP TABLE IF EXISTS local_unit_tbl;

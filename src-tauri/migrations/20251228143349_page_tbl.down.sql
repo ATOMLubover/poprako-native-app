@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS page_tbl;
+DROP TABLE IF EXISTS local_page_tbl;

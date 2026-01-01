@@ -101,21 +101,7 @@ pub async fn create_local_project(project: model_project::Project) -> Result<(),
     let author = project.author.clone();
     let title = project.title.clone();
 
-    // create local project record in repository
-    let new_project = po_project::NewLocalProject {
-        id: project_id.clone(),
-        author: author.clone(),
-        title: title.clone(),
-        local_image_dir: project.local_image_dir.as_deref().unwrap_or("").to_string(),
-        page_count: project.page_count,
-    };
-
-    repo_project::create_local_project(&new_project)
-        .await
-        .trace_error("创建本地项目条目时失败")
-        .map_err(|e| e.to_string())?;
-
-    // 创建项目成功后，读取 local_image_dir 下的图片并创建对应的页面条目
+    // 先读取 local_image_dir 下的图片并创建对应的页面条目列表
     let mut images: Vec<PathBuf> = Vec::new();
 
     let entries = fs::read_dir(&local_image_dir)
@@ -159,12 +145,20 @@ pub async fn create_local_project(project: model_project::Project) -> Result<(),
         });
     }
 
-    if !pages_to_create.is_empty() {
-        repo_project::create_project_pages(pages_to_create.as_slice())
-            .await
-            .trace_error("创建项目页时失败")
-            .map_err(|e| e.to_string())?;
-    }
+    // create local project record in repository together with pages in a single transaction
+    let new_project = po_project::NewLocalProject {
+        id: project_id.clone(),
+        author: author.clone(),
+        title: title.clone(),
+        local_image_dir: project.local_image_dir.as_deref().unwrap_or("").to_string(),
+        // repository will update page_count based on inserted pages inside the transaction
+        page_count: 0,
+    };
+
+    repo_project::create_local_project_with_pages(&new_project, pages_to_create.as_slice())
+        .await
+        .trace_error("创建本地项目条目时失败")
+        .map_err(|e| e.to_string())?;
 
     tracing::info!(ipc_id = ipc_id, "ipc.project.create_local_project.success");
 
@@ -476,10 +470,15 @@ pub async fn delete_page_units(unit_ids: Vec<String>) -> Result<(), String> {
 #[tauri::command]
 #[tracing::instrument]
 pub async fn select_project_dir() -> Result<Vec<String>, String> {
-    tracing::info!("ipc.project.select_project_dir.start");
+    let ipc_id = get_ipc_request_id();
+
+    tracing::info!(ipc_id = ipc_id, "ipc.project.select_project_dir.start");
 
     let script = r#"
         Add-Type -AssemblyName System.Windows.Forms
+        # Ensure PowerShell writes UTF-8 to stdout so Rust reads correct bytes
+        [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
         $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
         $dialog.Description = "选择项目目录"
         $dialog.ShowNewFolderButton = $true
@@ -496,27 +495,49 @@ pub async fn select_project_dir() -> Result<Vec<String>, String> {
         .trace_error("启动项目目录选择对话框失败")?;
 
     if !output.status.success() {
-        tracing::warn!("ipc.project.select_project_dir.cancelled_or_failed");
+        tracing::warn!(
+            ipc_id = ipc_id,
+            "ipc.project.select_project_dir.cancelled_or_failed"
+        );
         return Ok(vec![]);
     }
 
-    let dir = String::from_utf8_lossy(&output.stdout);
+    let raw = String::from_utf8_lossy(&output.stdout).to_string();
 
-    let dir_opt = dir
+    // Extract first non-empty line and sanitize surrounding quotes / nulls
+    let dir_opt = raw
         .lines()
         .map(|s| s.trim())
         .find(|s| !s.is_empty())
-        .map(|s| s.to_string());
+        .map(|s| {
+            s.trim_matches(|c: char| c.is_whitespace() || c == '"' || c == '\u{0}')
+                .to_string()
+        });
 
     let dir = match dir_opt {
         Some(p) => p,
         None => {
-            tracing::warn!("ipc.project.select_project_dir.no_selection");
+            tracing::warn!(
+                ipc_id = ipc_id,
+                "ipc.project.select_project_dir.no_selection"
+            );
             return Ok(vec![]);
         }
     };
 
     let mut images: Vec<String> = Vec::new();
+
+    // Normalize path and verify existence before reading
+    let dir_path = std::path::Path::new(&dir);
+
+    if !dir_path.exists() {
+        tracing::error!(
+            ipc_id = ipc_id,
+            selected = dir.as_str(),
+            "ipc.project.select_project_dir.not_found"
+        );
+        return Err(format!("读取所选目录失败: 路径不存在: {}", dir));
+    }
 
     let entries = std::fs::read_dir(&dir)
         .trace_error("读取所选目录失败")
@@ -543,6 +564,7 @@ pub async fn select_project_dir() -> Result<Vec<String>, String> {
     }
 
     tracing::info!(
+        ipc_id = ipc_id,
         selected = dir.as_str(),
         images = ?images,
         "ipc.project.select_project_dir.success"
@@ -561,6 +583,7 @@ pub async fn select_poprako_archived_path() -> Result<String, String> {
 
     let script = r#"
         Add-Type -AssemblyName System.Windows.Forms
+        [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
         $ofd = New-Object System.Windows.Forms.OpenFileDialog
         $ofd.Filter = 'Poprako Archive (*.zip)|*.zip'
@@ -592,13 +615,16 @@ pub async fn select_poprako_archived_path() -> Result<String, String> {
         return Ok("".to_string());
     }
 
-    let path = String::from_utf8_lossy(&output.stdout);
+    let raw = String::from_utf8_lossy(&output.stdout).to_string();
 
-    let path_opt = path
+    let path_opt = raw
         .lines()
         .map(|s| s.trim())
         .find(|s| !s.is_empty())
-        .map(|s| s.to_string());
+        .map(|s| {
+            s.trim_matches(|c: char| c.is_whitespace() || c == '"' || c == '\u{0}')
+                .to_string()
+        });
 
     match path_opt {
         Some(p) => {
@@ -954,25 +980,6 @@ pub async fn import_poprako_project(project_path: String) -> Result<(), String> 
 
     let project_id = uuid::Uuid::new_v4().to_string();
 
-    let new_project = po_project::NewLocalProject {
-        id: project_id.clone(),
-        author: export_project.author.clone(),
-        title: export_project.title.clone(),
-        local_image_dir: work_dir.to_string_lossy().to_string(),
-        page_count: export_project.pages.len() as u32,
-    };
-
-    repo_project::create_local_project(&new_project)
-        .await
-        .trace_error("创建本地项目条目时失败")
-        .map_err(|e| {
-            if is_temp {
-                let _ = fs::remove_dir_all(&work_dir);
-            }
-
-            e.to_string()
-        })?;
-
     let mut pages_to_create: Vec<po_project::LocalPage> = Vec::new();
 
     for (i, page) in export_project.pages.iter().enumerate() {
@@ -988,18 +995,25 @@ pub async fn import_poprako_project(project_path: String) -> Result<(), String> 
         });
     }
 
-    if !pages_to_create.is_empty() {
-        repo_project::create_project_pages(pages_to_create.as_slice())
-            .await
-            .trace_error("创建项目页时失败")
-            .map_err(|e| {
-                if is_temp {
-                    let _ = fs::remove_dir_all(&work_dir);
-                }
+    let new_project = po_project::NewLocalProject {
+        id: project_id.clone(),
+        author: export_project.author.clone(),
+        title: export_project.title.clone(),
+        local_image_dir: work_dir.to_string_lossy().to_string(),
+        // start with zero; repository will increment within transaction
+        page_count: 0,
+    };
 
-                e.to_string()
-            })?;
-    }
+    repo_project::create_local_project_with_pages(&new_project, pages_to_create.as_slice())
+        .await
+        .trace_error("创建本地项目条目时失败")
+        .map_err(|e| {
+            if is_temp {
+                let _ = fs::remove_dir_all(&work_dir);
+            }
+
+            e.to_string()
+        })?;
 
     let mut units_to_create: Vec<po_project::LocalUnit> = Vec::new();
 

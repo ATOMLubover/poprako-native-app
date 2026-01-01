@@ -1,8 +1,17 @@
 import { useEffect, useState } from "react";
 import ProjectList from "../components/project/ProjectList";
+import LocalProjectCreator from "../components/project/LocalProjectCreator";
+import { LocalTranslator } from "../components/project/LocalTranslator";
+import { createPortal } from "react-dom";
 import NatureButton from "../components/NatureButton";
+import Icon from "../components/Icon";
 import type { Project } from "../models/project";
-import { getProjects } from "../store/project";
+import {
+  getProjects,
+  getActiveProjectId,
+  setActiveProject,
+  clearActiveProject,
+} from "../store/project";
 import "./TranslatorWorkspacePage.css";
 
 export default function TranslatorWorkspacePage() {
@@ -10,6 +19,10 @@ export default function TranslatorWorkspacePage() {
   const [allProjects, setAllProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | undefined>(undefined);
+  const [showCreator, setShowCreator] = useState<boolean>(false);
+  const [activeProjectId, setActiveProjectIdState] = useState<string | null>(
+    () => getActiveProjectId()
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -45,7 +58,12 @@ export default function TranslatorWorkspacePage() {
       });
 
   const handleCreateLocal = () => {
-    console.log("新建本地项目");
+    setShowCreator(true);
+  };
+
+  // 导入本地或外部项目
+  const handleImportProject = () => {
+    console.log("导入项目");
   };
 
   const handleSyncCloud = () => {
@@ -53,18 +71,46 @@ export default function TranslatorWorkspacePage() {
   };
 
   const handleActProject = (project: Project) => {
-    console.log("开始项目:", project);
+    // 仅支持本地项目
+    if (project.relatedRemoteComicId) {
+      console.log("云端项目暂不支持");
+      return;
+    }
+
+    setActiveProject(project.id);
+    setActiveProjectIdState(project.id);
   };
 
   const handleSyncProject = (project: Project) => {
     console.log("同步项目:", project);
   };
 
+  const handleExitTranslator = () => {
+    clearActiveProject();
+    setActiveProjectIdState(null);
+  };
+
+  // 如果有激活的项目，则渲染 LocalTranslator
+  const activeProject = activeProjectId
+    ? allProjects.find((p) => p.id === activeProjectId)
+    : null;
+
+  if (activeProject) {
+    return (
+      <LocalTranslator project={activeProject} onExit={handleExitTranslator} />
+    );
+  }
+
   return (
-    <div className="twp-root">
+    <div className="twp-root twp-fade-in">
       {/* 第一行：标题 */}
       <div className="twp-header">
         <h1 className="twp-title">翻校工作区</h1>
+      </div>
+
+      {/* 背景装饰图标（右下角） */}
+      <div aria-hidden className="twp-bg-icon">
+        <Icon name="proofread" size={280} />
       </div>
 
       {/* 第二行：搜索框 + 按钮栏 */}
@@ -86,11 +132,19 @@ export default function TranslatorWorkspacePage() {
         </NatureButton>
 
         <NatureButton
+          variant="mist"
+          minWidth={120}
+          onClick={handleImportProject}
+        >
+          导入项目
+        </NatureButton>
+
+        <NatureButton
           variant="cloud"
           minWidth={120}
           onClick={handleSyncCloud}
         >
-          同步云端项目
+          云端项目同步
         </NatureButton>
       </div>
 
@@ -108,6 +162,43 @@ export default function TranslatorWorkspacePage() {
           />
         )}
       </div>
+
+      {showCreator
+        ? createPortal(
+            <div
+              style={{
+                position: "fixed",
+                inset: 0,
+                background: "rgba(6, 10, 8, 0.45)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 160,
+              }}
+              onClick={() => setShowCreator(false)}
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                style={{ maxWidth: "92%", maxHeight: "86%" }}
+              >
+                <LocalProjectCreator
+                  onSave={async () => {
+                    try {
+                      const ps = await getProjects(true);
+                      setAllProjects(ps || []);
+                    } catch (e) {
+                      setError((e as Error).message || String(e));
+                    } finally {
+                      setShowCreator(false);
+                    }
+                  }}
+                  onCancel={() => setShowCreator(false)}
+                />
+              </div>
+            </div>,
+            document.body
+          )
+        : null}
     </div>
   );
 }

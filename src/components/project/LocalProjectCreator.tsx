@@ -3,6 +3,7 @@ import NatureButton from "../NatureButton";
 import { User, FileText, Folder } from "lucide-react";
 import { selectProjectDir } from "../../ipc/project";
 import { createLocalProject } from "../../store/project";
+import { useToast } from "../NotificationToast";
 import type { NewLocalProject } from "../../models/project";
 import "../TermbaseCreator.css";
 
@@ -12,34 +13,51 @@ type Props = {
   onCancel?: () => void;
 };
 
-// 本地项目创建卡片，风格参考 TermbaseCreator
 export default function LocalProjectCreator({ initial = {}, onSave, onCancel }: Props) {
   const rootRef = useRef<HTMLDivElement | null>(null);
+
+  const { showToast } = useToast();
 
   const [author, setAuthor] = useState<string>(initial.author ?? "");
   const [title, setTitle] = useState<string>(initial.title ?? "");
   const [localImageDir, setLocalImageDir] = useState<string>(initial.localImageDir ?? "");
   const [saving, setSaving] = useState<boolean>(false);
 
+  // Initialize once on mount to avoid overwriting after HMR
   useEffect(() => {
     setAuthor(initial.author ?? "");
     setTitle(initial.title ?? "");
-    setLocalImageDir(initial.localImageDir ?? "");
-  }, [initial]);
+
+    if (initial.localImageDir) {
+      setLocalImageDir(initial.localImageDir);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function handleSelectDir() {
     try {
-      const path = await selectProjectDir();
+      const res = await selectProjectDir();
 
-      if (path) {
-        setLocalImageDir(path);
+      if (!res || res.length === 0) {
+        showToast("info", "未选择图片文件");
+        return;
       }
+
+      showToast("success", `已选择 ${res.length} 张图片`);
+
+      const first = res[0];
+      const idx = Math.max(first.lastIndexOf("\\"), first.lastIndexOf("/"));
+      let dir = idx >= 0 ? first.slice(0, idx) : first;
+      dir = dir.replace(/\u0000/g, "").trim();
+
+      setLocalImageDir(dir);
     } catch (e) {
       console.error("Select project dir failed", e);
+      showToast("error", "读取所选目录失败");
     }
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!author || !title || !localImageDir) {
       console.warn("Missing required fields");
       return;
@@ -53,18 +71,18 @@ export default function LocalProjectCreator({ initial = {}, onSave, onCancel }: 
       localImageDir,
     };
 
-    createLocalProject(payload)
-      .then(() => {
-        setSaving(false);
+    try {
+      await createLocalProject(payload);
+      setSaving(false);
 
-        if (onSave) {
-          onSave(payload);
-        }
-      })
-      .catch((e) => {
-        setSaving(false);
-        console.error("Create local project failed", e);
-      });
+      if (onSave) {
+        onSave(payload);
+      }
+    } catch (e) {
+      setSaving(false);
+      console.error("Create local project failed", e);
+      showToast("error", "创建本地项目失败");
+    }
   }
 
   return (
@@ -72,11 +90,13 @@ export default function LocalProjectCreator({ initial = {}, onSave, onCancel }: 
       <div className="tbc-header tbc-header-centered">
         <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#111827" }}>新建本地项目</h3>
       </div>
+
       <div className="tbc-body">
         <div className="tbc-field">
           <div className="tbc-field-icon">
             <User size={18} />
           </div>
+
           <input
             className="tbc-input"
             value={author}
@@ -89,6 +109,7 @@ export default function LocalProjectCreator({ initial = {}, onSave, onCancel }: 
           <div className="tbc-field-icon">
             <FileText size={18} />
           </div>
+
           <input
             className="tbc-input"
             value={title}
@@ -101,13 +122,17 @@ export default function LocalProjectCreator({ initial = {}, onSave, onCancel }: 
           <div className="tbc-field-icon">
             <Folder size={18} />
           </div>
+
           <div style={{ flex: 1, display: "flex", gap: 8 }}>
             <input
               className="tbc-input tbc-preview"
               value={localImageDir ?? ""}
+              title={localImageDir ?? ""}
               readOnly
               placeholder="请选择本地图片目录"
+              style={{ flex: 1, minWidth: 0 }}
             />
+
             <NatureButton variant="mist" onClick={handleSelectDir} minWidth={70}>
               选择
             </NatureButton>
