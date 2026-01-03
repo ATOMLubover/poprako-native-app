@@ -68,9 +68,19 @@ pub async fn create_project_pages(
 
     let mut conn = repo::acquire_connection().await?;
 
-    repo_page::save_project_pages(&mut conn, po_pages.as_slice())
+    let mut trx = repo::aquire_transaction(&mut conn)
+        .await
+        .trace_error("开始创建项目页事务失败")
+        .map_err(|e| e.to_string())?;
+
+    repo_page::save_project_pages(&mut trx, po_pages.as_slice())
         .await
         .trace_error("创建项目页时失败")
+        .map_err(|e| e.to_string())?;
+
+    trx.commit()
+        .await
+        .trace_error("提交创建项目页事务失败")
         .map_err(|e| e.to_string())?;
 
     tracing::info!(
@@ -111,9 +121,19 @@ pub async fn update_project_pages(
 
     let mut conn = repo::acquire_connection().await?;
 
-    repo_page::save_project_pages(&mut conn, po_pages.as_slice())
+    let mut trx = repo::aquire_transaction(&mut conn)
+        .await
+        .trace_error("开始更新项目页事务失败")
+        .map_err(|e| e.to_string())?;
+
+    repo_page::save_project_pages(&mut trx, po_pages.as_slice())
         .await
         .trace_error("更新项目页时失败")
+        .map_err(|e| e.to_string())?;
+
+    trx.commit()
+        .await
+        .trace_error("提交更新项目页事务失败")
         .map_err(|e| e.to_string())?;
 
     tracing::info!(

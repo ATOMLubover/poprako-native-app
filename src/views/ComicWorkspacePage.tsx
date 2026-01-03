@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import ProjectList from "../components/project/ProjectList";
 import LocalProjectCreator from "../components/project/LocalProjectCreator";
+import LocalProjectImporter from "../components/project/LocalProjectImporter";
 import { LocalTranslator } from "../components/project/LocalTranslator";
 import { createPortal } from "react-dom";
 import NatureButton from "../components/NatureButton";
@@ -20,6 +21,7 @@ export default function ComicWorkspacePage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | undefined>(undefined);
   const [showCreator, setShowCreator] = useState<boolean>(false);
+  const [showImporter, setShowImporter] = useState<boolean>(false);
   // Restore in-memory active project ID on mount (no persistence involved)
   const [activeProjectId, setActiveProjectIdState] = useState<string | null>(
     () => getActiveProjectId()
@@ -64,7 +66,7 @@ export default function ComicWorkspacePage() {
 
   // 导入本地或外部项目
   const handleImportProject = () => {
-    console.log("导入项目");
+    setShowImporter(true);
   };
 
   const handleSyncCloud = () => {
@@ -194,6 +196,43 @@ export default function ComicWorkspacePage() {
                     }
                   }}
                   onCancel={() => setShowCreator(false)}
+                />
+              </div>
+            </div>,
+            document.body
+          )
+        : null}
+
+      {showImporter
+        ? createPortal(
+            <div
+              style={{
+                position: "fixed",
+                inset: 0,
+                background: "rgba(6, 10, 8, 0.45)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 160,
+              }}
+              onClick={() => setShowImporter(false)}
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                style={{ maxWidth: "92%", maxHeight: "86%" }}
+              >
+                <LocalProjectImporter
+                  onSuccess={async () => {
+                    try {
+                      const ps = await getProjects(true);
+                      setAllProjects(ps || []);
+                    } catch (e) {
+                      setError((e as Error).message || String(e));
+                    } finally {
+                      setShowImporter(false);
+                    }
+                  }}
+                  onCancel={() => setShowImporter(false)}
                 />
               </div>
             </div>,

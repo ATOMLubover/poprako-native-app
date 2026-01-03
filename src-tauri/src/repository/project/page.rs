@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::LazyLock};
 
-use sqlx::{Acquire, SqliteConnection, Transaction, Sqlite};
+use sqlx::{Acquire, SqliteConnection};
 use tauri::async_runtime::Mutex;
 
 use crate::{model::po::project::LocalPage, result_trace::ResultTrace as _};
@@ -28,8 +28,7 @@ pub async fn get_project_pages(
     Ok(pages)
 }
 
-/// Save (upsert) project pages in a single transaction.
-/// For each page: attempt UPDATE; if no row updated, INSERT.
+/// 保存项目页，调用方负责开启与提交事务
 pub async fn save_project_pages(
     conn: &mut SqliteConnection,
     pages: &[LocalPage],
@@ -38,14 +37,8 @@ pub async fn save_project_pages(
         return Ok(());
     }
 
-    // Ensure only one save_project_pages runs at a time
+    // Respect the same upsert lock to avoid concurrent upserts
     let _lock_guard = PAGE_UPSERT_LOCK.lock().await;
-
-    let mut trx = conn
-        .begin()
-        .await
-        .trace_error("开始保存项目页事务失败")
-        .map_err(|e| e.to_string())?;
 
     let mut counts_by_project: HashMap<String, i64> = HashMap::new();
 
@@ -61,13 +54,12 @@ pub async fn save_project_pages(
         .bind(page.index_in_project)
         .bind(&page.local_image_path)
         .bind(&page.id)
-        .execute(trx.as_mut())
+        .execute(&mut *conn)
         .await
         .trace_error("保存项目页时更新失败")
         .map_err(|e| e.to_string())?;
 
         if update_res.rows_affected() == 0 {
-            // not existed -> insert
             sqlx::query(
                 r#"
                 INSERT INTO local_page_tbl (id, project_id, index_in_project, local_image_path)
@@ -78,7 +70,7 @@ pub async fn save_project_pages(
             .bind(&page.project_id)
             .bind(page.index_in_project)
             .bind(&page.local_image_path)
-            .execute(trx.as_mut())
+            .execute(&mut *conn)
             .await
             .trace_error("保存项目页时插入失败")
             .map_err(|e| e.to_string())?;
@@ -99,85 +91,7 @@ pub async fn save_project_pages(
         )
         .bind(add_pages)
         .bind(&project_id)
-        .execute(trx.as_mut())
-        .await
-        .trace_error("更新项目页计数时失败")
-        .map_err(|e| e.to_string())?;
-    }
-
-    trx.commit()
-        .await
-        .trace_error("提交保存项目页事务失败")
-        .map_err(|e| e.to_string())?;
-
-    Ok(())
-}
-
-/// Save project pages into an existing transaction `trx`.
-/// This function does not begin or commit the transaction; caller must manage it.
-pub async fn save_project_pages_in_trx(
-    trx: &mut Transaction<'_, Sqlite>,
-    pages: &[LocalPage],
-) -> Result<(), String> {
-    if pages.is_empty() {
-        return Ok(());
-    }
-
-    // Respect the same upsert lock to avoid concurrent upserts
-    let _lock_guard = PAGE_UPSERT_LOCK.lock().await;
-
-    let mut counts_by_project: std::collections::HashMap<String, i64> = std::collections::HashMap::new();
-
-    for page in pages.iter() {
-        let update_res = sqlx::query(
-            r#"
-            UPDATE local_page_tbl
-            SET project_id = ?, index_in_project = ?, local_image_path = ?, updated_at = CURRENT_TIMESTAMP
-            WHERE id = ?
-            "#,
-        )
-        .bind(&page.project_id)
-        .bind(page.index_in_project)
-        .bind(&page.local_image_path)
-        .bind(&page.id)
-        .execute(trx.as_mut())
-        .await
-        .trace_error("保存项目页时更新失败")
-        .map_err(|e| e.to_string())?;
-
-        if update_res.rows_affected() == 0 {
-            sqlx::query(
-                r#"
-                INSERT INTO local_page_tbl (id, project_id, index_in_project, local_image_path)
-                VALUES (?, ?, ?, ?)
-                "#,
-            )
-            .bind(&page.id)
-            .bind(&page.project_id)
-            .bind(page.index_in_project)
-            .bind(&page.local_image_path)
-            .execute(trx.as_mut())
-            .await
-            .trace_error("保存项目页时插入失败")
-            .map_err(|e| e.to_string())?;
-
-            *counts_by_project
-                .entry(page.project_id.clone())
-                .or_insert(0) += 1;
-        }
-    }
-
-    for (project_id, add_pages) in counts_by_project.into_iter() {
-        sqlx::query(
-            r#"
-            UPDATE local_project_tbl
-            SET page_count = page_count + ?, updated_at = CURRENT_TIMESTAMP
-            WHERE id = ?
-            "#,
-        )
-        .bind(add_pages)
-        .bind(&project_id)
-        .execute(trx.as_mut())
+        .execute(&mut *conn)
         .await
         .trace_error("更新项目页计数时失败")
         .map_err(|e| e.to_string())?;

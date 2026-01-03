@@ -163,14 +163,14 @@ pub async fn create_local_project(project: model_project::Project) -> Result<(),
     };
 
     // Create project within trx
-    repo_project::create_local_project_in_trx(&mut trx, &new_project)
+    repo_project::create_local_project(&mut trx, &new_project)
         .await
         .trace_error("创建本地项目条目时失败")
         .map_err(|e| e.to_string())?;
 
     // Save pages within the same trx
     if !pages_to_create.is_empty() {
-        repo_project::page::save_project_pages_in_trx(&mut trx, pages_to_create.as_slice())
+        repo_project::page::save_project_pages(&mut trx, pages_to_create.as_slice())
             .await
             .trace_error("创建项目页时失败")
             .map_err(|e| e.to_string())?;

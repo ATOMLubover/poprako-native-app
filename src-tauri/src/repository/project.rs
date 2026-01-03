@@ -1,4 +1,4 @@
-use sqlx::{Sqlite, SqliteConnection, Transaction};
+use sqlx::SqliteConnection;
 
 pub mod page;
 pub mod unit;
@@ -130,6 +130,7 @@ pub async fn get_local_projects(conn: &mut SqliteConnection) -> Result<Vec<Local
     Ok(project_list)
 }
 
+#[allow(dead_code)]
 pub async fn create_cached_project(
     conn: &mut SqliteConnection,
     project: &NewCachedProject,
@@ -148,29 +149,6 @@ pub async fn create_cached_project(
     .execute(&mut *conn)
     .await
     .trace_error("创建缓存项目时失败")
-    .map_err(|e| e.to_string())?;
-
-    Ok(())
-}
-
-pub async fn create_local_project_in_trx(
-    trx: &mut Transaction<'_, Sqlite>,
-    project: &NewLocalProject,
-) -> Result<(), String> {
-    sqlx::query(
-        r#"
-        INSERT INTO local_project_tbl (id, author, title, local_image_dir, page_count)
-        VALUES (?, ?, ?, ?, ?)
-        "#,
-    )
-    .bind(&project.id)
-    .bind(&project.author)
-    .bind(&project.title)
-    .bind(&project.local_image_dir)
-    .bind(project.page_count)
-    .execute(trx.as_mut())
-    .await
-    .trace_error("创建本地项目时失败")
     .map_err(|e| e.to_string())?;
 
     Ok(())

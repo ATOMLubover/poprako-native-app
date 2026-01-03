@@ -2,11 +2,13 @@ use std::path::PathBuf;
 
 use crate::{
     ipc::get_ipc_request_id,
-    model::po::project::{LocalPage, LocalUnit, NewLocalProject},
-    model::project::PortProject,
+    model::{
+        po::project::{LocalPage, LocalUnit, NewLocalProject},
+        project::PortProject,
+    },
     project::port::{export_project as port_export, import_project as port_import, PortMode},
     repository::{
-        acquire_connection,
+        acquire_connection, aquire_transaction,
         project::{
             page::get_project_pages as repo_get_pages, pick_cached_project, pick_local_project,
             unit::get_page_units as repo_get_units,
@@ -116,9 +118,15 @@ pub async fn export_project(project_id: String, need_compress: bool) -> Result<S
     Ok(base_dir_clone.to_string_lossy().to_string())
 }
 
+/// Import a PopRaKo project from the specified path.
+/// The path should be .json, .txt of .zip.
 #[tauri::command]
 #[tracing::instrument]
-pub async fn import_project(project_path: String) -> Result<(), String> {
+pub async fn import_project(
+    project_path: String,
+    author: Option<String>,
+    title: Option<String>,
+) -> Result<(), String> {
     let ipc_id = get_ipc_request_id();
 
     tracing::info!(
@@ -128,17 +136,39 @@ pub async fn import_project(project_path: String) -> Result<(), String> {
 
     let path = PathBuf::from(&project_path);
 
-    let mode = if path.is_file() {
-        PortMode::Zip
-    } else {
-        PortMode::Dir
-    };
+    if !path.exists() {
+        return Err("指定的项目路径不存在".to_string());
+    }
 
-    // 使用 project::port 的导入函数
-    let export_proj = port_import(path, mode)
-        .await
-        .trace_error("导入 Poprako 项目失败")
-        .map_err(|e| e.to_string())?;
+    // Determine mode by file extension.
+    // - .zip => Zip mode, pass the file path itself
+    // - .json/.txt => File mode, pass the file path itself
+    // - directory => Dir mode, pass the directory
+    // - other extensions => invalid
+    let export_proj = if path.is_dir() {
+        // directory given -> Dir mode
+        port_import(path.clone(), PortMode::Dir)
+            .await
+            .trace_error("导入 Poprako 项目失败")
+            .map_err(|e| e.to_string())?
+    } else {
+        let ext = path
+            .extension()
+            .and_then(|s| s.to_str())
+            .map(|s| s.to_lowercase());
+
+        match ext.as_deref() {
+            Some("zip") => port_import(path.clone(), PortMode::Zip)
+                .await
+                .trace_error("导入 Poprako 项目失败")
+                .map_err(|e| e.to_string())?,
+            Some("json") | Some("txt") => port_import(path.clone(), PortMode::File)
+                .await
+                .trace_error("导入 Poprako 项目失败")
+                .map_err(|e| e.to_string())?,
+            _ => return Err("不支持的导入文件类型，仅支持 .zip/.json/.txt 或目录".to_string()),
+        }
+    };
 
     let project_id = uuid::Uuid::new_v4().to_string();
 
@@ -186,37 +216,45 @@ pub async fn import_project(project_path: String) -> Result<(), String> {
         .map_err(|e| e.to_string())?;
 
     // Start transaction at IPC layer to ensure atomic import
-    let mut trx = crate::repository::aquire_transaction(&mut conn)
+    let mut trx = aquire_transaction(&mut conn)
         .await
         .trace_error("开始导入事务失败")
         .map_err(|e| e.to_string())?;
 
+    let final_title = title
+        .and_then(|t| Some(t.trim().to_string()))
+        .and_then(|t| if t.is_empty() { None } else { Some(t) })
+        .unwrap_or(export_proj.title.clone());
+
+    let final_author = author
+        .and_then(|a| Some(a.trim().to_string()))
+        .and_then(|a| if a.is_empty() { None } else { Some(a) })
+        .unwrap_or(export_proj.author.clone());
+
     let new_project = NewLocalProject {
         id: project_id,
-        author: export_proj.author.clone(),
-        title: export_proj.title.clone(),
+        author: final_author,
+        title: final_title,
         local_image_dir: image_dir.to_string_lossy().to_string(),
         page_count: 0,
     };
 
-    use crate::repository::project::{
-        create_local_project_in_trx, page::save_project_pages_in_trx, unit::save_page_units_in_trx,
-    };
+    use crate::repository::project::{page::save_project_pages, unit::save_page_units};
 
-    create_local_project_in_trx(&mut trx, &new_project)
+    crate::repository::project::create_local_project(&mut trx, &new_project)
         .await
         .trace_error("创建项目失败")
         .map_err(|e| e.to_string())?;
 
     if !pages_to_create.is_empty() {
-        save_project_pages_in_trx(&mut trx, pages_to_create.as_slice())
+        save_project_pages(&mut trx, pages_to_create.as_slice())
             .await
             .trace_error("创建项目页失败")
             .map_err(|e| e.to_string())?;
     }
 
     if !units_to_create.is_empty() {
-        save_page_units_in_trx(&mut trx, units_to_create.as_slice())
+        save_page_units(&mut trx, units_to_create.as_slice())
             .await
             .trace_error("创建单元失败")
             .map_err(|e| e.to_string())?;

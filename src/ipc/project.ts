@@ -311,20 +311,32 @@ export async function selectNewProjectDir(): Promise<string[]> {
 }
 
 // 选择归档项目路径（后端已重命名）
-export async function selectArchivedProjectPath(): Promise<string[]> {
+export async function selectArchivedProjectPath(): Promise<string> {
   try {
-    const res = await invoke<string[]>("select_archived_project_path");
-
-    return res || [];
+    return await invoke<string>("select_archived_project_path");
   } catch (e) {
     throw new Error((e as Error).message || String(e));
   }
 }
 
 // 导入 Poprako 项目（支持 zip 或 json 或 txt）
-export async function importProject(projectPath: string): Promise<void> {
+export async function importProject(
+  projectPath: string,
+  author?: string,
+  title?: string
+): Promise<void> {
   try {
-    await invoke<void>("port::import_project", { projectPath: projectPath });
+    const args: Record<string, unknown> = { projectPath: projectPath };
+
+    if (typeof author === "string" && author.trim() !== "") {
+      args.author = author;
+    }
+
+    if (typeof title === "string" && title.trim() !== "") {
+      args.title = title;
+    }
+
+    await invoke<void>("import_project", args);
 
     return;
   } catch (e) {
@@ -335,7 +347,7 @@ export async function importProject(projectPath: string): Promise<void> {
 // 导出 Poprako 项目（返回生成的归档文件夹）
 export async function exportProject(projectId: string): Promise<string> {
   try {
-    const path = await invoke<string>("port::export_project", {
+    const path = await invoke<string>("export_project", {
       projectId: projectId,
     });
 

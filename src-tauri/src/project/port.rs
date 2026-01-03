@@ -16,6 +16,7 @@ use crate::{
 pub enum PortMode {
     Dir,
     Zip,
+    File,
 }
 
 pub async fn export_project(
@@ -36,6 +37,7 @@ pub async fn export_project(
     match mode {
         PortMode::Dir => export_project_to_dir(project, dst_dir).await,
         PortMode::Zip => export_project_to_zip(project, dst_dir).await,
+        PortMode::File => export_project_to_dir(project, dst_dir).await,
     }
 }
 
@@ -189,6 +191,26 @@ pub async fn import_project(src_path: PathBuf, mode: PortMode) -> anyhow::Result
     match mode {
         PortMode::Dir => import_project_from_dir(src_path).await,
         PortMode::Zip => import_project_from_zip(src_path).await,
+        PortMode::File => {
+            let mut project = resolve_project_file(src_path.clone()).await?;
+
+            let base_dir = src_path
+                .parent()
+                .ok_or_else(|| anyhow::anyhow!("无法确定项目文件所在目录"))?;
+
+            // Convert relative image filenames to absolute paths
+            for page in &mut project.pages {
+                let img_path = base_dir.join(&page.image_filename);
+
+                if !img_path.exists() {
+                    bail!("项目中引用的图片文件不存在: {}", page.image_filename);
+                }
+
+                page.image_filename = img_path.to_string_lossy().to_string();
+            }
+
+            Ok(project)
+        }
     }
 }
 
@@ -332,7 +354,7 @@ async fn decompress_zip(zip_path: PathBuf, extract_dir: PathBuf) -> anyhow::Resu
 async fn reconstruct_project(src_dir: PathBuf) -> anyhow::Result<PortProject> {
     // Find project file (.json or .txt) at top level of extracted dir
     let project_files: Vec<PathBuf> = std::fs::read_dir(&src_dir)
-        .trace_error("读取解压目录失败")?
+        .trace_error("读取项目目录失败")?
         .filter_map(|e| e.ok())
         .map(|e| e.path())
         .filter(|p| {

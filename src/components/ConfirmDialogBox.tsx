@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "./ConfirmDialogBox.css";
+import NatureButton from "./NatureButton";
 
 type ConfirmDialogBoxProps = {
   title?: string;
@@ -30,14 +31,14 @@ const ConfirmDialogBox: React.FC<ConfirmDialogBoxProps> = ({
         {description && <div className="cdb-desc">{description}</div>}
         <div className="cdb-actions">
           {onCancel && (
-            <button className="cdb-btn cdb-cancel" onClick={onCancel}>
+            <NatureButton variant="cloud" onClick={onCancel}>
               {cancelText}
-            </button>
+            </NatureButton>
           )}
 
-          <button className="cdb-btn cdb-confirm" onClick={onConfirm}>
+          <NatureButton variant="mist" onClick={onConfirm}>
             {confirmText}
-          </button>
+          </NatureButton>
         </div>
       </div>
     </div>

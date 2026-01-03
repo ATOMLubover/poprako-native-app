@@ -73,9 +73,19 @@ pub async fn save_page_units(
 
     let mut conn = repo::acquire_connection().await?;
 
-    repo_unit::save_page_units(&mut conn, po_units.as_slice())
+    let mut trx = repo::aquire_transaction(&mut conn)
+        .await
+        .trace_error("开始保存页面单元事务失败")
+        .map_err(|e| e.to_string())?;
+
+    repo_unit::save_page_units(&mut trx, po_units.as_slice())
         .await
         .trace_error("保存页面单元时失败")
+        .map_err(|e| e.to_string())?;
+
+    trx.commit()
+        .await
+        .trace_error("提交保存页面单元事务失败")
         .map_err(|e| e.to_string())?;
 
     tracing::info!(ipc_id = ipc_id, "ipc.project.unit.save_page_units.success");

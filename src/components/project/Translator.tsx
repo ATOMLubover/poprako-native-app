@@ -770,4 +770,4 @@ export const Translator: React.FC<TranslatorProps> = ({
 };
 
 // Shortcut description text used in memo card
-const SHORTCUT_TEXT = `快捷键说明：\n- Home: 恢复归中\n- Tab: 切换到下一个单元\n- Shift+Tab: 切换到上一个单元\n- Ctrl+M: 在翻译和校对模式之间切换\n- 左键空白: 创建新框内\n- 右键空白: 创建新框外\n- 左键标记: 聚焦\n- 右键标记: 删除标记`;
+const SHORTCUT_TEXT = `- Home: 恢复归中\n- Tab: 切换到下一个单元\n- Shift+Tab: 切换到上一个单元\n- Ctrl+M: 在翻译和校对模式之间切换\n- 左键空白: 创建新框内\n- 右键空白: 创建新框外\n- 左键标记: 聚焦\n- 右键标记: 删除标记`;
