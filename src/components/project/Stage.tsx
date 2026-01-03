@@ -14,6 +14,7 @@ export type StageHandle = {
 
 type StageProps = {
   page: Page;
+  units?: Unit[];
   mode: TranslatorMode;
   selectedUnitId?: string | null;
   onUnitClick?: (unitId: string) => void;
@@ -23,7 +24,7 @@ type StageProps = {
   onUnitMoveEnd?: (unitId: string, x: number, y: number) => void;
 };
 
-export const Stage = forwardRef<StageHandle, StageProps>(({ page, mode, selectedUnitId, onUnitClick, onUnitCreate, onUnitRemove, onUnitMove, onUnitMoveEnd }, ref) => {
+export const Stage = forwardRef<StageHandle, StageProps>(({ page, units, mode, selectedUnitId, onUnitClick, onUnitCreate, onUnitRemove, onUnitMove, onUnitMoveEnd }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const imageLayerRef = useRef<ImageLayerHandle>(null);
   const [imageRenderInfo, setImageRenderInfo] = useState({
@@ -42,7 +43,7 @@ export const Stage = forwardRef<StageHandle, StageProps>(({ page, mode, selected
       imageLayerRef.current?.resetView();
     },
     centerUnit(unitId: string) {
-      const u = page.units.find((x) => x.id === unitId);
+      const u = (units ?? []).find((x) => x.id === unitId);
       if (!u) return;
 
       if (typeof imageLayerRef.current?.centerOn === "function") {
@@ -138,7 +139,7 @@ export const Stage = forwardRef<StageHandle, StageProps>(({ page, mode, selected
 
           {showMarkers && !isLoading && (
             <MarkerOverlay
-              units={page.units}
+              units={units ?? []}
               imageRenderInfo={imageRenderInfo}
               mode={mode}
               selectedUnitId={selectedUnitId}

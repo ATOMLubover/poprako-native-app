@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./UnitList.css";
-import type { Page } from "../../models/project";
+import type { Unit } from "../../models/project";
 import ConfirmDialogBox from "../ConfirmDialogBox";
 
 type UnitListProps = {
-  page: Page;
+  units: Unit[];
   onUnitClick?: (unitId: string | null) => void;
   selectedUnitId?: string | null;
   isProofMode?: boolean;
@@ -12,13 +12,13 @@ type UnitListProps = {
   onBulkConfirmProofAll?: () => void;
 };
 
-export const UnitList: React.FC<UnitListProps> = ({ page, onUnitClick, selectedUnitId, isProofMode = false, onBulkConfirmProofAll }) => {
+export const UnitList: React.FC<UnitListProps> = ({ units, onUnitClick, selectedUnitId, isProofMode = false, onBulkConfirmProofAll }) => {
   const listContentRef = useRef<HTMLDivElement>(null);
   const textareaRefs = useRef<Record<string, HTMLTextAreaElement | null>>({});
   const [confirmVisible, setConfirmVisible] = useState(false);
 
   // 自动调整 textarea 高度（使用每项 ref，确保在文本更新时也能生效）
-  const _contentKey = page.units.map((u) => `${u.id}:${u.translatedText ?? ""}:${u.proovedText ?? ""}`).join("|");
+  const _contentKey = units.map((u) => `${u.id}:${u.translatedText ?? ""}:${u.proovedText ?? ""}`).join("|");
 
   const resizeTextarea = (el: HTMLTextAreaElement | null) => {
     if (!el) return;
@@ -28,12 +28,12 @@ export const UnitList: React.FC<UnitListProps> = ({ page, onUnitClick, selectedU
   };
 
   useEffect(() => {
-    page.units.forEach((u) => {
+    units.forEach((u) => {
       const el = textareaRefs.current[u.id];
       resizeTextarea(el);
     });
     // 当文本、数量或模式变化时统一重新计算
-  }, [_contentKey, page.units.length, isProofMode]);
+  }, [_contentKey, units.length, isProofMode]);
 
   // 当选中单元变化时，自动滚动到可视区域
   useEffect(() => {
@@ -47,10 +47,10 @@ export const UnitList: React.FC<UnitListProps> = ({ page, onUnitClick, selectedU
   }, [selectedUnitId]);
 
   // 计算统计数据（仅逻辑，保留现有 JSX/样式不变）
-  const total = page.units.length;
+  const total = units.length;
 
   // 已完成：所有 isProoved === true 的单元数
-  const proovedCount = page.units.filter((u) => !!u.isProoved).length;
+  const proovedCount = units.filter((u) => !!u.isProoved).length;
 
   // 待校对：严格定义为 总数 - 已完成
   const unProoved = total - proovedCount;
@@ -59,13 +59,13 @@ export const UnitList: React.FC<UnitListProps> = ({ page, onUnitClick, selectedU
   const prooved = proovedCount;
 
   // 未翻译：既没有 translatedText 也没有 proovedText 的单元数
-  const unTranslated = page.units.filter((u) => {
+  const unTranslated = units.filter((u) => {
     const hasTranslated = ((u.translatedText ?? "") as string).toString().trim() !== "";
     const hasProovedText = ((u.proovedText ?? "") as string).toString().trim() !== "";
     return !hasTranslated && !hasProovedText;
   }).length;
 
-  const inboxCount = page.units.filter((u) => !!u.isInbox).length;
+  const inboxCount = units.filter((u) => !!u.isInbox).length;
   const outboxCount = total - inboxCount;
 
   const handleUnitClick = (unitId: string) => {
@@ -116,7 +116,7 @@ export const UnitList: React.FC<UnitListProps> = ({ page, onUnitClick, selectedU
 
       {/* 列表内容 */}
       <div className="list-content" ref={listContentRef}>
-        {page.units.map((unit) => {
+        {units.map((unit) => {
           const hasText = !!(unit.proovedText || unit.translatedText);
 
           // 确定状态颜色
@@ -217,7 +217,7 @@ export const UnitList: React.FC<UnitListProps> = ({ page, onUnitClick, selectedU
         })}
 
         {/* 将批量确认作为列表最后一项展示（仅在校对模式且存在单元时） */}
-        {isProofMode && page.units.length > 0 ? (
+        {isProofMode && units.length > 0 ? (
           <div
             className={`unit-item bulk-action unit-item--transparent`}
             onClick={(e) => {

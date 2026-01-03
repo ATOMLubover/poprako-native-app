@@ -16,6 +16,7 @@ export type TranslatorMode = "translate" | "proofread" | "read";
 export type TranslatorProps = {
   project: Project;
   currentPage: Page;
+  currentUnits: Unit[];
   isLoading: boolean;
   mode: TranslatorMode;
   isOffline: boolean;
@@ -137,6 +138,7 @@ type ShortcutConfig = {
 export const Translator: React.FC<TranslatorProps> = ({
   project,
   currentPage,
+  currentUnits,
   mode,
   currentPageIndex,
   selectedUnitId,
@@ -163,7 +165,7 @@ export const Translator: React.FC<TranslatorProps> = ({
   const editorRef = useRef<EditorRef>(null);
   const stageRef = useRef<StageHandle>(null);
 
-  const selectedUnit = currentPage.units.find((u) => u.id === selectedUnitId);
+  const selectedUnit = currentUnits.find((u) => u.id === selectedUnitId);
   const effectiveMode = localMode;
   // sidebar view state: 'vsc' for read-mode VerticalStatusCard, 'editor' for unit list + editor
   const [displaySidebarView, setDisplaySidebarView] = useState<"vsc" | "editor">(
@@ -211,7 +213,7 @@ export const Translator: React.FC<TranslatorProps> = ({
 
   // 批量操作：确认校对所有单元（设 isProoved = true）
   const handleBulkConfirmProofAll = () => {
-    for (const u of currentPage.units) {
+    for (const u of currentUnits) {
       // 若单元有任何文本（翻译文本或校对文本），则可被标记为已校对
       const hasAnyText = ((u.translatedText ?? "") as string).toString().trim() !== "" ||
         ((u.proovedText ?? "") as string).toString().trim() !== "";
@@ -224,7 +226,7 @@ export const Translator: React.FC<TranslatorProps> = ({
 
   // 复制单个 unit 的 translatedText 到 proovedText 并保存
   const handleCopyTranslatedToProof = (unitId: string) => {
-    const u = currentPage.units.find((x) => x.id === unitId);
+    const u = currentUnits.find((x) => x.id === unitId);
     if (!u) return;
     if (!u.translatedText) return;
 
@@ -254,7 +256,7 @@ export const Translator: React.FC<TranslatorProps> = ({
   const handleUnitCreate = (unit: Omit<Unit, "id" | "indexInPage">) => {
     // 生成临时ID和索引
     const newId = `unit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const newIndexInPage = currentPage.units.length;
+    const newIndexInPage = currentUnits.length;
 
     const newUnit: Unit = {
       ...unit,
@@ -338,7 +340,7 @@ export const Translator: React.FC<TranslatorProps> = ({
       handler: () => {
         if (!onUnitSelect) return;
 
-        const units = currentPage.units;
+        const units = currentUnits;
         if (units.length === 0) return;
 
         if (!selectedUnitId) {
@@ -389,7 +391,7 @@ export const Translator: React.FC<TranslatorProps> = ({
       handler: () => {
         if (!onUnitSelect) return;
 
-        const units = currentPage.units;
+        const units = currentUnits;
         if (units.length === 0) return;
 
         if (!selectedUnitId) {
@@ -457,7 +459,7 @@ export const Translator: React.FC<TranslatorProps> = ({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [onUnitSelect, selectedUnitId, currentPage.units, shortcuts]);
+  }, [onUnitSelect, selectedUnitId, currentUnits, shortcuts]);
 
   const handleTextModify = (newText: string) => {
     if (!selectedUnit) return;
@@ -685,6 +687,7 @@ export const Translator: React.FC<TranslatorProps> = ({
           <Stage
             ref={stageRef}
             page={currentPage}
+            units={currentUnits}
             mode={effectiveMode}
             selectedUnitId={selectedUnitId}
             onUnitClick={onUnitSelect}
@@ -708,7 +711,7 @@ export const Translator: React.FC<TranslatorProps> = ({
             <div className={`sidebar-content sidebar-editor-list ${animatingOut ? "fade-out" : "fade-in"}`}>
               <div className="sidebar-unitlist">
                 <UnitList
-                  page={currentPage}
+                  units={currentUnits}
                   onUnitClick={onUnitSelect}
                   selectedUnitId={selectedUnitId}
                   isProofMode={effectiveMode === "proofread"}
@@ -732,7 +735,7 @@ export const Translator: React.FC<TranslatorProps> = ({
                           ""
                         : selectedUnit.translatedText ?? ""
                     }
-                    totalUnits={currentPage.units.length}
+                    totalUnits={currentUnits.length}
                     onTextModify={handleTextModify}
                     onStatusClick={() => {
                       // 切换 isInbox 状态并保存

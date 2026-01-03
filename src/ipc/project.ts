@@ -54,7 +54,6 @@ function fromRawPage(p: RawPage): Page {
     id: p.id,
     localImageUrl: p.local_image_path ?? undefined,
     remoteImageUrl: undefined,
-    units: [],
   };
 }
 
@@ -151,31 +150,14 @@ export async function updateProject(project: Project): Promise<void> {
   }
 }
 
-// 获取某项目的页面列表（含单元）
-// 前端自行调用 page IPC 和 unit IPC 并组装
+// 获取某项目的页面列表（不含单元，units 需按需单独加载）
 export async function getProjectPages(projectId: string): Promise<Page[]> {
   try {
     const rawPages = await invoke<RawPage[]>("get_project_pages", {
       projectId: projectId,
     });
 
-    const pages = (rawPages || []).map(fromRawPage);
-
-    // 为每个 page 获取其 units
-    for (const page of pages) {
-      try {
-        const rawUnits = await invoke<RawUnit[]>("get_page_units", {
-          pageId: page.id,
-        });
-
-        page.units = (rawUnits || []).map(fromRawUnit);
-      } catch (err) {
-        console.error(`Failed to get units for page ${page.id}`, err);
-        page.units = [];
-      }
-    }
-
-    return pages;
+    return (rawPages || []).map(fromRawPage);
   } catch (e) {
     throw new Error((e as Error).message || String(e));
   }
@@ -184,7 +166,8 @@ export async function getProjectPages(projectId: string): Promise<Page[]> {
 // 创建项目页面（page 和 unit 分别创建）
 export async function createProjectPages(
   projectId: string,
-  pages: Page[]
+  pages: Page[],
+  unitsMap?: Map<string, Unit[]>
 ): Promise<void> {
   try {
     const rawPages = (pages || []).map((p) => toRawPage(p));
@@ -194,25 +177,29 @@ export async function createProjectPages(
       pages: rawPages,
     });
 
-    // 分别创建每个 page 的 units
-    for (const page of pages) {
-      if (page.units && page.units.length > 0) {
-        const rawUnits = page.units.map((u) => ({
-          id: u.id,
-          x: u.x,
-          y: u.y,
-          index_in_page: u.indexInPage,
-          is_inbox: u.isInbox,
-          translated_text: u.translatedText ?? null,
-          is_prooved: u.isProoved,
-          prooved_text: u.proovedText ?? null,
-          comment: u.comment ?? null,
-        }));
+    // 如果提供了 unitsMap，则创建每个 page 的 units
+    if (unitsMap) {
+      for (const page of pages) {
+        const units = unitsMap.get(page.id);
 
-        await invoke<void>("save_page_units", {
-          pageId: page.id,
-          units: rawUnits,
-        });
+        if (units && units.length > 0) {
+          const rawUnits = units.map((u) => ({
+            id: u.id,
+            x: u.x,
+            y: u.y,
+            index_in_page: u.indexInPage,
+            is_inbox: u.isInbox,
+            translated_text: u.translatedText ?? null,
+            is_prooved: u.isProoved,
+            prooved_text: u.proovedText ?? null,
+            comment: u.comment ?? null,
+          }));
+
+          await invoke<void>("save_page_units", {
+            pageId: page.id,
+            units: rawUnits,
+          });
+        }
       }
     }
 

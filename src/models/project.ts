@@ -16,7 +16,6 @@ export type Page = {
   id: string;
   localImageUrl?: string; // 漫画页在本地的存储路径（可选)
   remoteImageUrl?: string; // 漫画页的远程 URL 地址（可选）
-  units: Unit[]; // 漫画页中的翻译单元列表
 };
 
 /* // 漫画页元数据，包含基本信息但不含单元列表

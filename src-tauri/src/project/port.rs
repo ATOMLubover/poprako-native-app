@@ -191,27 +191,29 @@ pub async fn import_project(src_path: PathBuf, mode: PortMode) -> anyhow::Result
     match mode {
         PortMode::Dir => import_project_from_dir(src_path).await,
         PortMode::Zip => import_project_from_zip(src_path).await,
-        PortMode::File => {
-            let mut project = resolve_project_file(src_path.clone()).await?;
-
-            let base_dir = src_path
-                .parent()
-                .ok_or_else(|| anyhow::anyhow!("无法确定项目文件所在目录"))?;
-
-            // Convert relative image filenames to absolute paths
-            for page in &mut project.pages {
-                let img_path = base_dir.join(&page.image_filename);
-
-                if !img_path.exists() {
-                    bail!("项目中引用的图片文件不存在: {}", page.image_filename);
-                }
-
-                page.image_filename = img_path.to_string_lossy().to_string();
-            }
-
-            Ok(project)
-        }
+        PortMode::File => import_project_from_file(src_path).await,
     }
+}
+
+async fn import_project_from_file(src_path: PathBuf) -> anyhow::Result<PortProject> {
+    let mut project = resolve_project_file(src_path.clone()).await?;
+
+    let base_dir = src_path
+        .parent()
+        .ok_or_else(|| anyhow::anyhow!("无法确定项目文件所在目录"))?;
+
+    // Convert relative image filenames to absolute paths
+    for page in &mut project.pages {
+        let img_path = base_dir.join(&page.image_filename);
+
+        if !img_path.exists() {
+            bail!("项目中引用的图片文件不存在: {}", page.image_filename);
+        }
+
+        page.image_filename = img_path.to_string_lossy().to_string();
+    }
+
+    Ok(project)
 }
 
 async fn resolve_project_file(src_path: PathBuf) -> anyhow::Result<PortProject> {
