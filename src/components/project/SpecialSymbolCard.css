@@ -1,3 +1,5 @@
+@import "../../styles/scrollbar.css";
+
 .special-symbol-card-overlay {
   position: fixed;
   top: 0;
@@ -66,15 +68,6 @@
   padding: 12px 16px;
   overflow-y: auto;
   flex: 1;
-  scrollbar-width: thin;
-  scrollbar-color: #e5e7eb transparent;
-}
-
-@import "../../styles/scrollbar.css";
-
-/* apply shared scrollbar helper class to the scrollable area */
-.card-content {
-  /* ensure scrollbar hint for Firefox and avoid empty-ruleset lint */
   scrollbar-width: thin;
   scrollbar-color: #e5e7eb transparent;
 }

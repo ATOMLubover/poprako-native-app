@@ -4,8 +4,8 @@ import type { Project, Page, Unit } from "../models/project";
 // 非导出的原始后端 DTO（snake_case），用于接收 Rust 返回的 JSON
 type RawUnit = {
   id: string;
-  x_coordinate: number;
-  y_coordinate: number;
+  x: number;
+  y: number;
   index_in_page: number;
   is_inbox: boolean;
   translated_text?: string | null;
@@ -17,7 +17,12 @@ type RawUnit = {
 type RawPage = {
   id: string;
   local_image_path?: string | null;
-  units?: RawUnit[];
+};
+
+// Outgoing DTO for create/update project pages: matches Rust `model_project::LocalPage`
+type OutPage = {
+  id: string;
+  local_image_path: string;
 };
 
 type RawProject = {
@@ -35,32 +40,21 @@ type RawProject = {
   updated_at?: string | null;
 };
 
-// 将前端 Page -> 后端 RawPage DTO（字段映射）
-function toRawPage(page: Page): RawPage {
+// 将前端 Page -> 后端 OutPage DTO（字段映射，不含 units）
+function toRawPage(page: Page): OutPage {
   return {
     id: page.id,
-    local_image_path: page.localImageUrl ?? page.remoteImageUrl ?? undefined,
-    units: (page.units || []).map((u) => ({
-      id: u.id,
-      x_coordinate: u.x,
-      y_coordinate: u.y,
-      index_in_page: u.indexInPage,
-      is_inbox: u.isInbox,
-      translated_text: u.translatedText ?? null,
-      is_prooved: u.isProoved,
-      prooved_text: u.proovedText ?? null,
-      comment: u.comment ?? null,
-    })),
+    local_image_path: page.localImageUrl ?? page.remoteImageUrl ?? "",
   };
 }
 
-// 将后端 RawPage -> 前端 Page DTO
+// 将后端 RawPage -> 前端 Page DTO（不含 units，由前端自行组装）
 function fromRawPage(p: RawPage): Page {
   return {
     id: p.id,
     localImageUrl: p.local_image_path ?? undefined,
     remoteImageUrl: undefined,
-    units: (p.units || []).map(fromRawUnit),
+    units: [],
   };
 }
 
@@ -68,8 +62,8 @@ function fromRawPage(p: RawPage): Page {
 function fromRawUnit(u: RawUnit): Unit {
   return {
     id: u.id,
-    x: u.x_coordinate,
-    y: u.y_coordinate,
+    x: u.x,
+    y: u.y,
     indexInPage: u.index_in_page,
     isInbox: u.is_inbox,
     translatedText: u.translated_text ?? undefined,
@@ -158,19 +152,36 @@ export async function updateProject(project: Project): Promise<void> {
 }
 
 // 获取某项目的页面列表（含单元）
+// 前端自行调用 page IPC 和 unit IPC 并组装
 export async function getProjectPages(projectId: string): Promise<Page[]> {
   try {
-    const pages = await invoke<RawPage[]>("get_project_pages", {
+    const rawPages = await invoke<RawPage[]>("get_project_pages", {
       projectId: projectId,
     });
 
-    return (pages || []).map(fromRawPage);
+    const pages = (rawPages || []).map(fromRawPage);
+
+    // 为每个 page 获取其 units
+    for (const page of pages) {
+      try {
+        const rawUnits = await invoke<RawUnit[]>("get_page_units", {
+          pageId: page.id,
+        });
+
+        page.units = (rawUnits || []).map(fromRawUnit);
+      } catch (err) {
+        console.error(`Failed to get units for page ${page.id}`, err);
+        page.units = [];
+      }
+    }
+
+    return pages;
   } catch (e) {
     throw new Error((e as Error).message || String(e));
   }
 }
 
-// 创建项目页面（同时创建页面内单元）
+// 创建项目页面（page 和 unit 分别创建）
 export async function createProjectPages(
   projectId: string,
   pages: Page[]
@@ -183,30 +194,35 @@ export async function createProjectPages(
       pages: rawPages,
     });
 
+    // 分别创建每个 page 的 units
+    for (const page of pages) {
+      if (page.units && page.units.length > 0) {
+        const rawUnits = page.units.map((u) => ({
+          id: u.id,
+          x: u.x,
+          y: u.y,
+          index_in_page: u.indexInPage,
+          is_inbox: u.isInbox,
+          translated_text: u.translatedText ?? null,
+          is_prooved: u.isProoved,
+          prooved_text: u.proovedText ?? null,
+          comment: u.comment ?? null,
+        }));
+
+        await invoke<void>("save_page_units", {
+          pageId: page.id,
+          units: rawUnits,
+        });
+      }
+    }
+
     return;
   } catch (e) {
     throw new Error((e as Error).message || String(e));
   }
 }
 
-// 更新项目页面（以及页面内单元）
-export async function updateProjectPages(
-  projectId: string,
-  pages: Page[]
-): Promise<void> {
-  try {
-    const rawPages = (pages || []).map((p) => toRawPage(p));
-
-    await invoke<void>("update_project_pages", {
-      projectId: projectId,
-      pages: rawPages,
-    });
-
-    return;
-  } catch (e) {
-    throw new Error((e as Error).message || String(e));
-  }
-}
+// Note: `updateProjectPages` removed — page metadata is immutable in translation flow.
 
 // 删除页面
 export async function deleteProjectPages(pageIds: string[]): Promise<void> {
@@ -232,16 +248,16 @@ export async function getPageUnits(pageId: string): Promise<Unit[]> {
   }
 }
 
-// 创建页面单元
-export async function createPageUnits(
+// 保存页面单元（upsert）
+export async function savePageUnits(
   pageId: string,
   units: Unit[]
 ): Promise<void> {
   try {
     const rawUnits = (units || []).map((u) => ({
       id: u.id,
-      x_coordinate: u.x,
-      y_coordinate: u.y,
+      x: u.x,
+      y: u.y,
       index_in_page: u.indexInPage,
       is_inbox: u.isInbox,
       translated_text: u.translatedText ?? null,
@@ -250,36 +266,7 @@ export async function createPageUnits(
       comment: u.comment ?? null,
     }));
 
-    await invoke<void>("create_page_units", {
-      pageId: pageId,
-      units: rawUnits,
-    });
-
-    return;
-  } catch (e) {
-    throw new Error((e as Error).message || String(e));
-  }
-}
-
-// 更新页面单元
-export async function updatePageUnits(
-  pageId: string,
-  units: Unit[]
-): Promise<void> {
-  try {
-    const rawUnits = (units || []).map((u) => ({
-      id: u.id,
-      x_coordinate: u.x,
-      y_coordinate: u.y,
-      index_in_page: u.indexInPage,
-      is_inbox: u.isInbox,
-      translated_text: u.translatedText ?? null,
-      is_prooved: u.isProoved,
-      prooved_text: u.proovedText ?? null,
-      comment: u.comment ?? null,
-    }));
-
-    await invoke<void>("update_page_units", {
+    await invoke<void>("save_page_units", {
       pageId: pageId,
       units: rawUnits,
     });
@@ -301,10 +288,21 @@ export async function deletePageUnits(unitIds: string[]): Promise<void> {
   }
 }
 
-// 打开文件/目录选择对话框以选择项目目录
-export async function selectProjectDir(): Promise<string[]> {
+// 删除项目
+export async function deleteProject(projectId: string): Promise<void> {
   try {
-    const res = await invoke<string[]>("select_project_dir");
+    await invoke<void>("delete_project", { projectId: projectId });
+
+    return;
+  } catch (e) {
+    throw new Error((e as Error).message || String(e));
+  }
+}
+
+// 打开文件/目录选择对话框以选择项目目录
+export async function selectNewProjectDir(): Promise<string[]> {
+  try {
+    const res = await invoke<string[]>("select_new_project_dir");
 
     return res || [];
   } catch (e) {
@@ -312,25 +310,36 @@ export async function selectProjectDir(): Promise<string[]> {
   }
 }
 
-// 打开对话框以选择 Poprako 项目存档（zip 文件）或文件夹，返回所选路径（可能为 undefined）
-export async function selectPoprakoArchivedPath(): Promise<string | undefined> {
+// 选择归档项目路径（后端已重命名）
+export async function selectArchivedProjectPath(): Promise<string[]> {
   try {
-    const path = await invoke<string | null | undefined>(
-      "select_poprako_archived_path"
-    );
+    const res = await invoke<string[]>("select_archived_project_path");
 
-    return path ?? undefined;
+    return res || [];
   } catch (e) {
     throw new Error((e as Error).message || String(e));
   }
 }
 
-// 导入 Poprako 项目（支持 zip 或 文件夹）
-export async function importPoprakoProject(projectPath: string): Promise<void> {
+// 导入 Poprako 项目（支持 zip 或 json 或 txt）
+export async function importProject(projectPath: string): Promise<void> {
   try {
-    await invoke<void>("import_poprako_project", { projectPath: projectPath });
+    await invoke<void>("port::import_project", { projectPath: projectPath });
 
     return;
+  } catch (e) {
+    throw new Error((e as Error).message || String(e));
+  }
+}
+
+// 导出 Poprako 项目（返回生成的归档文件夹）
+export async function exportProject(projectId: string): Promise<string> {
+  try {
+    const path = await invoke<string>("port::export_project", {
+      projectId: projectId,
+    });
+
+    return path;
   } catch (e) {
     throw new Error((e as Error).message || String(e));
   }
@@ -342,13 +351,13 @@ export default {
   updateProject,
   getProjectPages,
   createProjectPages,
-  updateProjectPages,
   deleteProjectPages,
   getPageUnits,
-  createPageUnits,
-  updatePageUnits,
+  savePageUnits,
   deletePageUnits,
-  selectProjectDir,
-  selectPoprakoArchivedPath,
-  importPoprakoProject,
+  deleteProject,
+  select_new_project_dir: selectNewProjectDir,
+  select_archived_project_path: selectArchivedProjectPath,
+  import_project: importProject,
+  export_project: exportProject,
 };

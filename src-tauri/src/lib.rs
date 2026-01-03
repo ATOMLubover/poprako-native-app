@@ -11,6 +11,7 @@ mod model;
 mod project;
 mod repository;
 mod result_trace;
+mod selector;
 
 /// Memo:
 /// setup.logger.initialized level=Level(Debug)
@@ -72,6 +73,7 @@ pub fn run() {
         })
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
+            ipc::check_dev_mode,
             ipc::compress::compress_image,
             ipc::compress::open_compress_dir,
             ipc::compress::select_image_files,
@@ -87,18 +89,18 @@ pub fn run() {
             ipc::project::get_projects,
             ipc::project::create_local_project,
             ipc::project::update_project,
-            ipc::project::get_project_pages,
-            ipc::project::create_project_pages,
-            ipc::project::update_project_pages,
-            ipc::project::delete_project_pages,
-            ipc::project::get_page_units,
-            ipc::project::create_page_units,
-            ipc::project::update_page_units,
-            ipc::project::delete_page_units,
-            ipc::project::select_project_dir,
-            ipc::project::select_poprako_archived_path,
-            ipc::project::export_poprako_project,
-            ipc::project::import_poprako_project,
+            ipc::project::delete_project,
+            ipc::project::page::get_project_pages,
+            ipc::project::page::create_project_pages,
+            ipc::project::page::update_project_pages,
+            ipc::project::page::delete_project_pages,
+            ipc::project::unit::get_page_units,
+            ipc::project::unit::save_page_units,
+            ipc::project::unit::delete_page_units,
+            ipc::project::select_new_project_dir,
+            ipc::project::select_archived_project_path,
+            ipc::project::port::export_project,
+            ipc::project::port::import_project,
         ])
         .run(tauri::generate_context!())
         .expect("无法启动 Tauri 应用程序");
@@ -130,17 +132,19 @@ fn init_logger(app: &App) -> Result<(), String> {
         app.manage(_guard);
 
         tracing::info!("setup.logger.production.initialized");
-    } else {
-        let subscriber = tracing_subscriber::fmt()
-            .with_max_level(Level::DEBUG)
-            .with_ansi(true)
-            .finish();
 
-        tracing::subscriber::set_global_default(subscriber)
-            .map_err(|e| format!("设置全局日志器失败: {}", e))?;
-
-        tracing::info!("setup.logger.debug.initialized");
+        return Ok(());
     }
+
+    let subscriber = tracing_subscriber::fmt()
+        .with_max_level(Level::DEBUG)
+        .with_ansi(true)
+        .finish();
+
+    tracing::subscriber::set_global_default(subscriber)
+        .map_err(|e| format!("设置全局日志器失败: {}", e))?;
+
+    tracing::info!("setup.logger.debug.initialized");
 
     Ok(())
 }

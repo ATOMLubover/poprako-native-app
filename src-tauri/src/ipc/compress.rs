@@ -1,5 +1,6 @@
 use std::{path::PathBuf, process::Command, sync::LazyLock};
 
+use crate::selector::{select_paths, Filter};
 use crate::{compress, ipc::get_ipc_request_id, result_trace::ResultTrace, APP_CACHE_DIR};
 
 static COMPRESS_DIR: LazyLock<PathBuf> = LazyLock::new(|| {
@@ -93,6 +94,13 @@ pub async fn open_compress_dir() -> Result<(), String> {
     Ok(())
 }
 
+/// 通用的路径选择函数，支持自定义筛选条件
+///
+/// # 参数
+/// - `filters`: 筛选条件列表
+/// - `allow_multiple`: 是否允许多选
+#[allow(dead_code)]
+
 /// Use Windows-only PowerShell to open a file dialog for selecting image files.
 #[tauri::command]
 #[tracing::instrument]
@@ -101,45 +109,26 @@ pub async fn select_image_files() -> Result<Vec<String>, String> {
 
     tracing::info!(ipc_id = ipc_id, "ipc.compress.select_image_files.start");
 
-    // Use PowerShell to open a file dialog
-    let script = r#"
-        Add-Type -AssemblyName System.Windows.Forms
-        $dialog = New-Object System.Windows.Forms.OpenFileDialog
-        $dialog.Filter = "图片文件|*.png;*.jpg;*.jpeg"
-        $dialog.Multiselect = $true
-        $dialog.Title = "选择图片文件"
-        $result = $dialog.ShowDialog()
-        if ($result -eq 'OK') {
-            $dialog.FileNames
-        }
-    "#;
+    let filters = vec![Filter::Extension(vec![
+        "png".to_string(),
+        "jpg".to_string(),
+        "jpeg".to_string(),
+    ])];
 
-    let output = Command::new("powershell")
-        .args(&["-NoProfile", "-Command", script])
-        .output()
-        .map_err(|e| format!("无法启动 PowerShell: {}", e))
-        .trace_error("启动文件选择对话框失败")?;
+    let paths = select_paths(&filters, true)
+        .trace_error("选择图片文件时失败")
+        .map_err(|e| e.to_string())?;
 
-    if !output.status.success() {
-        tracing::info!(
-            ipc_id = ipc_id,
-            "ipc.compress.select_image_files.cancelled_or_failed"
-        );
-        return Ok(vec![]);
-    }
-
-    let paths_str = String::from_utf8_lossy(&output.stdout);
-    let paths: Vec<String> = paths_str
-        .lines()
-        .map(|s| s.trim().to_string())
-        .filter(|s| !s.is_empty())
+    let path_strings: Vec<String> = paths
+        .into_iter()
+        .filter_map(|p| p.to_str().map(|s| s.to_string()))
         .collect();
 
     tracing::info!(
         ipc_id = ipc_id,
-        selected_count = paths.len(),
+        selected_count = path_strings.len(),
         "ipc.compress.select_image_files.success"
     );
 
-    Ok(paths)
+    Ok(path_strings)
 }

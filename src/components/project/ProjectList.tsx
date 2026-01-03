@@ -152,7 +152,14 @@ export default function ProjectList({ projects, onAct, onSync, onRefresh, title 
         ) : (
           pageProjects.map((project) => (
             <div key={project.id} style={{ height: itemHeight }}>
-              <ProjectStatusCard project={project} onAct={onAct} onSync={onSync} />
+              <ProjectStatusCard
+                project={project}
+                onAct={onAct}
+                onSync={onSync}
+                onDelete={() => {
+                  if (onRefresh) onRefresh();
+                }}
+              />
             </div>
           ))
         )}

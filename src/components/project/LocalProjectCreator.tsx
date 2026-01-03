@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import NatureButton from "../NatureButton";
 import { User, FileText, Folder } from "lucide-react";
-import { selectProjectDir } from "../../ipc/project";
+import { selectNewProjectDir } from "../../ipc/project";
 import { createLocalProject } from "../../store/project";
 import { useToast } from "../NotificationToast";
 import type { NewLocalProject } from "../../models/project";
@@ -36,7 +36,7 @@ export default function LocalProjectCreator({ initial = {}, onSave, onCancel }: 
 
   async function handleSelectDir() {
     try {
-      const res = await selectProjectDir();
+      const res = await selectNewProjectDir();
 
       if (!res || res.length === 0) {
         showToast("info", "未选择图片文件");

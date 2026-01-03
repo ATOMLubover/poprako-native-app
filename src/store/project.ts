@@ -4,11 +4,9 @@ import {
   updateProject as ipcUpdateProject,
   getProjectPages as ipcGetProjectPages,
   createProjectPages as ipcCreateProjectPages,
-  updateProjectPages as ipcUpdateProjectPages,
   deleteProjectPages as ipcDeleteProjectPages,
   getPageUnits as ipcGetPageUnits,
-  createPageUnits as ipcCreatePageUnits,
-  updatePageUnits as ipcUpdatePageUnits,
+  savePageUnits as ipcSavePageUnits,
   deletePageUnits as ipcDeletePageUnits,
 } from "../ipc/project";
 import type { Project, Page, Unit, NewLocalProject } from "../models/project";
@@ -98,13 +96,7 @@ export async function createProjectPages(
   await ipcCreateProjectPages(projectId, pages);
 }
 
-// 更新项目页面
-export async function updateProjectPages(
-  projectId: string,
-  pages: Page[]
-): Promise<void> {
-  await ipcUpdateProjectPages(projectId, pages);
-}
+// `updateProjectPages` removed — use `savePageUnits`/`createProjectPages` as appropriate
 
 // 删除项目页面
 export async function deleteProjectPages(pageIds: string[]): Promise<void> {
@@ -116,20 +108,12 @@ export async function getPageUnits(pageId: string): Promise<Unit[]> {
   return await ipcGetPageUnits(pageId);
 }
 
-// 创建页面单元
-export async function createPageUnits(
+// 保存页面单元（upsert）
+export async function savePageUnits(
   pageId: string,
   units: Unit[]
 ): Promise<void> {
-  await ipcCreatePageUnits(pageId, units);
-}
-
-// 更新页面单元
-export async function updatePageUnits(
-  pageId: string,
-  units: Unit[]
-): Promise<void> {
-  await ipcUpdatePageUnits(pageId, units);
+  await ipcSavePageUnits(pageId, units);
 }
 
 // 删除页面单元
@@ -144,17 +128,22 @@ export function clearProjectCache(): void {
 
 // 当前激活的项目 ID（用于翻校工作区）
 let activeProjectId: string | null = null;
+// 当前激活项目的页面索引（仅内存级别，随进程重启清空）
+let activeProjectPageIndex: number | null = null;
 
 // 设置激活项目
 export function setActiveProject(projectId: string): void {
   activeProjectId = projectId;
+}
 
-  // 持久化到 localStorage
-  try {
-    localStorage.setItem("poprako_active_project_id", projectId);
-  } catch (err) {
-    console.error("Failed to persist active project ID", err);
-  }
+// 设置当前激活项目的页面索引（仅在运行时保留）
+export function setActiveProjectPageIndex(index: number): void {
+  activeProjectPageIndex = index;
+}
+
+// 获取当前激活项目的页面索引
+export function getActiveProjectPageIndex(): number | null {
+  return activeProjectPageIndex;
 }
 
 // 获取激活项目 ID
@@ -163,29 +152,10 @@ export function getActiveProjectId(): string | null {
   if (activeProjectId !== null) {
     return activeProjectId;
   }
-
-  // 尝试从 localStorage 恢复
-  try {
-    const stored = localStorage.getItem("poprako_active_project_id");
-
-    if (stored) {
-      activeProjectId = stored;
-      return stored;
-    }
-  } catch (err) {
-    console.error("Failed to restore active project ID", err);
-  }
-
   return null;
 }
 
 // 清除激活项目
 export function clearActiveProject(): void {
   activeProjectId = null;
-
-  try {
-    localStorage.removeItem("poprako_active_project_id");
-  } catch (err) {
-    console.error("Failed to clear active project ID", err);
-  }
 }

@@ -12,14 +12,15 @@ import {
   setActiveProject,
   clearActiveProject,
 } from "../store/project";
-import "./TranslatorWorkspacePage.css";
+import "./ComicWorkspacePage.css";
 
-export default function TranslatorWorkspacePage() {
+export default function ComicWorkspacePage() {
   const [searchKeyword, setSearchKeyword] = useState<string>("");
   const [allProjects, setAllProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | undefined>(undefined);
   const [showCreator, setShowCreator] = useState<boolean>(false);
+  // Restore in-memory active project ID on mount (no persistence involved)
   const [activeProjectId, setActiveProjectIdState] = useState<string | null>(
     () => getActiveProjectId()
   );

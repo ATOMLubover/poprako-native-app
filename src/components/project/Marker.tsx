@@ -63,14 +63,32 @@ export const Marker: React.FC<MarkerProps> = ({
   // 确认对话框控制
   const [confirmVisible, setConfirmVisible] = useState(false);
 
-  // 拖拽实现（参考 Vue 样板：按下即进入拖拽）
+  // 拖拽实现
   const draggingRef = useRef(false);
+  const dragStartPosRef = useRef({ x: 0, y: 0 }); // 记录拖动开始的鼠标位置
+  const dragThresholdExceededRef = useRef(false); // 是否已超过拖动死区
   const markerDragOffset = useRef({ x: 0, y: 0 });
   const dragSuppressClickRef = useRef(false);
   const [dragScreenPos, setDragScreenPos] = useState<{ x: number; y: number } | null>(null);
+  const DRAG_THRESHOLD = 6; // px，拖动死区
 
   const handleWindowMouseMove = (e: MouseEvent) => {
     if (!draggingRef.current) return;
+
+    // 检查是否超过死区
+    if (!dragThresholdExceededRef.current) {
+      const dx = e.clientX - dragStartPosRef.current.x;
+      const dy = e.clientY - dragStartPosRef.current.y;
+      const distance = Math.hypot(dx, dy);
+
+      if (distance > DRAG_THRESHOLD) {
+        dragThresholdExceededRef.current = true;
+        onMoveStart?.(); // 真正开始拖动时才触发
+      } else {
+        // 未超过死区，不执行拖动
+        return;
+      }
+    }
 
     const pointerX = e.clientX - markerDragOffset.current.x;
     const pointerY = e.clientY - markerDragOffset.current.y;
@@ -93,28 +111,34 @@ export const Marker: React.FC<MarkerProps> = ({
   const handleWindowMouseUp = (e: MouseEvent) => {
     if (!draggingRef.current) return;
 
+    const wasRealDrag = dragThresholdExceededRef.current;
+
     draggingRef.current = false;
+    dragThresholdExceededRef.current = false;
 
-    const pointerX = e.clientX - markerDragOffset.current.x;
-    const pointerY = e.clientY - markerDragOffset.current.y;
+    // 只有真正拖动过才触发 onMoveEnd
+    if (wasRealDrag) {
+      const pointerX = e.clientX - markerDragOffset.current.x;
+      const pointerY = e.clientY - markerDragOffset.current.y;
 
-    const relX = (pointerX - imageRenderInfo.left) / imageRenderInfo.width;
-    const relY = (pointerY - imageRenderInfo.top) / imageRenderInfo.height;
+      const relX = (pointerX - imageRenderInfo.left) / imageRenderInfo.width;
+      const relY = (pointerY - imageRenderInfo.top) / imageRenderInfo.height;
 
-    const clamp = (v: number) => Math.max(0, Math.min(1, v));
+      const clamp = (v: number) => Math.max(0, Math.min(1, v));
 
-    const nx = clamp(relX);
-    const ny = clamp(relY);
+      const nx = clamp(relX);
+      const ny = clamp(relY);
 
-    onMoveEnd?.(nx, ny);
+      onMoveEnd?.(nx, ny);
+
+      // 抑制随后的 click/contextmenu
+      dragSuppressClickRef.current = true;
+      setTimeout(() => {
+        dragSuppressClickRef.current = false;
+      }, 0);
+    }
 
     setDragScreenPos(null);
-
-    // 抑制随后的 click/contextmenu
-    dragSuppressClickRef.current = true;
-    setTimeout(() => {
-      dragSuppressClickRef.current = false;
-    }, 0);
 
     window.removeEventListener("mousemove", handleWindowMouseMove);
     window.removeEventListener("mouseup", handleWindowMouseUp);
@@ -174,6 +198,10 @@ export const Marker: React.FC<MarkerProps> = ({
 
     e.stopPropagation();
 
+    // 记录拖动开始的鼠标位置
+    dragStartPosRef.current = { x: e.clientX, y: e.clientY };
+    dragThresholdExceededRef.current = false;
+
     // 计算指针到 marker 中心的偏移（使拖拽看起来更自然）
     const pointerX = imageRenderInfo.left + unit.x * imageRenderInfo.width;
     const pointerY = imageRenderInfo.top + unit.y * imageRenderInfo.height;
@@ -184,7 +212,7 @@ export const Marker: React.FC<MarkerProps> = ({
     };
 
     draggingRef.current = true;
-    onMoveStart?.();
+    // onMoveStart 移到真正开始拖动时调用
 
     window.addEventListener("mousemove", handleWindowMouseMove);
     window.addEventListener("mouseup", handleWindowMouseUp);

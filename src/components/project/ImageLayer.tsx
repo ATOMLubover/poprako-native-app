@@ -32,7 +32,9 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const suppressClickRef = useRef(false);
   const contextMenuHandledRef = useRef(false);
-  const DRAG_THRESHOLD = 5; // px
+  const pointerDownOnImageRef = useRef(false); // 标记 pointerdown 是否在图片区域开始
+  const dragThresholdExceededRef = useRef(false); // 标记是否已超过拖动死区
+  const DRAG_THRESHOLD = 8; // px，增大死区
   
   // 图片的自然尺寸
   const [naturalSize, setNaturalSize] = useState({ width: 0, height: 0 });
@@ -241,7 +243,11 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
       return;
     }
 
+    // 标记此次 pointer down 是从图片内部开始
+    pointerDownOnImageRef.current = true;
+
     setIsDragging(true);
+    dragThresholdExceededRef.current = false;
     setDragStart({ x: e.clientX - userOffset.x, y: e.clientY - userOffset.y });
   };
 
@@ -251,15 +257,26 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
   // 鼠标移动
   const handleMouseMove = (e: React.MouseEvent) => {
     if (isDragging) {
+      const dx = e.clientX - dragStart.x - userOffset.x;
+      const dy = e.clientY - dragStart.y - userOffset.y;
+      const distance = Math.hypot(dx, dy);
+
+      // 检查是否超过死区阈值
+      if (!dragThresholdExceededRef.current) {
+        if (distance > DRAG_THRESHOLD) {
+          dragThresholdExceededRef.current = true;
+          suppressClickRef.current = true;
+        } else {
+          // 未超过死区，不执行拖动
+          return;
+        }
+      }
+
+      // 已超过死区，执行真正的拖动
       const newOffset = {
         x: e.clientX - dragStart.x,
         y: e.clientY - dragStart.y,
       };
-      // 如果移动超过阈值，标记为拖动以抑制后续 click/contextmenu
-      const moved = Math.hypot(e.clientX - dragStart.x, e.clientY - dragStart.y) > DRAG_THRESHOLD;
-      if (moved) {
-        suppressClickRef.current = true;
-      }
       setUserOffset(passthroughOffset(newOffset));
       // 立即计算并通知渲染信息，避免 MarkerOverlay 因 useEffect 延迟而产生滞后
       const info = computeRenderInfo(userScale, newOffset);
@@ -272,6 +289,8 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
   // 鼠标释放
   const handleMouseUp = () => {
     setIsDragging(false);
+    // 清除 pointer-down 标记
+    pointerDownOnImageRef.current = false;
     // 在 mouseup 发生后，click event 会紧随其后；保留 suppressClickRef 直到 click 处理完毕。
     // 在 click/contextmenu 处理处会清除 suppressClickRef。
   };
@@ -280,6 +299,7 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
   useEffect(() => {
     const handleWindowMouseUp = () => {
       setIsDragging(false);
+      pointerDownOnImageRef.current = false;
     };
 
     window.addEventListener("mouseup", handleWindowMouseUp);
@@ -392,6 +412,28 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
           // again and create a duplicate unit.
           contextMenuHandledRef.current = true;
 
+          // 仅当 pointerdown 发生在图片区域时，才将该按下视为有效的 image-origin
+          const rect = containerRef.current?.getBoundingClientRect();
+          if (rect) {
+            const mouseX = (e as React.PointerEvent).clientX - rect.left;
+            const mouseY = (e as React.PointerEvent).clientY - rect.top;
+
+            const currentWidth = naturalSize.width * fitScale * userScale;
+            const currentHeight = naturalSize.height * fitScale * userScale;
+
+            const currentLeft = rect.width / 2 - currentWidth / 2 + userOffset.x;
+            const currentTop = rect.height / 2 - currentHeight / 2 + userOffset.y;
+
+            const isOnImage = mouseX >= currentLeft && mouseX <= currentLeft + currentWidth && mouseY >= currentTop && mouseY <= currentTop + currentHeight;
+            if (!isOnImage) {
+              // 非图像区域的右键按下不视为 image-origin
+              contextMenuHandledRef.current = false;
+              return;
+            }
+
+            pointerDownOnImageRef.current = true;
+          }
+
           (e as unknown as React.MouseEvent).preventDefault?.();
 
           if (typeof onCanvasContextMenu === 'function') {
@@ -405,6 +447,10 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
           suppressClickRef.current = false;
           e.stopPropagation();
           e.preventDefault();
+          return;
+        }
+        // 仅处理在 image 内部开始的点击，防止在 image 外按下然后拖入再释放时误触
+        if (!pointerDownOnImageRef.current) {
           return;
         }
 
@@ -425,6 +471,13 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
 
         if (suppressClickRef.current) {
           suppressClickRef.current = false;
+          e.stopPropagation();
+          e.preventDefault();
+          return;
+        }
+
+        // 同样检查此次上下文菜单事件是否源自 image 内的 pointerdown
+        if (!pointerDownOnImageRef.current) {
           e.stopPropagation();
           e.preventDefault();
           return;
@@ -453,7 +506,7 @@ const ImageLayer = forwardRef<ImageLayerHandle, ImageLayerProps>(({ imageUrl, on
             width: `${renderWidth}px`,
             height: `${renderHeight}px`,
             transform: `translate(${userOffset.x}px, ${userOffset.y}px)`,
-            cursor: isDragging ? "grabbing" : "default",
+            cursor: "default",
           }}
         />
       )}

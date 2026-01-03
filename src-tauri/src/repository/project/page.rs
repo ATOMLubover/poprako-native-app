@@ -1,0 +1,284 @@
+use std::{collections::HashMap, sync::LazyLock};
+
+use sqlx::{Acquire, SqliteConnection, Transaction, Sqlite};
+use tauri::async_runtime::Mutex;
+
+use crate::{model::po::project::LocalPage, result_trace::ResultTrace as _};
+
+static PAGE_UPSERT_LOCK: LazyLock<Mutex<()>> = LazyLock::new(|| Mutex::new(()));
+
+pub async fn get_project_pages(
+    conn: &mut SqliteConnection,
+    project_id: &str,
+) -> Result<Vec<LocalPage>, String> {
+    let pages: Vec<LocalPage> = sqlx::query_as(
+        r#"
+        SELECT id, project_id, index_in_project, local_image_path
+        FROM local_page_tbl
+        WHERE project_id = ?
+        ORDER BY index_in_project ASC
+        "#,
+    )
+    .bind(project_id)
+    .fetch_all(&mut *conn)
+    .await
+    .trace_error("获取项目页列表时失败")
+    .map_err(|e| e.to_string())?;
+
+    Ok(pages)
+}
+
+/// Save (upsert) project pages in a single transaction.
+/// For each page: attempt UPDATE; if no row updated, INSERT.
+pub async fn save_project_pages(
+    conn: &mut SqliteConnection,
+    pages: &[LocalPage],
+) -> Result<(), String> {
+    if pages.is_empty() {
+        return Ok(());
+    }
+
+    // Ensure only one save_project_pages runs at a time
+    let _lock_guard = PAGE_UPSERT_LOCK.lock().await;
+
+    let mut trx = conn
+        .begin()
+        .await
+        .trace_error("开始保存项目页事务失败")
+        .map_err(|e| e.to_string())?;
+
+    let mut counts_by_project: HashMap<String, i64> = HashMap::new();
+
+    for page in pages.iter() {
+        let update_res = sqlx::query(
+            r#"
+            UPDATE local_page_tbl
+            SET project_id = ?, index_in_project = ?, local_image_path = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+            "#,
+        )
+        .bind(&page.project_id)
+        .bind(page.index_in_project)
+        .bind(&page.local_image_path)
+        .bind(&page.id)
+        .execute(trx.as_mut())
+        .await
+        .trace_error("保存项目页时更新失败")
+        .map_err(|e| e.to_string())?;
+
+        if update_res.rows_affected() == 0 {
+            // not existed -> insert
+            sqlx::query(
+                r#"
+                INSERT INTO local_page_tbl (id, project_id, index_in_project, local_image_path)
+                VALUES (?, ?, ?, ?)
+                "#,
+            )
+            .bind(&page.id)
+            .bind(&page.project_id)
+            .bind(page.index_in_project)
+            .bind(&page.local_image_path)
+            .execute(trx.as_mut())
+            .await
+            .trace_error("保存项目页时插入失败")
+            .map_err(|e| e.to_string())?;
+
+            *counts_by_project
+                .entry(page.project_id.clone())
+                .or_insert(0) += 1;
+        }
+    }
+
+    for (project_id, add_pages) in counts_by_project.into_iter() {
+        sqlx::query(
+            r#"
+            UPDATE local_project_tbl
+            SET page_count = page_count + ?, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+            "#,
+        )
+        .bind(add_pages)
+        .bind(&project_id)
+        .execute(trx.as_mut())
+        .await
+        .trace_error("更新项目页计数时失败")
+        .map_err(|e| e.to_string())?;
+    }
+
+    trx.commit()
+        .await
+        .trace_error("提交保存项目页事务失败")
+        .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+/// Save project pages into an existing transaction `trx`.
+/// This function does not begin or commit the transaction; caller must manage it.
+pub async fn save_project_pages_in_trx(
+    trx: &mut Transaction<'_, Sqlite>,
+    pages: &[LocalPage],
+) -> Result<(), String> {
+    if pages.is_empty() {
+        return Ok(());
+    }
+
+    // Respect the same upsert lock to avoid concurrent upserts
+    let _lock_guard = PAGE_UPSERT_LOCK.lock().await;
+
+    let mut counts_by_project: std::collections::HashMap<String, i64> = std::collections::HashMap::new();
+
+    for page in pages.iter() {
+        let update_res = sqlx::query(
+            r#"
+            UPDATE local_page_tbl
+            SET project_id = ?, index_in_project = ?, local_image_path = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+            "#,
+        )
+        .bind(&page.project_id)
+        .bind(page.index_in_project)
+        .bind(&page.local_image_path)
+        .bind(&page.id)
+        .execute(trx.as_mut())
+        .await
+        .trace_error("保存项目页时更新失败")
+        .map_err(|e| e.to_string())?;
+
+        if update_res.rows_affected() == 0 {
+            sqlx::query(
+                r#"
+                INSERT INTO local_page_tbl (id, project_id, index_in_project, local_image_path)
+                VALUES (?, ?, ?, ?)
+                "#,
+            )
+            .bind(&page.id)
+            .bind(&page.project_id)
+            .bind(page.index_in_project)
+            .bind(&page.local_image_path)
+            .execute(trx.as_mut())
+            .await
+            .trace_error("保存项目页时插入失败")
+            .map_err(|e| e.to_string())?;
+
+            *counts_by_project
+                .entry(page.project_id.clone())
+                .or_insert(0) += 1;
+        }
+    }
+
+    for (project_id, add_pages) in counts_by_project.into_iter() {
+        sqlx::query(
+            r#"
+            UPDATE local_project_tbl
+            SET page_count = page_count + ?, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+            "#,
+        )
+        .bind(add_pages)
+        .bind(&project_id)
+        .execute(trx.as_mut())
+        .await
+        .trace_error("更新项目页计数时失败")
+        .map_err(|e| e.to_string())?;
+    }
+
+    Ok(())
+}
+
+pub async fn delete_project_pages(
+    conn: &mut SqliteConnection,
+    page_ids: &[&str],
+) -> Result<(), String> {
+    if page_ids.is_empty() {
+        return Ok(());
+    }
+
+    let mut trx = conn
+        .begin()
+        .await
+        .trace_error("开始删除项目页批量事务失败")
+        .map_err(|e| e.to_string())?;
+
+    for page_id in page_ids.iter() {
+        let project_id: String = sqlx::query_scalar(
+            r#"
+            SELECT project_id FROM local_page_tbl WHERE id = ?
+            "#,
+        )
+        .bind(page_id)
+        .fetch_one(trx.as_mut())
+        .await
+        .trace_error("查询要删除页面的 project_id 失败")
+        .map_err(|e| e.to_string())?;
+
+        let (units_cnt, translated_cnt, prooved_cnt, inbox_cnt): (
+            i64,
+            Option<i64>,
+            Option<i64>,
+            Option<i64>,
+        ) = sqlx::query_as(
+            r#"
+            SELECT
+                COUNT(*) as cnt,
+                SUM(CASE WHEN translated_text IS NOT NULL AND translated_text != '' THEN 1 ELSE 0 END) as translated_sum,
+                SUM(CASE WHEN is_prooved = 1 THEN 1 ELSE 0 END) as prooved_sum,
+                SUM(CASE WHEN is_inbox = 1 THEN 1 ELSE 0 END) as inbox_sum
+            FROM local_unit_tbl
+            WHERE page_id = ?
+            "#,
+        )
+        .bind(page_id)
+        .fetch_one(trx.as_mut())
+        .await
+        .trace_error("聚合页面单元统计失败")
+        .map_err(|e| e.to_string())?;
+
+        let translated_cnt = translated_cnt.unwrap_or(0);
+        let prooved_cnt = prooved_cnt.unwrap_or(0);
+        let inbox_cnt = inbox_cnt.unwrap_or(0);
+        let outbox_cnt = units_cnt - inbox_cnt;
+
+        sqlx::query(
+            r#"
+            DELETE FROM local_page_tbl WHERE id = ?
+            "#,
+        )
+        .bind(page_id)
+        .execute(trx.as_mut())
+        .await
+        .trace_error("批量删除项目页时失败")
+        .map_err(|e| e.to_string())?;
+
+        sqlx::query(
+            r#"
+            UPDATE local_project_tbl
+            SET page_count = page_count - 1,
+                unit_count = unit_count - ?,
+                translated_unit_count = translated_unit_count - ?,
+                prooved_unit_count = prooved_unit_count - ?,
+                inbox_unit_count = inbox_unit_count - ?,
+                outbox_unit_count = outbox_unit_count - ?,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+            "#,
+        )
+        .bind(units_cnt)
+        .bind(translated_cnt)
+        .bind(prooved_cnt)
+        .bind(inbox_cnt)
+        .bind(outbox_cnt)
+        .bind(&project_id)
+        .execute(trx.as_mut())
+        .await
+        .trace_error("更新项目元数据时失败")
+        .map_err(|e| e.to_string())?;
+    }
+
+    trx.commit()
+        .await
+        .trace_error("提交删除项目页批量事务失败")
+        .map_err(|e| e.to_string())?;
+
+    Ok(())
+}

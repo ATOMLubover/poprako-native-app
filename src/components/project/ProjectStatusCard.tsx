@@ -5,15 +5,19 @@ import ProgressBar from "../ProgressBar";
 import NatureButton from "../NatureButton";
 import { Type, Check, Cloud, HardDrive, FileText, Layers } from "lucide-react";
 import type { Project } from "../../models/project";
+import { deleteProject } from "../../ipc/project";
+import ConfirmDialogBox from "../ConfirmDialogBox";
+import { useToast } from "../NotificationToast";
 
 type ProjectStatusCardProps = {
   project: Project;
   onAct?: (project: Project) => void;
   onSync?: (project: Project) => void;
+  onDelete?: (project: Project) => void;
 };
 
 // 极简 ProjectStatusCard 组件，仅接受 Project DTO
-export default function ProjectStatusCard({ project, onAct, onSync }: ProjectStatusCardProps) {
+export default function ProjectStatusCard({ project, onAct, onSync, onDelete }: ProjectStatusCardProps) {
   const author = project.author ?? "";
   const title = project.title ?? "";
   const pages = project.pageCount ?? 0;
@@ -78,6 +82,31 @@ export default function ProjectStatusCard({ project, onAct, onSync }: ProjectSta
     }
   }
 
+  async function handleDelete() {
+    // kept for compatibility; replaced by ConfirmDialogBox below
+    setConfirmVisible(true);
+  }
+
+  const [confirmVisible, setConfirmVisible] = useState(false);
+
+  const { showToast } = useToast();
+
+  async function doDelete() {
+    try {
+      await deleteProject(project.id);
+
+      if (onDelete) {
+        onDelete(project);
+      }
+    } catch (e) {
+      console.error("Delete project failed", e);
+      showToast("error", (e as Error).message || String(e), 5000);
+    } finally {
+      setMenuOpen(false);
+      setConfirmVisible(false);
+    }
+  }
+
   return (
     <div className="psc-root">
       <div className="psc-left">
@@ -90,6 +119,16 @@ export default function ProjectStatusCard({ project, onAct, onSync }: ProjectSta
             <span className="psc-title">{author ? `【${author}】${title}` : title}</span>
           </div>
         </div>
+
+          <ConfirmDialogBox
+            visible={confirmVisible}
+            title="删除项目"
+            description="确定要删除该项目吗？此操作不可恢复。"
+            confirmText="删除"
+            cancelText="取消"
+            onConfirm={doDelete}
+            onCancel={() => setConfirmVisible(false)}
+          />
       </div>
 
       <div className="psc-metrics">
@@ -192,6 +231,15 @@ export default function ProjectStatusCard({ project, onAct, onSync }: ProjectSta
                       >
                         导出
                       </div>
+
+                      <div
+                        className="psc-dropdown-item"
+                        onClick={() => {
+                          handleDelete();
+                        }}
+                      >
+                        删除
+                      </div>
                     </>
                   ) : (
                     <>
@@ -213,6 +261,15 @@ export default function ProjectStatusCard({ project, onAct, onSync }: ProjectSta
                         }}
                       >
                         修改
+                      </div>
+
+                      <div
+                        className="psc-dropdown-item"
+                        onClick={() => {
+                          handleDelete();
+                        }}
+                      >
+                        删除
                       </div>
                     </>
                   )}

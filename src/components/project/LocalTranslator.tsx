@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Translator } from "./Translator";
 import type { Project, Page, Unit } from "../../models/project";
-import { getProjectPages, updateProjectPages } from "../../store/project";
+import { getProjectPages, savePageUnits, setActiveProjectPageIndex, getActiveProjectPageIndex } from "../../store/project";
 import { useToast } from "../NotificationToast";
 
 export type LocalTranslatorProps = {
@@ -46,6 +46,17 @@ export const LocalTranslator: React.FC<LocalTranslatorProps> = ({
         if (!mounted) return;
 
         setPages(loadedPages);
+
+        // 尝试从内存中恢复上次的页面索引（仅运行时保存）
+        try {
+          const storedIndex = getActiveProjectPageIndex();
+
+          if (typeof storedIndex === "number" && storedIndex >= 0 && storedIndex < loadedPages.length) {
+            setCurrentPageIndex(storedIndex);
+          }
+        } catch (err) {
+          // ignore
+        }
         setLoading(false);
       } catch (err) {
         if (!mounted) return;
@@ -69,7 +80,12 @@ export const LocalTranslator: React.FC<LocalTranslatorProps> = ({
     if (changedPages.length === 0) return;
 
     try {
-      await updateProjectPages(project.id, changedPages);
+      // For translation workflow we only need to persist units. Save units per page.
+      for (const page of changedPages) {
+        if (!page.units || page.units.length === 0) continue;
+
+        await savePageUnits(page.id, page.units);
+      }
 
       pendingChangesRef.current.clear();
 
@@ -103,6 +119,12 @@ export const LocalTranslator: React.FC<LocalTranslatorProps> = ({
       }
 
       setCurrentPageIndex(targetIndex);
+      // 保存当前页索引到内存状态
+      try {
+        setActiveProjectPageIndex(targetIndex);
+      } catch (err) {
+        // ignore
+      }
       setSelectedUnitId(null);
     },
     [pages.length, flushPendingChanges, showToast]
@@ -258,6 +280,13 @@ export const LocalTranslator: React.FC<LocalTranslatorProps> = ({
     try {
       await flushPendingChanges();
 
+      // 保存退出前的当前页索引到内存状态
+      try {
+        setActiveProjectPageIndex(currentPageIndex);
+      } catch (err) {
+        // ignore
+      }
+
       onExit();
     } catch (err) {
       showToast("error", "保存失败，无法退出");
@@ -352,6 +381,7 @@ export const LocalTranslator: React.FC<LocalTranslatorProps> = ({
         onUnitSelect={handleUnitSelect}
         onRearrangeUnits={handleRearrangeUnits}
         onFlush={handleFlush}
+        onReturn={handleExitWithSave}
       />
     </div>
   );

@@ -14,20 +14,26 @@ type UnitListProps = {
 
 export const UnitList: React.FC<UnitListProps> = ({ page, onUnitClick, selectedUnitId, isProofMode = false, onBulkConfirmProofAll }) => {
   const listContentRef = useRef<HTMLDivElement>(null);
+  const textareaRefs = useRef<Record<string, HTMLTextAreaElement | null>>({});
   const [confirmVisible, setConfirmVisible] = useState(false);
 
-  // 自动调整 textarea 高度
+  // 自动调整 textarea 高度（使用每项 ref，确保在文本更新时也能生效）
+  const _contentKey = page.units.map((u) => `${u.id}:${u.translatedText ?? ""}:${u.proovedText ?? ""}`).join("|");
+
+  const resizeTextarea = (el: HTMLTextAreaElement | null) => {
+    if (!el) return;
+
+    el.style.height = "0px";
+    el.style.height = `${el.scrollHeight}px`;
+  };
+
   useEffect(() => {
-    if (!listContentRef.current) return;
-
-    const textareas = listContentRef.current.querySelectorAll(".unit-textarea");
-
-    textareas.forEach((textarea) => {
-      const element = textarea as HTMLTextAreaElement;
-      element.style.height = "0px";
-      element.style.height = element.scrollHeight + "px";
+    page.units.forEach((u) => {
+      const el = textareaRefs.current[u.id];
+      resizeTextarea(el);
     });
-  }, [page.units]);
+    // 当文本、数量或模式变化时统一重新计算
+  }, [_contentKey, page.units.length, isProofMode]);
 
   // 当选中单元变化时，自动滚动到可视区域
   useEffect(() => {
@@ -98,7 +104,7 @@ export const UnitList: React.FC<UnitListProps> = ({ page, onUnitClick, selectedU
       <ConfirmDialogBox
         visible={!!confirmVisible}
         title="确认校对所有单元"
-        description="此操作会将所有单元标记为已校对，是否继续？\n快捷键：Ctrl+P"
+        description="此操作会将所有单元标记为已校对，是否继续？"
         confirmText="确认"
         cancelText="取消"
         onConfirm={() => {
@@ -176,7 +182,21 @@ export const UnitList: React.FC<UnitListProps> = ({ page, onUnitClick, selectedU
 
             const displayText = unit.proovedText || unit.translatedText || "-";
 
-            return <textarea className="unit-textarea" readOnly value={displayText} />;
+            return (
+              <textarea
+                className="unit-textarea"
+                readOnly
+                value={displayText}
+                ref={(el) => {
+                  textareaRefs.current[unit.id] = el;
+                  // 立即调整新挂载/更新的 textarea 高度，避免切换模式后高度未更新
+                  if (el) {
+                    el.style.height = "0px";
+                    el.style.height = `${el.scrollHeight}px`;
+                  }
+                }}
+              />
+            );
           };
 
           return (

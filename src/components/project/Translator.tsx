@@ -1,15 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./Translator.css";
-import ProgressBar from "../ProgressBar";
 import { UnitList } from "./UnitList";
 import Editor, { type EditorRef } from "./Editor";
 import { Stage, type StageHandle } from "./Stage";
 import { useSpecialSymbolsStore } from "../../store/specialSymbols";
 import ConfirmDialogBox from "../ConfirmDialogBox";
 import { useToast } from "../NotificationToast";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, LogOut } from "lucide-react";
 import type { Project, Page, Unit } from "../../models/project";
 import { SpecialSymbolCard } from "./SpecialSymbolCard";
+import VerticalStatusCard from "../project/VerticalStatusCard";
 
 export type TranslatorMode = "translate" | "proofread" | "read";
 
@@ -31,6 +31,8 @@ export type TranslatorProps = {
   // 父组件可注入该回调以接收强制刷新通知
   // TODO: 在父组件 TranslatorPage 内注入一个空实现以便后续实现刷新逻辑
   onFlush?: () => void;
+  // 父组件可注入返回工作区的回调（比如退出到项目列表）
+  onReturn?: () => void;
   // `mode` is used as initial mode only; Translator owns its internal mode state
 };
 
@@ -146,6 +148,7 @@ export const Translator: React.FC<TranslatorProps> = ({
   onUnitSave,
   onUnitRemove,
   onRearrangeUnits,
+  onReturn,
 }) => {
   // Ensure `isMeProofreader` implicitly includes `isMeTranslator`.
   const isMeProofreader = isMeProofreaderProp ?? false;
@@ -162,6 +165,26 @@ export const Translator: React.FC<TranslatorProps> = ({
 
   const selectedUnit = currentPage.units.find((u) => u.id === selectedUnitId);
   const effectiveMode = localMode;
+  // sidebar view state: 'vsc' for read-mode VerticalStatusCard, 'editor' for unit list + editor
+  const [displaySidebarView, setDisplaySidebarView] = useState<"vsc" | "editor">(
+    effectiveMode === "read" ? "vsc" : "editor"
+  );
+
+  const [animatingOut, setAnimatingOut] = useState(false);
+
+  useEffect(() => {
+    const target = effectiveMode === "read" ? "vsc" : "editor";
+    if (target === displaySidebarView) return;
+
+    // animate current view out, then swap
+    setAnimatingOut(true);
+    const t = setTimeout(() => {
+      setDisplaySidebarView(target);
+      setAnimatingOut(false);
+    }, 220);
+
+    return () => clearTimeout(t);
+  }, [effectiveMode, displaySidebarView]);
   const [showMemo, setShowMemo] = useState(false);
   const [showSymbolCard, setShowSymbolCard] = useState(false);
 
@@ -453,27 +476,35 @@ export const Translator: React.FC<TranslatorProps> = ({
       <div className="translator-container" data-is-me-translator={isMeTranslator} data-is-me-proofreader={isMeProofreader}>
       {/* 顶部栏 */}
       <div className="translator-header">
+        <div
+          className="toolbox-pill"
+          aria-label="退出"
+          title="退出到项目列表"
+          onClick={() => {
+            if (typeof onReturn === "function") {
+              onReturn();
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              if (typeof onReturn === "function") {
+                onReturn();
+              }
+            }
+          }}
+          style={{ cursor: "pointer", marginRight: 10 }}
+          role="button"
+          tabIndex={0}
+        >
+          <LogOut size={18} color="#374151" style={{ transform: "scaleX(-1)" }} />
+        </div>
+
         <div className="project-info">
           [{project.author}] {project.title}
         </div>
 
-        <div className="progress-area" style={{ justifyContent: 'flex-start' }}>
-          <div style={{ width: 200 }}>
-            <ProgressBar
-              items={[
-                {
-                  color: "#fed7aa",
-                  length: project.unitCount > 0 ? (project.translatedUnitCount / project.unitCount) * 100 : 0,
-                },
-                {
-                  color: "#bbf7d0",
-                  length: project.unitCount > 0 ? (project.proovedUnitCount / project.unitCount) * 100 : 0,
-                },
-              ]}
-              height={14}
-            />
-          </div>
-        </div>
+        
 
         <div className="header-toolbox" style={{ marginLeft: 'auto' }}>
           <div className="toolbox-pill" aria-label="翻译模式" title="翻译模式（Ctrl+M）">
@@ -553,21 +584,7 @@ export const Translator: React.FC<TranslatorProps> = ({
             <RefreshCw size={18} color="#374151" />
           </div>
 
-          <div
-            className="toolbox-pill"
-            aria-label="导出"
-            title="导出"
-            onClick={() => {
-              // TODO: implement export functionality
-            }}
-            style={{ cursor: "pointer" }}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-          </div>
+          {/* export button removed from header; moved to VSC card bottom */}
 
           <div
             className="toolbox-pill"
@@ -681,46 +698,55 @@ export const Translator: React.FC<TranslatorProps> = ({
         </div>
 
         {/* 右侧侧边栏 */}
-        <div className={`translator-sidebar ${effectiveMode === 'read' ? 'hidden' : ''}`}>
-          <div className="sidebar-unitlist">
-            <UnitList
-              page={currentPage}
-              onUnitClick={onUnitSelect}
-              selectedUnitId={selectedUnitId}
-              isProofMode={effectiveMode === "proofread"}
-              onCopyTranslatedToProof={handleCopyTranslatedToProof}
-              onBulkConfirmProofAll={handleBulkConfirmProofAll}
-            />
-          </div>
+        <div className="translator-sidebar">
+          {/* render currently displayed view; animate out before swapping */}
+          {displaySidebarView === "vsc" ? (
+            <div className={`sidebar-content sidebar-vsc ${animatingOut ? "fade-out" : "fade-in"}`}>
+              <VerticalStatusCard project={project} />
+            </div>
+          ) : (
+            <div className={`sidebar-content sidebar-editor-list ${animatingOut ? "fade-out" : "fade-in"}`}>
+              <div className="sidebar-unitlist">
+                <UnitList
+                  page={currentPage}
+                  onUnitClick={onUnitSelect}
+                  selectedUnitId={selectedUnitId}
+                  isProofMode={effectiveMode === "proofread"}
+                  onCopyTranslatedToProof={handleCopyTranslatedToProof}
+                  onBulkConfirmProofAll={handleBulkConfirmProofAll}
+                />
+              </div>
 
-          {selectedUnit && isMeProofreader && (
-            <div className="sidebar-editor">
-              <Editor
-                ref={editorRef}
-                key={selectedUnit.id}
-                indexInPage={selectedUnit.indexInPage}
-                isInsideBox={selectedUnit.isInbox}
-                symbols={customSymbols}
-                initialText={
-                  effectiveMode === "proofread"
-                    ? selectedUnit.proovedText ??
-                      selectedUnit.translatedText ??
-                      ""
-                    : selectedUnit.translatedText ?? ""
-                }
-                totalUnits={currentPage.units.length}
-                onTextModify={handleTextModify}
-                onStatusClick={() => {
-                  // 切换 isInbox 状态并保存
-                  const newIsInbox = !selectedUnit.isInbox;
-                  onUnitSave({ id: selectedUnit.id, isInbox: newIsInbox });
-                }}
-                onIndexChange={(targetIndex) => {
-                  if (!onRearrangeUnits) return;
+              {selectedUnit && isMeProofreader && (
+                <div className="sidebar-editor">
+                  <Editor
+                    ref={editorRef}
+                    key={selectedUnit.id}
+                    indexInPage={selectedUnit.indexInPage}
+                    isInsideBox={selectedUnit.isInbox}
+                    symbols={customSymbols}
+                    initialText={
+                      effectiveMode === "proofread"
+                        ? selectedUnit.proovedText ??
+                          selectedUnit.translatedText ??
+                          ""
+                        : selectedUnit.translatedText ?? ""
+                    }
+                    totalUnits={currentPage.units.length}
+                    onTextModify={handleTextModify}
+                    onStatusClick={() => {
+                      // 切换 isInbox 状态并保存
+                      const newIsInbox = !selectedUnit.isInbox;
+                      onUnitSave({ id: selectedUnit.id, isInbox: newIsInbox });
+                    }}
+                    onIndexChange={(targetIndex) => {
+                      if (!onRearrangeUnits) return;
 
-                  onRearrangeUnits(selectedUnit.id, targetIndex);
-                }}
-              />
+                      onRearrangeUnits(selectedUnit.id, targetIndex);
+                    }}
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>

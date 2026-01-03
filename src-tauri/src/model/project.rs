@@ -20,7 +20,6 @@ pub struct Project {
 pub struct LocalPage {
     pub id: String,
     pub local_image_path: String,
-    pub units: Vec<LocalUnit>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -36,21 +35,21 @@ pub struct LocalUnit {
     pub comment: Option<String>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct ExportProject {
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct PortProject {
     pub author: String,
     pub title: String,
-    pub pages: Vec<ExportPage>,
+    pub pages: Vec<PortPage>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct ExportPage {
-    pub local_image_path: String,
-    pub units: Vec<ExportUnit>,
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct PortPage {
+    pub image_filename: String,
+    pub units: Vec<PortUnit>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct ExportUnit {
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct PortUnit {
     pub x: f64,
     pub y: f64,
     pub index_in_page: u32,

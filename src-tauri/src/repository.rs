@@ -1,6 +1,8 @@
 use std::sync::Mutex;
 
-use sqlx::{sqlite::SqlitePoolOptions, SqlitePool};
+use sqlx::{
+    pool::PoolConnection, sqlite::SqlitePoolOptions, Acquire as _, Sqlite, SqlitePool, Transaction,
+};
 
 pub mod project;
 pub mod special_symbol;
@@ -38,4 +40,26 @@ pub async fn init_database() -> Result<(), String> {
     tracing::info!(database_path = ?database_path, "setup.database.initialized");
 
     Ok(())
+}
+
+pub async fn acquire_connection() -> Result<PoolConnection<Sqlite>, String> {
+    let pool = {
+        let db = DATABASE
+            .lock()
+            .map_err(|e| format!("无法锁定 DATABASE: {}", e))?;
+
+        db.as_ref().ok_or("数据库未初始化".to_string())?.clone()
+    };
+
+    pool.acquire()
+        .await
+        .map_err(|e| format!("无法获取数据库连接: {}", e))
+}
+
+pub async fn aquire_transaction(
+    conn: &mut PoolConnection<Sqlite>,
+) -> Result<Transaction<'_, Sqlite>, String> {
+    conn.begin()
+        .await
+        .map_err(|e| format!("无法开始数据库事务: {}", e))
 }

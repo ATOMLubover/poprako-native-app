@@ -75,7 +75,7 @@ pub struct NewLocalProject {
     pub page_count: u32,
 }
 
-#[derive(FromRow)]
+#[derive(FromRow, Clone)]
 pub struct LocalPage {
     pub id: String,
 
