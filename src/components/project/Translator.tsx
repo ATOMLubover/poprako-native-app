@@ -10,6 +10,7 @@ import { RefreshCw, LogOut } from "lucide-react";
 import type { Project, Page, Unit } from "../../models/project";
 import { SpecialSymbolCard } from "./SpecialSymbolCard";
 import VerticalStatusCard from "../project/VerticalStatusCard";
+import { firstNonEmpty } from "../../util/string";
 
 export type TranslatorMode = "translate" | "proofread" | "read";
 
@@ -730,11 +731,11 @@ export const Translator: React.FC<TranslatorProps> = ({
                     symbols={customSymbols}
                     initialText={
                       effectiveMode === "proofread"
-                        ? selectedUnit.proovedText ??
-                          selectedUnit.translatedText ??
-                          ""
-                        : selectedUnit.translatedText ?? ""
+                        ? firstNonEmpty(selectedUnit.proovedText, selectedUnit.translatedText, "") ?? ""
+                        : firstNonEmpty(selectedUnit.translatedText, "") ?? ""
                     }
+                      translatedText={firstNonEmpty(selectedUnit.translatedText) ?? ""}
+                      isProofMode={effectiveMode === "proofread"}
                     totalUnits={currentUnits.length}
                     onTextModify={handleTextModify}
                     onStatusClick={() => {
@@ -747,6 +748,11 @@ export const Translator: React.FC<TranslatorProps> = ({
 
                       onRearrangeUnits(selectedUnit.id, targetIndex);
                     }}
+                      onRestore={() => {
+                        // 清空当前单元的校对文本
+                        onUnitSave({ id: selectedUnit.id, proovedText: "" });
+                        showToast("success", "已重置校对文本");
+                      }}
                   />
                 </div>
               )}

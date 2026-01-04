@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./UnitList.css";
+import { firstNonEmpty } from "../../util/string";
 import type { Unit } from "../../models/project";
 import ConfirmDialogBox from "../ConfirmDialogBox";
 
@@ -60,8 +61,8 @@ export const UnitList: React.FC<UnitListProps> = ({ units, onUnitClick, selected
 
   // 未翻译：既没有 translatedText 也没有 proovedText 的单元数
   const unTranslated = units.filter((u) => {
-    const hasTranslated = ((u.translatedText ?? "") as string).toString().trim() !== "";
-    const hasProovedText = ((u.proovedText ?? "") as string).toString().trim() !== "";
+    const hasTranslated = (firstNonEmpty(u.translatedText) ?? "").toString().trim() !== "";
+    const hasProovedText = (firstNonEmpty(u.proovedText) ?? "").toString().trim() !== "";
     return !hasTranslated && !hasProovedText;
   }).length;
 
@@ -117,7 +118,7 @@ export const UnitList: React.FC<UnitListProps> = ({ units, onUnitClick, selected
       {/* 列表内容 */}
       <div className="list-content" ref={listContentRef}>
         {units.map((unit) => {
-          const hasText = !!(unit.proovedText || unit.translatedText);
+          const hasText = !!firstNonEmpty(unit.proovedText, unit.translatedText);
 
           // 确定状态颜色
           let statusClass = "status-empty";
@@ -135,8 +136,8 @@ export const UnitList: React.FC<UnitListProps> = ({ units, onUnitClick, selected
 
           // 渲染内容
           const renderContent = () => {
-            const hasTranslated = (unit.translatedText ?? "").toString().trim() !== "";
-            const hasProoved = (unit.proovedText ?? "").toString().trim() !== "";
+            const hasTranslated = (firstNonEmpty(unit.translatedText) ?? "").toString().trim() !== "";
+            const hasProoved = (firstNonEmpty(unit.proovedText) ?? "").toString().trim() !== "";
 
             if (isProofMode) {
               return (
@@ -180,7 +181,7 @@ export const UnitList: React.FC<UnitListProps> = ({ units, onUnitClick, selected
               );
             }
 
-            const displayText = unit.proovedText || unit.translatedText || "-";
+            const displayText = firstNonEmpty(unit.proovedText, unit.translatedText) ?? "-";
 
             return (
               <textarea

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./Marker.css";
+import { firstNonEmpty } from "../../util/string";
 import type { Unit } from "../../models/project";
 import type { TranslatorMode } from "./Translator";
 import ConfirmDialogBox from "../ConfirmDialogBox";
@@ -49,7 +50,7 @@ export const Marker: React.FC<MarkerProps> = ({
   const containerTop = pointScreenY - totalHeight;
 
   // 状态与样式
-  const hasTranslated = !!unit.translatedText;
+  const hasTranslated = (firstNonEmpty(unit.translatedText) ?? "").toString().trim() !== "";
   const isProoved = unit.isProoved;
   let borderColor = "transparent";
   if (mode === "translate" && hasTranslated) {
@@ -163,7 +164,7 @@ export const Marker: React.FC<MarkerProps> = ({
 
     if (!onRemove) return;
 
-    const hasContent = unit.translatedText || unit.proovedText;
+    const hasContent = !!firstNonEmpty(unit.translatedText, unit.proovedText);
     if (hasContent) {
       setConfirmVisible(true);
       return;
@@ -242,7 +243,7 @@ export const Marker: React.FC<MarkerProps> = ({
           return (
             <div className="marker-preview" style={{ left: `${previewLeft}px`, top: `${previewTop}px` }}>
               <div className="marker-preview-content">
-                {unit.proovedText ?? unit.translatedText ?? "-"}
+                {firstNonEmpty(unit.proovedText, unit.translatedText) ?? "-"}
               </div>
             </div>
           );

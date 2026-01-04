@@ -88,15 +88,7 @@ export default function LocalProjectImporter({ onSuccess, onCancel }: Props) {
               title={projectPath ?? ""}
               readOnly
               placeholder="请选择要导入的项目文件"
-              style={{
-                flex: 1,
-                minWidth: 0,
-                textAlign: "right",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                direction: "rtl",
-              }}
+              style={{ flex: 1, minWidth: 0 }}
             />
 
             <NatureButton variant="mist" onClick={handleSelectPath} minWidth={70}>

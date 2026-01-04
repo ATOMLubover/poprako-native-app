@@ -9,3 +9,4 @@
 - [ ] Accumulated edit timer.
 - [x] Page progress in view mode(translator).
 - [ ] Minimize the count of unit update calls when updating page.
+- [ ] Add override button in proofreading mode.

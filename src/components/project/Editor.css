@@ -45,6 +45,28 @@
   border-radius: 4px;
 }
 
+.status-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.restore-tag {
+  cursor: pointer;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background-color: #f0f7ff; /* 淡蓝 */
+  color: #5676a1;
+  border: 1px solid rgba(15,23,42,0.04);
+  font-weight: 500;
+  user-select: none;
+}
+
+.restore-tag:hover {
+  background-color: #e1effe; /* 略微加深 */
+}
+
 .status-tag {
   cursor: pointer;
   font-size: 11px;

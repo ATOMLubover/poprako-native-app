@@ -29,10 +29,21 @@ pub struct LocalUnit {
     pub y: f64,
     pub index_in_page: u32,
     pub is_inbox: bool,
+    #[serde(skip_serializing_if = "LocalUnit::is_text_empty")]
     pub translated_text: Option<String>,
-    pub is_prooved: bool,
+    #[serde(skip_serializing_if = "LocalUnit::is_text_empty")]
     pub prooved_text: Option<String>,
+    pub is_prooved: bool,
     pub comment: Option<String>,
+}
+
+impl LocalUnit {
+    fn is_text_empty(value: &Option<String>) -> bool {
+        match value {
+            Some(text) => text.is_empty(),
+            None => true,
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]

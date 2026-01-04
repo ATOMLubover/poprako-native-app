@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import "./Editor.css";
+import { firstNonEmpty } from "../../util/string";
 
 type EditorProps = {
   indexInPage: number;
@@ -10,6 +11,15 @@ type EditorProps = {
   onTextModify: (newText: string) => void;
   onStatusClick: () => void;
   onIndexChange: (targetIndex: number) => void;
+  /**
+   * 恢复按钮回调（用于通知父组件清空校对文本）
+   * 必需：父组件必须提供实现以清空校对文本
+   */
+  onRestore: () => void;
+  /** 翻译文本（用于在恢复时视觉上展示） */
+  translatedText: string;
+  /** 当前是否为校对模式（用于 placeholder 文案） */
+  isProofMode: boolean;
 };
 
 export type EditorRef = {
@@ -29,6 +39,9 @@ const Editor = forwardRef<EditorRef, EditorProps>((
     onTextModify,
     onStatusClick,
     onIndexChange,
+    onRestore,
+    translatedText,
+    isProofMode,
   },
   ref
 ) => {
@@ -112,6 +125,27 @@ const Editor = forwardRef<EditorRef, EditorProps>((
     setEditingIndex(false);
   };
 
+  // 点击“复制”按钮：通知父组件清空校对文本，视觉上将输入框展示为翻译文本
+  const handleRestoreClick = () => {
+    console.log("[Editor] Restore clicked, show translation text");
+
+    // 通知父组件清空校对文本（父组件必需提供实现）
+    onRestore();
+
+    // 将输入框内容切换为翻译文本（优先使用传入的 translatedText，忽略空字符串）
+    const showText = firstNonEmpty(translatedText, initialText, "") ?? "";
+    setText(showText);
+
+    // 尝试聚焦到文本尾部，提升体验
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.focus();
+
+      const len = showText.length;
+      textarea.setSelectionRange(len, len);
+    }
+  };
+
   return (
     <div className="editor-card">
       <div className="card-header">
@@ -137,12 +171,19 @@ const Editor = forwardRef<EditorRef, EditorProps>((
             {String(indexInPage + 1).padStart(2, "0")}
           </span>
         )}
-        <span
-          className={`status-tag ${isInsideBox ? "tag-in" : "tag-out"}`}
-          onClick={onStatusClick}
-        >
-          {isInsideBox ? "框内" : "框外"}
-        </span>
+
+        <div className="status-group">
+          <span className="restore-tag" role="button" tabIndex={0} onClick={handleRestoreClick} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleRestoreClick(); } }}>
+            复制
+          </span>
+
+          <span
+            className={`status-tag ${isInsideBox ? "tag-in" : "tag-out"}`}
+            onClick={onStatusClick}
+          >
+            {isInsideBox ? "框内" : "框外"}
+          </span>
+        </div>
       </div>
 
       <div className="symbol-bar">
@@ -161,7 +202,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((
         <textarea
           ref={textareaRef}
           className="editor-textarea"
-          placeholder="请输入翻译..."
+          placeholder={isProofMode ? "请输入校对" : "请输入翻译..."}
           value={text}
           onChange={handleTextChange}
         />
