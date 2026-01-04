@@ -98,6 +98,7 @@ export default function ProjectStatusCard({ project, onAct, onSync, onDelete }: 
       if (onDelete) {
         onDelete(project);
       }
+      // 使用回调通知父组件完成删除（全局事件已被禁止）
     } catch (e) {
       console.error("Delete project failed", e);
       showToast("error", (e as Error).message || String(e), 5000);

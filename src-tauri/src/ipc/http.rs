@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 
-use crate::{ipc::get_ipc_request_id, result_trace::ResultTrace as _};
+use tauri::Url;
+
+use crate::{ipc::get_ipc_request_id, result_trace::ResultTrace as _, service};
 
 #[tauri::command]
 #[tracing::instrument]
@@ -9,7 +11,9 @@ pub async fn proxy_get(url: &str, headers: HashMap<String, String>) -> Result<St
 
     tracing::info!(ipc_id = ipc_id, "ipc.http.proxy_get.start");
 
-    let data_url = crate::http::get(url, Some(headers))
+    let url = Url::parse(url).map_err(|e| format!("无效的 URL: {}", e))?;
+
+    let data_url = service::http::get(url, Some(headers))
         .await
         .map_err(|e| format!("代理 GET 请求失败: {}", e))
         .trace_error("代理 GET 请求失败")?;
@@ -30,7 +34,9 @@ pub async fn proxy_post(
 
     tracing::info!(ipc_id = ipc_id, "ipc.http.proxy_post.start");
 
-    let response = crate::http::post(url, Some(headers), Some(body))
+    let url = Url::parse(url).map_err(|e| format!("无效的 URL: {}", e))?;
+
+    let response = service::http::post(url, Some(headers), Some(body))
         .await
         .map_err(|e| format!("代理 POST 请求失败: {}", e))
         .trace_error("代理 POST 请求失败")?;
@@ -51,7 +57,9 @@ pub async fn proxy_put(
 
     tracing::info!(ipc_id = ipc_id, "ipc.http.proxy_put.start");
 
-    let response = crate::http::put(url, Some(headers), Some(body))
+    let url = Url::parse(url).map_err(|e| format!("无效的 URL: {}", e))?;
+
+    let response = service::http::put(url, Some(headers), Some(body))
         .await
         .map_err(|e| format!("代理 PUT 请求失败: {}", e))
         .trace_error("代理 PUT 请求失败")?;
@@ -70,9 +78,11 @@ pub async fn proxy_patch(
 ) -> Result<String, String> {
     let ipc_id = get_ipc_request_id();
 
+    let url = Url::parse(url).map_err(|e| format!("无效的 URL: {}", e))?;
+
     tracing::info!(ipc_id = ipc_id, "ipc.http.proxy_patch.start");
 
-    let response = crate::http::patch(url, Some(headers), Some(body))
+    let response = service::http::patch(url, Some(headers), Some(body))
         .await
         .map_err(|e| format!("代理 PATCH 请求失败: {}", e))
         .trace_error("代理 PATCH 请求失败")?;
@@ -93,7 +103,9 @@ pub async fn proxy_delete(
 
     tracing::info!(ipc_id = ipc_id, "ipc.http.proxy_delete.start");
 
-    let response = crate::http::delete(url, Some(headers), body)
+    let url = Url::parse(url).map_err(|e| format!("无效的 URL: {}", e))?;
+
+    let response = service::http::delete(url, Some(headers), body)
         .await
         .map_err(|e| format!("代理 DELETE 请求失败: {}", e))
         .trace_error("代理 DELETE 请求失败")?;

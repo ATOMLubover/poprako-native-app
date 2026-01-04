@@ -88,6 +88,16 @@ export default function ComicWorkspacePage() {
     console.log("同步项目:", project);
   };
 
+  // 刷新项目列表（供子组件回调使用）
+  async function handleRefreshProjects() {
+    try {
+      const ps = await getProjects(true);
+      setAllProjects(ps || []);
+    } catch (e) {
+      setError((e as Error).message || String(e));
+    }
+  }
+
   const handleExitTranslator = () => {
     clearActiveProject();
     setActiveProjectIdState(null);
@@ -162,6 +172,7 @@ export default function ComicWorkspacePage() {
             projects={filteredProjects}
             onAct={handleActProject}
             onSync={handleSyncProject}
+            onRefresh={handleRefreshProjects}
           />
         )}
       </div>

@@ -38,19 +38,16 @@ export default function LocalProjectCreator({ initial = {}, onSave, onCancel }: 
     try {
       const res = await selectNewProjectDir();
 
-      if (!res || res.length === 0) {
+      if (!res || typeof res !== "object" || !(res as any).dir_path) {
         showToast("info", "未选择图片文件");
         return;
       }
 
-      showToast("success", `已选择 ${res.length} 张图片`);
+      const obj = res as { dir_path: string; image_count: number };
 
-      const first = res[0];
-      const idx = Math.max(first.lastIndexOf("\\"), first.lastIndexOf("/"));
-      let dir = idx >= 0 ? first.slice(0, idx) : first;
-      dir = dir.replace(/\u0000/g, "").trim();
+      showToast("success", `已选择 ${obj.image_count} 张图片`);
 
-      setLocalImageDir(dir);
+      setLocalImageDir(obj.dir_path || "");
     } catch (e) {
       console.error("Select project dir failed", e);
       showToast("error", "读取所选目录失败");
@@ -91,6 +88,27 @@ export default function LocalProjectCreator({ initial = {}, onSave, onCancel }: 
         <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#111827" }}>新建本地项目</h3>
       </div>
 
+        <div className="tbc-field">
+          <div className="tbc-field-icon">
+            <Folder size={18} />
+          </div>
+
+          <div style={{ flex: 1, display: "flex", gap: 8 }}>
+            <input
+              className="tbc-input tbc-preview"
+              value={localImageDir ?? ""}
+              title={localImageDir ?? ""}
+              readOnly
+              placeholder="请选择本地图片目录"
+              style={{ flex: 1, minWidth: 0 }}
+            />
+
+            <NatureButton variant="mist" onClick={handleSelectDir} minWidth={70}>
+              选择
+            </NatureButton>
+          </div>
+      </div>
+      
       <div className="tbc-body">
         <div className="tbc-field">
           <div className="tbc-field-icon">
@@ -118,26 +136,7 @@ export default function LocalProjectCreator({ initial = {}, onSave, onCancel }: 
           />
         </div>
 
-        <div className="tbc-field">
-          <div className="tbc-field-icon">
-            <Folder size={18} />
-          </div>
 
-          <div style={{ flex: 1, display: "flex", gap: 8 }}>
-            <input
-              className="tbc-input tbc-preview"
-              value={localImageDir ?? ""}
-              title={localImageDir ?? ""}
-              readOnly
-              placeholder="请选择本地图片目录"
-              style={{ flex: 1, minWidth: 0 }}
-            />
-
-            <NatureButton variant="mist" onClick={handleSelectDir} minWidth={70}>
-              选择
-            </NatureButton>
-          </div>
-        </div>
 
         <div style={{ height: 8 }} />
 

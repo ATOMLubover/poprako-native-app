@@ -1,8 +1,10 @@
 use std::collections::HashMap;
 use std::sync::LazyLock;
 
+use anyhow::{anyhow, bail};
 use reqwest::header::{HeaderMap, HeaderName, HeaderValue};
 use reqwest::Method;
+use tauri::Url;
 
 static HTTP_CLIENT: LazyLock<reqwest::Client> = LazyLock::new(|| {
     reqwest::Client::builder()
@@ -12,54 +14,53 @@ static HTTP_CLIENT: LazyLock<reqwest::Client> = LazyLock::new(|| {
 });
 
 /// Simple GET wrapper using a shared `reqwest::Client`.
-pub async fn get(url: &str, headers: Option<HashMap<String, String>>) -> Result<String, String> {
-    let client = &*HTTP_CLIENT;
+pub async fn get(url: Url, headers: Option<HashMap<String, String>>) -> anyhow::Result<String> {
+    do_request(Method::GET, url, headers, None).await
+}
 
-    let mut req = client.get(url);
+/// POST helper, supports optional binary body
+pub async fn post(
+    url: Url,
+    headers: Option<HashMap<String, String>>,
+    body: Option<Vec<u8>>,
+) -> anyhow::Result<String> {
+    do_request(Method::POST, url, headers, body).await
+}
 
-    if let Some(hmap) = headers {
-        let mut header_map = HeaderMap::new();
+/// PUT helper, supports optional binary body
+pub async fn put(
+    url: Url,
+    headers: Option<HashMap<String, String>>,
+    body: Option<Vec<u8>>,
+) -> anyhow::Result<String> {
+    do_request(Method::PUT, url, headers, body).await
+}
 
-        for (k, v) in hmap {
-            let name = HeaderName::from_bytes(k.as_bytes())
-                .map_err(|e| format!("Invalid header name {}: {}", k, e))?;
+/// PATCH helper, supports optional binary body
+pub async fn patch(
+    url: Url,
+    headers: Option<HashMap<String, String>>,
+    body: Option<Vec<u8>>,
+) -> anyhow::Result<String> {
+    do_request(Method::PATCH, url, headers, body).await
+}
 
-            let value = HeaderValue::from_str(&v)
-                .map_err(|e| format!("Invalid header value for {}: {}", k, e))?;
-
-            header_map.insert(name, value);
-        }
-
-        req = req.headers(header_map);
-    }
-
-    let resp = req
-        .send()
-        .await
-        .map_err(|e| format!("Request error: {}", e))?;
-
-    let status = resp.status();
-
-    // We do not deserialize JSON here, just return the text.
-    let text = resp
-        .text()
-        .await
-        .map_err(|e| format!("Failed to read response text: {}", e))?;
-
-    if !status.is_success() {
-        return Err(format!("HTTP error {}: {}", status.as_u16(), text));
-    }
-
-    Ok(text)
+/// DELETE helper, supports optional binary body
+pub async fn delete(
+    url: Url,
+    headers: Option<HashMap<String, String>>,
+    body: Option<Vec<u8>>,
+) -> anyhow::Result<String> {
+    do_request(Method::DELETE, url, headers, body).await
 }
 
 /// Internal generic request function, supports optional body
 async fn do_request(
     method: Method,
-    url: &str,
+    url: Url,
     headers: Option<HashMap<String, String>>,
     body: Option<Vec<u8>>,
-) -> Result<String, String> {
+) -> anyhow::Result<String> {
     let client = &*HTTP_CLIENT;
 
     let mut req = client.request(method, url);
@@ -69,10 +70,10 @@ async fn do_request(
 
         for (k, v) in hmap {
             let name = HeaderName::from_bytes(k.as_bytes())
-                .map_err(|e| format!("Invalid header name {}: {}", k, e))?;
+                .map_err(|e| anyhow!("无效的请求头 {}: {}", k, e))?;
 
-            let value = HeaderValue::from_str(&v)
-                .map_err(|e| format!("Invalid header value for {}: {}", k, e))?;
+            let value =
+                HeaderValue::from_str(&v).map_err(|e| anyhow!("无效的请求头值 {}: {}", k, e))?;
 
             header_map.insert(name, value);
         }
@@ -87,54 +88,18 @@ async fn do_request(
     let resp = req
         .send()
         .await
-        .map_err(|e| format!("Request error: {}", e))?;
+        .map_err(|e| anyhow!("请求发生错误: {}", e))?;
 
     let status = resp.status();
 
     let text = resp
         .text()
         .await
-        .map_err(|e| format!("Failed to read response text: {}", e))?;
+        .map_err(|e| anyhow!("无法读取请求体为 text: {}", e))?;
 
     if !status.is_success() {
-        return Err(format!("HTTP error {}: {}", status.as_u16(), text));
+        bail!("HTTP 状态码错误 {}: {}", status.as_u16(), text);
     }
 
     Ok(text)
-}
-
-/// POST helper, supports optional binary body
-pub async fn post(
-    url: &str,
-    headers: Option<HashMap<String, String>>,
-    body: Option<Vec<u8>>,
-) -> Result<String, String> {
-    do_request(Method::POST, url, headers, body).await
-}
-
-/// PUT helper, supports optional binary body
-pub async fn put(
-    url: &str,
-    headers: Option<HashMap<String, String>>,
-    body: Option<Vec<u8>>,
-) -> Result<String, String> {
-    do_request(Method::PUT, url, headers, body).await
-}
-
-/// PATCH helper, supports optional binary body
-pub async fn patch(
-    url: &str,
-    headers: Option<HashMap<String, String>>,
-    body: Option<Vec<u8>>,
-) -> Result<String, String> {
-    do_request(Method::PATCH, url, headers, body).await
-}
-
-/// DELETE helper, supports optional binary body
-pub async fn delete(
-    url: &str,
-    headers: Option<HashMap<String, String>>,
-    body: Option<Vec<u8>>,
-) -> Result<String, String> {
-    do_request(Method::DELETE, url, headers, body).await
 }

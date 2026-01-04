@@ -70,3 +70,16 @@ pub struct PortUnit {
     pub prooved_text: Option<String>,
     pub comment: Option<String>,
 }
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct SelectedProjectDir {
+    pub dir_path: String,
+    pub image_count: usize,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct NewLocalProject {
+    pub author: String,
+    pub title: String,
+    pub local_image_dir: String,
+}

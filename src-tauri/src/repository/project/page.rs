@@ -1,16 +1,17 @@
 use std::{collections::HashMap, sync::LazyLock};
 
+use anyhow::anyhow;
 use sqlx::{Acquire, SqliteConnection};
 use tauri::async_runtime::Mutex;
 
-use crate::{model::po::project::LocalPage, result_trace::ResultTrace as _};
+use crate::model::po::project::LocalPage;
 
 static PAGE_UPSERT_LOCK: LazyLock<Mutex<()>> = LazyLock::new(|| Mutex::new(()));
 
 pub async fn get_project_pages(
     conn: &mut SqliteConnection,
     project_id: &str,
-) -> Result<Vec<LocalPage>, String> {
+) -> anyhow::Result<Vec<LocalPage>> {
     let pages: Vec<LocalPage> = sqlx::query_as(
         r#"
         SELECT id, project_id, index_in_project, local_image_path
@@ -22,8 +23,7 @@ pub async fn get_project_pages(
     .bind(project_id)
     .fetch_all(&mut *conn)
     .await
-    .trace_error("获取项目页列表时失败")
-    .map_err(|e| e.to_string())?;
+    .map_err(|e| anyhow!("获取项目页列表时失败: {}", e))?;
 
     Ok(pages)
 }
@@ -32,7 +32,7 @@ pub async fn get_project_pages(
 pub async fn save_project_pages(
     conn: &mut SqliteConnection,
     pages: &[LocalPage],
-) -> Result<(), String> {
+) -> anyhow::Result<()> {
     if pages.is_empty() {
         return Ok(());
     }
@@ -56,8 +56,7 @@ pub async fn save_project_pages(
         .bind(&page.id)
         .execute(&mut *conn)
         .await
-        .trace_error("保存项目页时更新失败")
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| anyhow!("保存项目页时更新失败: {}", e))?;
 
         if update_res.rows_affected() == 0 {
             sqlx::query(
@@ -72,8 +71,7 @@ pub async fn save_project_pages(
             .bind(&page.local_image_path)
             .execute(&mut *conn)
             .await
-            .trace_error("保存项目页时插入失败")
-            .map_err(|e| e.to_string())?;
+            .map_err(|e| anyhow!("保存项目页时插入失败: {}", e))?;
 
             *counts_by_project
                 .entry(page.project_id.clone())
@@ -93,8 +91,7 @@ pub async fn save_project_pages(
         .bind(&project_id)
         .execute(&mut *conn)
         .await
-        .trace_error("更新项目页计数时失败")
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| anyhow!("更新项目页计数时失败: {}", e))?;
     }
 
     Ok(())
@@ -103,7 +100,7 @@ pub async fn save_project_pages(
 pub async fn delete_project_pages(
     conn: &mut SqliteConnection,
     page_ids: &[&str],
-) -> Result<(), String> {
+) -> anyhow::Result<()> {
     if page_ids.is_empty() {
         return Ok(());
     }
@@ -111,8 +108,7 @@ pub async fn delete_project_pages(
     let mut trx = conn
         .begin()
         .await
-        .trace_error("开始删除项目页批量事务失败")
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| anyhow!("开始删除项目页批量事务失败: {}", e))?;
 
     for page_id in page_ids.iter() {
         let project_id: String = sqlx::query_scalar(
@@ -123,8 +119,7 @@ pub async fn delete_project_pages(
         .bind(page_id)
         .fetch_one(trx.as_mut())
         .await
-        .trace_error("查询要删除页面的 project_id 失败")
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| anyhow!("查询要删除页面的 project_id 失败: {}", e))?;
 
         let (units_cnt, translated_cnt, prooved_cnt, inbox_cnt): (
             i64,
@@ -145,8 +140,7 @@ pub async fn delete_project_pages(
         .bind(page_id)
         .fetch_one(trx.as_mut())
         .await
-        .trace_error("聚合页面单元统计失败")
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| anyhow!("聚合页面单元统计失败: {}", e))?;
 
         let translated_cnt = translated_cnt.unwrap_or(0);
         let prooved_cnt = prooved_cnt.unwrap_or(0);
@@ -161,8 +155,7 @@ pub async fn delete_project_pages(
         .bind(page_id)
         .execute(trx.as_mut())
         .await
-        .trace_error("批量删除项目页时失败")
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| anyhow!("批量删除项目页时失败: {}", e))?;
 
         sqlx::query(
             r#"
@@ -185,14 +178,12 @@ pub async fn delete_project_pages(
         .bind(&project_id)
         .execute(trx.as_mut())
         .await
-        .trace_error("更新项目元数据时失败")
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| anyhow!("更新项目元数据时失败: {}", e))?;
     }
 
     trx.commit()
         .await
-        .trace_error("提交删除项目页批量事务失败")
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| anyhow!("提交删除项目页批量事务失败: {}", e))?;
 
     Ok(())
 }

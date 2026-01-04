@@ -105,6 +105,8 @@
 
 ## Rust 后端部分
 
+- 禁止使用 allow(dead_code) 等类似的属性来抑制编译器警告。
+
 - IPC 函数（即 tauri::command 指定的函数）必须放在 /src-tauri/src/ipc mod 下，且按 domain 进行文件划分。
 
 - 对于每一个使用 ? 进行传播的 Result，必须在引入 crate::result_trace 模块后，使用 ResultTrace trait 的 .trace_debug("some message") **等**方法进行错误追踪。你需要自行决定使用什么级别的 trace 方法（trace_debug、trace_info、trace_warn、trace_error）。

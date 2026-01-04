@@ -5,13 +5,15 @@ pub mod unit;
 
 use crate::{
     model::po::project::{CachedProject, LocalProject, NewCachedProject, NewLocalProject},
-    result_trace::ResultTrace as _,
+    // result_trace::ResultTrace as _,
 };
+
+use anyhow::anyhow;
 
 pub async fn pick_local_project(
     conn: &mut SqliteConnection,
     project_id: &str,
-) -> Result<LocalProject, String> {
+) -> anyhow::Result<LocalProject> {
     let project: LocalProject = sqlx::query_as(
         r#"
         SELECT
@@ -34,8 +36,7 @@ pub async fn pick_local_project(
     .bind(project_id)
     .fetch_one(&mut *conn)
     .await
-    .trace_error("获取项目时失败")
-    .map_err(|e| e.to_string())?;
+    .map_err(|e| anyhow!("获取项目时失败: {}", e))?;
 
     Ok(project)
 }
@@ -43,7 +44,7 @@ pub async fn pick_local_project(
 pub async fn pick_cached_project(
     conn: &mut SqliteConnection,
     project_id: &str,
-) -> Result<CachedProject, String> {
+) -> anyhow::Result<CachedProject> {
     let project: CachedProject = sqlx::query_as(
         r#"
         SELECT
@@ -66,15 +67,14 @@ pub async fn pick_cached_project(
     .bind(project_id)
     .fetch_one(&mut *conn)
     .await
-    .trace_error("获取缓存项目时失败")
-    .map_err(|e| e.to_string())?;
+    .map_err(|e| anyhow!("获取缓存项目时失败: {}", e))?;
 
     Ok(project)
 }
 
 pub async fn get_cached_projects(
     conn: &mut SqliteConnection,
-) -> Result<Vec<CachedProject>, String> {
+) -> anyhow::Result<Vec<CachedProject>> {
     let project_list: Vec<CachedProject> = sqlx::query_as(
         r#"
         SELECT
@@ -96,13 +96,12 @@ pub async fn get_cached_projects(
     )
     .fetch_all(&mut *conn)
     .await
-    .trace_error("获取项目列表时失败")
-    .map_err(|e| e.to_string())?;
+    .map_err(|e| anyhow!("获取项目列表时失败: {}", e))?;
 
     Ok(project_list)
 }
 
-pub async fn get_local_projects(conn: &mut SqliteConnection) -> Result<Vec<LocalProject>, String> {
+pub async fn get_local_projects(conn: &mut SqliteConnection) -> anyhow::Result<Vec<LocalProject>> {
     let project_list: Vec<LocalProject> = sqlx::query_as(
         r#"
         SELECT
@@ -124,8 +123,7 @@ pub async fn get_local_projects(conn: &mut SqliteConnection) -> Result<Vec<Local
     )
     .fetch_all(&mut *conn)
     .await
-    .trace_error("获取本地项目列表时失败")
-    .map_err(|e| e.to_string())?;
+    .map_err(|e| anyhow!("获取本地项目列表时失败: {}", e))?;
 
     Ok(project_list)
 }
@@ -134,7 +132,7 @@ pub async fn get_local_projects(conn: &mut SqliteConnection) -> Result<Vec<Local
 pub async fn create_cached_project(
     conn: &mut SqliteConnection,
     project: &NewCachedProject,
-) -> Result<(), String> {
+) -> anyhow::Result<()> {
     sqlx::query(
         r#"
         INSERT INTO cached_project_tbl (id, author, title, local_image_dir, page_count)
@@ -148,8 +146,7 @@ pub async fn create_cached_project(
     .bind(project.page_count)
     .execute(&mut *conn)
     .await
-    .trace_error("创建缓存项目时失败")
-    .map_err(|e| e.to_string())?;
+    .map_err(|e| anyhow!("创建缓存项目时失败: {}", e))?;
 
     Ok(())
 }
@@ -157,7 +154,7 @@ pub async fn create_cached_project(
 pub async fn create_local_project(
     conn: &mut SqliteConnection,
     project: &NewLocalProject,
-) -> Result<(), String> {
+) -> anyhow::Result<()> {
     sqlx::query(
         r#"
         INSERT INTO local_project_tbl (id, author, title, local_image_dir, page_count)
@@ -171,16 +168,15 @@ pub async fn create_local_project(
     .bind(project.page_count)
     .execute(&mut *conn)
     .await
-    .trace_error("创建本地项目时失败")
-    .map_err(|e| e.to_string())?;
+    .map_err(|e| anyhow!("创建本地项目时失败: {}", e))?;
 
     Ok(())
 }
 
 pub async fn update_local_project(
     conn: &mut SqliteConnection,
-    project: &NewLocalProject,
-) -> Result<(), String> {
+    project: &LocalProject,
+) -> anyhow::Result<()> {
     sqlx::query(
         r#"
         UPDATE local_project_tbl
@@ -195,8 +191,7 @@ pub async fn update_local_project(
     .bind(&project.id)
     .execute(&mut *conn)
     .await
-    .trace_error("更新本地项目时失败")
-    .map_err(|e| e.to_string())?;
+    .map_err(|e| anyhow!("更新本地项目时失败: {}", e))?;
 
     Ok(())
 }
@@ -204,7 +199,7 @@ pub async fn update_local_project(
 pub async fn delete_local_project(
     conn: &mut SqliteConnection,
     project_id: &str,
-) -> Result<(), String> {
+) -> anyhow::Result<()> {
     sqlx::query(
         r#"
         DELETE FROM local_project_tbl
@@ -214,8 +209,7 @@ pub async fn delete_local_project(
     .bind(project_id)
     .execute(&mut *conn)
     .await
-    .trace_error("删除本地项目时失败")
-    .map_err(|e| e.to_string())?;
+    .map_err(|e| anyhow!("删除本地项目时失败: {}", e))?;
 
     Ok(())
 }

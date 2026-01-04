@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 
-use crate::{http, ipc::get_ipc_request_id, local_image, result_trace::ResultTrace as _};
+use tauri::Url;
+
+use crate::{ipc::get_ipc_request_id, result_trace::ResultTrace as _, service};
 
 /// Proxies a local image file and returns a Base64 data string if successful.
 #[tauri::command]
@@ -10,10 +12,10 @@ pub async fn proxy_local_image(path: &str) -> Result<String, String> {
 
     tracing::info!(ipc_id = ipc_id, "ipc.image.proxy_local_image.start");
 
-    let data_url = local_image::proxy_local_image(path)
+    let data_url = service::image::proxy_local_image(std::path::PathBuf::from(path))
         .await
-        .map_err(|e| format!("代理本地图片失败: {}", e))
-        .trace_error("代理本地图片失败")?;
+        .trace_error("代理本地图片失败")
+        .map_err(|e| e.to_string())?;
 
     tracing::info!(ipc_id = ipc_id, "ipc.image.proxy_local_image.success");
 
@@ -31,10 +33,12 @@ pub async fn proxy_remote_image(
 
     tracing::info!(ipc_id = ipc_id, "ipc.image.proxy_remote_image.start");
 
-    let data_url = http::get(url, Some(headers))
+    let url = Url::parse(url).map_err(|e| format!("无效的 URL: {}", e))?;
+
+    let data_url = service::image::proxy_remote_image(url, headers)
         .await
-        .map_err(|e| format!("代理远程图片失败: {}", e))
-        .trace_error("代理远程图片失败")?;
+        .trace_error("代理远程图片失败")
+        .map_err(|e| e.to_string())?;
 
     tracing::info!(ipc_id = ipc_id, "ipc.image.proxy_remote_image.success");
 

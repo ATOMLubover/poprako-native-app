@@ -1,17 +1,15 @@
+use std::path::PathBuf;
+
+use anyhow::{anyhow, bail};
 use base64::{engine::general_purpose, Engine as _};
 
 /// Proxies a local image file and returns a Base64 data string if successful.
-pub async fn proxy_local_image(path: &str) -> Result<String, String> {
-    use std::fs;
-    use std::path::Path;
-
-    let p = Path::new(path);
-
-    if !p.exists() {
-        return Err(format!("File not found: {}", p.display()));
+pub async fn proxy_local_image(path: PathBuf) -> anyhow::Result<String> {
+    if !path.exists() {
+        bail!("本地图片文件不存在: {}", path.display());
     }
 
-    let ext = p
+    let ext = path
         .extension()
         .and_then(|s| s.to_str())
         .map(|s| s.to_lowercase());
@@ -28,7 +26,8 @@ pub async fn proxy_local_image(path: &str) -> Result<String, String> {
         _ => "application/octet-stream",
     };
 
-    let bytes = fs::read(p).map_err(|e| format!("Failed to read file {}: {}", p.display(), e))?;
+    let bytes =
+        std::fs::read(&path).map_err(|e| anyhow!("读取文件 {} 时失败: {}", path.display(), e))?;
 
     let encoded = general_purpose::STANDARD.encode(&bytes);
 

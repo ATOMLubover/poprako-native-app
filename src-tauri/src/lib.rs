@@ -11,7 +11,8 @@ mod model;
 mod project;
 mod repository;
 mod result_trace;
-mod selector;
+mod service;
+mod util;
 
 /// Memo:
 /// setup.logger.initialized level=Level(Debug)
@@ -41,11 +42,13 @@ static APP_ENV: Environment = {
 static APP_DATA_DIR: RwLock<Option<PathBuf>> = RwLock::new(None);
 static APP_CACHE_DIR: RwLock<Option<PathBuf>> = RwLock::new(None);
 static APP_DB_PATH: RwLock<Option<PathBuf>> = RwLock::new(None);
+static APP_COMPRESS_DIR: RwLock<Option<PathBuf>> = RwLock::new(None);
 
 static BIN_SUB_DIR: &str = "bin";
 static STORAGE_SUB_DIR: &str = "storage";
 
 static DB_SUB_PATH: &str = "data.db";
+static COMPRESS_SUB_DIR: &str = "compressed";
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -66,6 +69,9 @@ pub fn run() {
             // Initialize the database path.
             init_database_path(app)?;
 
+            // Initialize the image compress directory.
+            init_compress_dir(app)?;
+
             // Initialize the database.
             tauri::async_runtime::block_on(async { repository::init_database().await })?;
 
@@ -77,8 +83,8 @@ pub fn run() {
             ipc::compress::compress_image,
             ipc::compress::open_compress_dir,
             ipc::compress::select_image_files,
-            ipc::specail_symbol::get_special_symbols,
-            ipc::specail_symbol::save_specail_symbols,
+            ipc::special_symbol::get_special_symbols,
+            ipc::special_symbol::save_specail_symbols,
             ipc::image::proxy_local_image,
             ipc::image::proxy_remote_image,
             ipc::http::proxy_get,
@@ -92,13 +98,13 @@ pub fn run() {
             ipc::project::delete_project,
             ipc::project::page::get_project_pages,
             ipc::project::page::create_project_pages,
-            ipc::project::page::update_project_pages,
+            ipc::project::page::save_project_pages,
             ipc::project::page::delete_project_pages,
             ipc::project::unit::get_page_units,
             ipc::project::unit::save_page_units,
             ipc::project::unit::delete_page_units,
-            ipc::project::select_new_project_dir,
-            ipc::project::select_archived_project_path,
+            ipc::project::select_project_dir,
+            ipc::project::select_project_archive,
             ipc::project::port::export_project,
             ipc::project::port::import_project,
         ])
@@ -240,6 +246,27 @@ fn init_database_path(app: &App) -> Result<(), String> {
         .replace(database_path.clone());
 
     tracing::info!(db_path = ?database_path, "setup.database_path.initialized");
+
+    Ok(())
+}
+
+fn init_compress_dir(app: &App) -> Result<(), String> {
+    let cache_dir = app
+        .path()
+        .app_cache_dir()
+        .map_err(|e| format!("无法获取应用 cache 目录: {}", e))?;
+
+    let compress_dir = cache_dir.join(COMPRESS_SUB_DIR);
+
+    std::fs::create_dir_all(&compress_dir)
+        .map_err(|e| format!("无法创建 compress 目录 {:?}: {}", compress_dir, e))?;
+
+    APP_COMPRESS_DIR
+        .write()
+        .map_err(|e| format!("无法锁定 APP_COMPRESS_DIR: {}", e))?
+        .replace(compress_dir.clone());
+
+    tracing::info!(compress_dir = ?compress_dir, "setup.compress_dir.initialized");
 
     Ok(())
 }

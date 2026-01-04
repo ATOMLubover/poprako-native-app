@@ -1,6 +1,6 @@
 import {
   getProjects as ipcGetProjects,
-  createProject as ipcCreateProject,
+  createLocalProject as ipcCreateProject,
   updateProject as ipcUpdateProject,
   getProjectPages as ipcGetProjectPages,
   createProjectPages as ipcCreateProjectPages,

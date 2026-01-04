@@ -3444,7 +3444,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "poprako-fe"
+name = "poprako-native-app"
 version = "0.1.0"
 dependencies = [
  "anyhow",

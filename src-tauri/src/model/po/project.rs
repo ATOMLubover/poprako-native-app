@@ -85,6 +85,15 @@ pub struct LocalPage {
     pub local_image_path: String,
 }
 
+pub struct NewLocalPage {
+    pub id: String,
+
+    pub project_id: String,
+    pub index_in_project: u32,
+
+    pub local_image_path: String,
+}
+
 #[derive(FromRow)]
 pub struct LocalUnit {
     pub id: String,
