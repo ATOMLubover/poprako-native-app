@@ -65,3 +65,19 @@ export type NewRemoteProject = {
   outboxUnitCount?: number;
   pageCount: number;
 };
+
+// Post processor models (frontend view of backend DTOs)
+export type CharConverter = {
+  mapping: Record<string, string>;
+};
+
+export type NamedPostProcessor<P> = {
+  name: string;
+  processor: P;
+};
+
+export type PostProcessor = {
+  kind: "CharConverter";
+  name: string;
+  processor: CharConverter;
+};

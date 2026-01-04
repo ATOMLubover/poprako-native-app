@@ -5,12 +5,13 @@ use std::{
     sync::Arc,
 };
 
-use anyhow::bail;
+use anyhow::{anyhow, bail};
 
 use crate::{
     model::project::PortProject,
     project::codec::{decode_export_project, encode_project, Format},
     result_trace::ResultTrace as _,
+    util::file::open_dir,
 };
 
 pub enum PortMode {
@@ -402,4 +403,8 @@ async fn reconstruct_project(src_dir: PathBuf) -> anyhow::Result<PortProject> {
     }
 
     Ok(project)
+}
+
+pub fn open_project_dir(local_image_dir: PathBuf) -> anyhow::Result<()> {
+    open_dir(local_image_dir)
 }

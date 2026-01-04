@@ -4,6 +4,7 @@ use anyhow::anyhow;
 use time::OffsetDateTime;
 
 pub mod page;
+pub mod plugin;
 pub mod port;
 pub mod unit;
 
@@ -104,7 +105,6 @@ pub async fn create_local_project(project: NewLocalProject) -> anyhow::Result<()
     let new_project_id = uuid::Uuid::new_v4().to_string();
 
     let mut pages = vec![];
-    let page_count = images_pathes.len();
 
     for (idx, path) in images_pathes.into_iter().enumerate() {
         let path = path.to_string_lossy().to_string();

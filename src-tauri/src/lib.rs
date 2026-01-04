@@ -43,11 +43,14 @@ static APP_DATA_DIR: RwLock<Option<PathBuf>> = RwLock::new(None);
 static APP_CACHE_DIR: RwLock<Option<PathBuf>> = RwLock::new(None);
 static APP_DB_PATH: RwLock<Option<PathBuf>> = RwLock::new(None);
 static APP_COMPRESS_DIR: RwLock<Option<PathBuf>> = RwLock::new(None);
+static APP_POST_PROC_DIR: RwLock<Option<PathBuf>> = RwLock::new(None);
 
 static BIN_SUB_DIR: &str = "bin";
 static STORAGE_SUB_DIR: &str = "storage";
 
 static DB_SUB_PATH: &str = "data.db";
+static PLUGIN_SUB_DIR: &str = "plugins";
+static POST_PROC_SUB_DIR: &str = "post_processors";
 static COMPRESS_SUB_DIR: &str = "compressed";
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -71,6 +74,9 @@ pub fn run() {
 
             // Initialize the image compress directory.
             init_compress_dir(app)?;
+
+            // Initialize the post processor directory.
+            init_post_proc_dir(app)?;
 
             // Initialize the database.
             tauri::async_runtime::block_on(async { repository::init_database().await })?;
@@ -105,8 +111,14 @@ pub fn run() {
             ipc::project::unit::delete_page_units,
             ipc::project::select_project_dir,
             ipc::project::select_project_archive,
+            ipc::project::plugin::get_local_post_processors,
+            ipc::project::plugin::save_local_post_processor,
+            ipc::project::plugin::select_post_processor_file,
+            ipc::project::plugin::import_post_processor,
+            ipc::project::plugin::open_post_processor_dir,
             ipc::project::port::export_project,
             ipc::project::port::import_project,
+            ipc::project::port::open_project_dir,
         ])
         .run(tauri::generate_context!())
         .expect("无法启动 Tauri 应用程序");
@@ -267,6 +279,27 @@ fn init_compress_dir(app: &App) -> Result<(), String> {
         .replace(compress_dir.clone());
 
     tracing::info!(compress_dir = ?compress_dir, "setup.compress_dir.initialized");
+
+    Ok(())
+}
+
+fn init_post_proc_dir(app: &App) -> Result<(), String> {
+    let data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("无法获取应用 data 目录: {}", e))?;
+
+    let post_proc_dir = data_dir.join(STORAGE_SUB_DIR).join(POST_PROC_SUB_DIR);
+
+    std::fs::create_dir_all(&post_proc_dir)
+        .map_err(|e| format!("无法创建 post_processors 目录 {:?}: {}", post_proc_dir, e))?;
+
+    APP_POST_PROC_DIR
+        .write()
+        .map_err(|e| format!("无法锁定 APP_POST_PROC_DIR: {}", e))?
+        .replace(post_proc_dir.clone());
+
+    tracing::info!(post_proc_dir = ?post_proc_dir, "setup.post_proc_dir.initialized");
 
     Ok(())
 }

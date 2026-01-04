@@ -11,3 +11,4 @@
 - [ ] Minimize the count of unit update calls when updating page.
 - [ ] Add override button in proofreading mode.
 - [ ] Provide layered concurrency options in comprossors.
+- [ ] Search local projects.

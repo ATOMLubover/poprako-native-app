@@ -1,8 +1,4 @@
-use crate::{
-    ipc::get_ipc_request_id,
-    repository::special_symbol::get_special_symbols as repo_get_special_symbols,
-    result_trace::ResultTrace,
-};
+use crate::{ipc::get_ipc_request_id, result_trace::ResultTrace, service};
 
 /// Get the list of special symbols stored in the repository.
 #[tauri::command]
@@ -15,10 +11,10 @@ pub async fn get_special_symbols() -> Result<Vec<String>, String> {
         "ipc.specail_symbols.get_special_symbols.start"
     );
 
-    let symbols = repo_get_special_symbols()
+    let symbols = service::special_symbol::get_special_symbols()
         .await
-        .map_err(|e| format!("获取 special_symbols 失败: {}", e))
-        .trace_error("获取 special_symbols 失败")?;
+        .trace_error("获取 special_symbols 失败")
+        .map_err(|e| e.to_string())?;
 
     tracing::info!(
         ipc_id = ipc_id,
@@ -39,10 +35,10 @@ pub async fn save_specail_symbols(symbols: Vec<String>) -> Result<(), String> {
         "ipc.specail_symbols.save_specail_symbols.start"
     );
 
-    crate::repository::special_symbol::save_specail_symbols(&symbols)
+    service::special_symbol::save_specail_symbols(symbols)
         .await
-        .map_err(|e| format!("保存 special_symbols 失败: {}", e))
-        .trace_error("保存 special_symbols 失败")?;
+        .trace_error("保存 special_symbols 失败")
+        .map_err(|e| e.to_string())?;
 
     tracing::info!(
         ipc_id = ipc_id,

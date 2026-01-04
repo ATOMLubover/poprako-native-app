@@ -3,9 +3,14 @@ import { useEffect, useState } from "react";
 import { Project } from "../../models/project";
 import { getProjectPages } from "../../ipc/project";
 import { proxyLocalImage } from "../../ipc/image";
+import { getLocalPostProcessors } from "../../ipc/project/plugin";
+import { exportProject, openProjectDir } from "../../ipc/project/port";
+import type { PostProcessor } from "../../models/project";
+import { useToast } from "../NotificationToast";
 import { Type, Check, FileText, Layers, Image as ImageIcon, LogIn, LogOut } from "lucide-react";
 import ProgressBar from "../ProgressBar";
 import NatureButton from "../NatureButton";
+import NatureSwitchButton from "../NatureSwitchButton";
 
 type VerticalStatusCardProps = {
   project: Project;
@@ -13,6 +18,11 @@ type VerticalStatusCardProps = {
 
 export default function VerticalStatusCard({ project }: VerticalStatusCardProps) {
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [postProcessors, setPostProcessors] = useState<PostProcessor[]>([]);
+  const [selectedProcessors, setSelectedProcessors] = useState<string[]>([]);
+  const [exportToZip, setExportToZip] = useState(false);
+  const { showToast } = useToast();
 
   useEffect(() => {
     let isMounted = true;
@@ -36,6 +46,19 @@ export default function VerticalStatusCard({ project }: VerticalStatusCardProps)
     return () => { isMounted = false; };
   }, [project.id]);
 
+  useEffect(() => {
+    async function fetchProcessors() {
+      try {
+        const procs = await getLocalPostProcessors();
+        setPostProcessors(procs);
+      } catch (e) {
+        console.error("Failed to fetch post processors", e);
+      }
+    }
+
+    fetchProcessors();
+  }, []);
+
   const author = project.author ?? "";
   const title = project.title ?? "";
   const trPercent = project.unitCount > 0
@@ -48,9 +71,54 @@ export default function VerticalStatusCard({ project }: VerticalStatusCardProps)
   const tr = Math.max(0, Math.min(100, Math.round(trPercent)));
   const pr = Math.max(0, Math.min(100, Math.round(prPercent)));
 
+  const handleExportClick = () => {
+    setIsExporting(true);
+    setSelectedProcessors([]);
+  };
+
+  const handleCancelExport = () => {
+    setIsExporting(false);
+    setSelectedProcessors([]);
+  };
+
+  const handleProcessorToggle = (name: string) => {
+    setSelectedProcessors(prev => {
+      if (prev.includes(name)) {
+        return prev.filter(n => n !== name);
+      } else {
+        return [...prev, name];
+      }
+    });
+  };
+
+  const handleConfirmExport = async () => {
+    try {
+      const path = await exportProject(project.id, exportToZip, selectedProcessors);
+      showToast("success", `项目导出成功: ${path}`);
+      setIsExporting(false);
+      setSelectedProcessors([]);
+    } catch (e) {
+      showToast("error", `导出失败: ${(e as Error).message}`);
+    }
+  };
+
+  const handleOpenProjectDir = async () => {
+    if (!project.localImageDir || project.localImageDir.trim() === "") {
+      showToast("error", "项目没有本地图片目录");
+      return;
+    }
+
+    try {
+      await openProjectDir(project.localImageDir);
+      showToast("success", "已打开项目目录");
+    } catch (e) {
+      showToast("error", `打开项目目录失败: ${(e as Error).message}`);
+    }
+  };
+
   return (
     <>
-      <div className="vsc-image-container">
+      <div className={`vsc-image-container ${isExporting ? 'collapsed' : ''}`}>
         <div className="vsc-image-box" aria-hidden>
           {coverUrl ? (
             <img src={coverUrl} alt={title} className="vsc-image" />
@@ -131,15 +199,68 @@ export default function VerticalStatusCard({ project }: VerticalStatusCardProps)
           </div>
         </div>
       </div>
+
+      <div className={`vsc-postproc-selector ${isExporting ? 'open' : 'closed'}`}>
+        <div className="vsc-postproc-header">
+          <div className="vsc-postproc-title">选择后处理配置</div>
+          <div className="vsc-postproc-actions">
+            <NatureSwitchButton
+              initialState={exportToZip ? "on" : "off"}
+              onToggle={(s) => setExportToZip(s === "on")}
+              width={140}
+              height={28}
+              onText="启用压缩"
+              offText="启用压缩"
+            />
+          </div>
+        </div>
+        <div className="vsc-postproc-list">
+          {postProcessors.length === 0 ? (
+            <div className="vsc-postproc-placeholder">暂无后处理器</div>
+          ) : (
+            postProcessors.map(proc => (
+              <div
+                key={proc.name}
+                className={`vsc-postproc-entry ${selectedProcessors.includes(proc.name) ? 'selected' : ''}`}
+                onClick={() => handleProcessorToggle(proc.name)}
+              >
+                {proc.name}
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
       <div className="vsc-export-wrap">
         <div className="vsc-export-inner">
-          <NatureButton
-            variant="cloud"
-            minWidth={0}
-            onClick={() => {
-              console.log("[VerticalStatusCard] Export", project.id);
-            }}
-          >导出</NatureButton>
+          {!isExporting ? (
+            <>
+              <NatureButton
+                variant="cloud"
+                minWidth={0}
+                onClick={handleOpenProjectDir}
+              >打开项目目录</NatureButton>
+
+              <NatureButton
+                variant="mist"
+                minWidth={0}
+                onClick={handleExportClick}
+              >导出</NatureButton>
+            </>
+          ) : (
+            <>
+              <NatureButton
+                variant="cloud"
+                minWidth={0}
+                onClick={handleCancelExport}
+              >取消</NatureButton>
+              <NatureButton
+                variant="mist"
+                minWidth={0}
+                onClick={handleConfirmExport}
+              >导出</NatureButton>
+            </>
+          )}
         </div>
       </div>
     </>

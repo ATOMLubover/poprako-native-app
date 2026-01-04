@@ -1,13 +1,22 @@
-use std::path::PathBuf;
+use std::{collections::HashMap, path::PathBuf};
 
 use anyhow::anyhow;
 
 use crate::{
     model::{
         po::project::{LocalPage, LocalUnit, NewLocalProject},
-        project::PortProject,
+        project::{
+            plugin::{PostProcess, PostProcessor},
+            PortPage, PortProject,
+        },
     },
-    project::port::{export_project as port_export, import_project as port_import, PortMode},
+    project::{
+        plugin::get_local_post_processors,
+        port::{
+            export_project as port_export, import_project as port_import,
+            open_project_dir as port_open, PortMode,
+        },
+    },
     repository::{
         acquire_connection, aquire_transaction,
         project::{self as repo_project, page as repo_page, unit as repo_unit},
@@ -15,7 +24,11 @@ use crate::{
 };
 
 /// Exports a project in both PopRaKo and LabelPlus formats.
-pub async fn export_project(project_id: &str, need_compress: bool) -> anyhow::Result<String> {
+pub async fn export_project(
+    project_id: &str,
+    need_compress: bool,
+    post_processors: Vec<String>,
+) -> anyhow::Result<String> {
     let mut conn = acquire_connection()
         .await
         .map_err(|e| anyhow!("获取数据库连接时失败: {}", e))?;
@@ -48,7 +61,7 @@ pub async fn export_project(project_id: &str, need_compress: bool) -> anyhow::Re
         units.push(page_units);
     }
 
-    let export_pages: Vec<crate::model::project::PortPage> = pages
+    let export_pages: Vec<PortPage> = pages
         .into_iter()
         .zip(units.into_iter())
         .map(|(p, us)| {
@@ -58,7 +71,7 @@ pub async fn export_project(project_id: &str, need_compress: bool) -> anyhow::Re
                 .map(|s| s.to_string())
                 .unwrap_or(p.local_image_path.clone());
 
-            crate::model::project::PortPage {
+            PortPage {
                 image_filename,
                 units: us
                     .into_iter()
@@ -81,6 +94,12 @@ pub async fn export_project(project_id: &str, need_compress: bool) -> anyhow::Re
         author,
         title,
         pages: export_pages,
+    };
+
+    // Post-process the project if needed
+    let export_proj = match post_processors.is_empty() {
+        true => export_proj,
+        false => post_process(export_proj, post_processors).await?,
     };
 
     let base_dir_clone = base_dir.clone();
@@ -226,4 +245,55 @@ pub async fn import_project(
         .map_err(|e| anyhow!("提交导入事务失败: {}", e))?;
 
     Ok(())
+}
+
+pub fn open_project_dir(local_image_dir: PathBuf) -> anyhow::Result<()> {
+    port_open(local_image_dir).map_err(|e| anyhow!("打开项目目录时失败: {}", e))
+}
+
+async fn post_process(
+    project: PortProject,
+    processors: Vec<String>,
+) -> anyhow::Result<PortProject> {
+    let local_processors = get_local_post_processors().await?;
+
+    let mut local_hashmap: HashMap<String, PostProcessor> = HashMap::new();
+
+    for p in local_processors.into_iter() {
+        let name = p.name().to_string();
+        local_hashmap.insert(name, p);
+    }
+
+    if processors.is_empty() {
+        return Ok(project);
+    }
+
+    let mut selected: Vec<PostProcessor> = Vec::new();
+    let mut missing: Vec<String> = Vec::new();
+
+    for name in processors.iter() {
+        if let Some(p) = local_hashmap.remove(name) {
+            selected.push(p);
+        } else {
+            missing.push(name.clone());
+        }
+    }
+
+    if !missing.is_empty() {
+        return Err(anyhow!("后处理器未找到: {}", missing.join(", ")));
+    }
+
+    let project = tauri::async_runtime::spawn_blocking(move || -> anyhow::Result<PortProject> {
+        let mut project = project;
+
+        for proc in selected.into_iter() {
+            proc.process(&mut project)?;
+        }
+
+        Ok(project)
+    })
+    .await
+    .map_err(|e| anyhow!("执行后处理器时失败: {}", e))??;
+
+    Ok(project)
 }

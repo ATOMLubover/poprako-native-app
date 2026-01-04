@@ -1,4 +1,5 @@
 pub mod page;
+pub mod plugin;
 pub mod port;
 pub mod unit;
 

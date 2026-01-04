@@ -28,6 +28,14 @@
   justify-content: center;
   overflow: hidden;
   border-bottom: 1px solid #f3f4f6;
+  transition: height 0.3s ease, opacity 0.3s ease;
+}
+
+.vsc-image-container.collapsed {
+  height: 0;
+  opacity: 0;
+  padding: 0;
+  border-bottom: none;
 }
 
 .vsc-image-box {
@@ -155,6 +163,116 @@
   background: linear-gradient(180deg, #fffbf2 0%, #ffffff 100%);
 }
 
+.vsc-postproc-selector {
+  padding: 12px;
+  border-top: 1px solid #f3f4f6;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: max-height 320ms ease, opacity 240ms ease, transform 240ms ease;
+}
+
+.vsc-postproc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.vsc-postproc-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  text-align: left;
+}
+
+.vsc-postproc-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vsc-postproc-zip-label {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.vsc-postproc-list {
+  height: 200px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+}
+
+/* compact scrollbar, consistent with ConfirmDialogBox */
+.vsc-postproc-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.vsc-postproc-list::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 2px;
+}
+
+.vsc-postproc-list {
+  scrollbar-width: thin;
+  scrollbar-color: #e5e7eb transparent;
+}
+
+.vsc-postproc-entry {
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.vsc-postproc-entry:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.vsc-postproc-entry.selected {
+  background: #cfebd9;
+  border-color: #86efac;
+  color: #1b3123;
+  font-weight: 500;
+}
+
+.vsc-postproc-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.vsc-postproc-selector.open {
+  max-height: 320px; /* enough to show header + list */
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.vsc-postproc-selector.closed {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
 .vsc-export-wrap {
   display: flex;
   justify-content: center;
@@ -164,15 +282,16 @@
 }
 
 .vsc-export-inner {
-  width: 60%;
+  width: 80%;
   max-width: 280px;
   min-width: 120px;
   display: flex;
   justify-content: center;
+  gap: 8px;
 }
 
 .vsc-export-inner .nb-btn-base {
-  width: 100%;
+  flex: 1;
 }
 
 .vsc-metric-item {

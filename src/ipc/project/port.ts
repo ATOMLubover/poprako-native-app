@@ -52,13 +52,30 @@ export async function importProject(
   }
 }
 
-export async function exportProject(projectId: string): Promise<string> {
+export async function exportProject(
+  projectId: string,
+  needCompress: boolean,
+  postProcessors: string[]
+): Promise<string> {
   try {
     const path = await invoke<string>("export_project", {
       projectId: projectId,
+      needCompress: needCompress,
+      postProcessors: postProcessors,
     });
 
     return path;
+  } catch (e) {
+    throw new Error((e as Error).message || String(e));
+  }
+}
+
+export async function openProjectDir(localImageDir: string): Promise<void> {
+  try {
+    await invoke<void>("open_project_dir", {
+      localImageDir: localImageDir,
+    });
+    return;
   } catch (e) {
     throw new Error((e as Error).message || String(e));
   }
@@ -69,4 +86,5 @@ export default {
   selectProjectArchive,
   importProject,
   exportProject,
+  openProjectDir,
 };

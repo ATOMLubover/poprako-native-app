@@ -3,6 +3,7 @@ import type { Project, NewLocalProject } from "../models/project";
 import * as Page from "./project/page";
 import * as Unit from "./project/unit";
 import * as Port from "./project/port";
+import * as Plugin from "./project/plugin";
 
 type RawProject = {
   id: string;
@@ -105,6 +106,12 @@ export const getPageUnits = Unit.getPageUnits;
 export const savePageUnits = Unit.savePageUnits;
 export const deletePageUnits = Unit.deletePageUnits;
 
+export const getLocalPostProcessors = Plugin.getLocalPostProcessors;
+export const saveLocalPostProcessor = Plugin.saveLocalPostProcessor;
+export const selectPostProcessorFile = Plugin.selectPostProcessorFile;
+export const importPostProcessor = Plugin.importPostProcessor;
+export const openPostProcessorDir = Plugin.openPostProcessorDir;
+
 // 删除项目
 export async function deleteProject(projectId: string): Promise<void> {
   try {
@@ -145,4 +152,10 @@ export default {
   selectArchivedProjectPath: Port.selectProjectArchive,
   importProject: Port.importProject,
   exportProject: Port.exportProject,
+  // plugin api
+  getLocalPostProcessors: Plugin.getLocalPostProcessors,
+  saveLocalPostProcessor: Plugin.saveLocalPostProcessor,
+  selectPostProcessorFile: Plugin.selectPostProcessorFile,
+  importPostProcessor: Plugin.importPostProcessor,
+  openPostProcessorDir: Plugin.openPostProcessorDir,
 };
