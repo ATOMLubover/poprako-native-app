@@ -12,9 +12,11 @@
   "app": {
     "windows": [
       {
-        "title": "poprako-fe",
+        "title": "poprako-native",
         "width": 1280,
-        "height": 720
+        "height": 720,
+        "resizable": true,
+        "decorations": false
       }
     ],
     "security": {

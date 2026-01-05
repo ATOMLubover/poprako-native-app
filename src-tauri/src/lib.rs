@@ -86,6 +86,9 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             ipc::check_dev_mode,
+            ipc::util::minimize_window,
+            ipc::util::maximize_window,
+            ipc::util::close_window,
             ipc::compress::compress_image,
             ipc::compress::open_compress_dir,
             ipc::compress::select_image_files,

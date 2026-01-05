@@ -2,6 +2,7 @@
   --sidebar-width-collapsed: 70px;
   --sidebar-width-expanded: 240px;
   
+  
   /* 自然配色方案 */
   --bg-page: #f6f6f6;
   --bg-sidebar: #ffffff;
@@ -71,8 +72,8 @@ html, body, #root {
 .sidebar {
   position: fixed;
   left: 0;
-  top: 0;
-  height: 100vh;
+  top: var(--titlebar-height);
+  height: calc(100vh - var(--titlebar-height));
   width: var(--sidebar-width-collapsed);
   background-color: var(--bg-sidebar);
   border-right: 1px solid var(--border-color);

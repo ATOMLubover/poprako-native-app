@@ -223,8 +223,6 @@ export function CompressorPage() {
   return (
     <div className="compressor-view">
       <div className="compressor-header">
-        <h1 className="compressor-title">压图工具</h1>
-
         <div className="compressor-toolbar">
           <div className="toolbar-left">
             <label className="footer-label">压缩上限</label>

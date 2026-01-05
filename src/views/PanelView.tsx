@@ -2,14 +2,14 @@ import { useState } from "react";
 import Icon from "../components/Icon";
 import TermbasePage from "./TermbasePage";
 import TagPoolPage from "./TagPoolPage";
-import { CompressorPage } from "./CompressorPage";
 import SpecialSymbolPage from "./SpecialSymbolPage";
 import ComicWorkspacePage from "./ComicWorkspacePage";
+import ToolboxPage from "./ToolboxPage.tsx";
 import VerticalStatusCard from "../components/project/VerticalStatusCard";
 import type { Project } from "../models/project";
 import "./PanelView.css";
 
-type MenuItem = "draft-board" | "team-list" | "tag-pool" | "termbase-pool" | "font-repo" | "compressor-helper" | "special-symbols" | "comic-workspace" | "settings";
+type MenuItem = "draft-board" | "tag-pool" | "termbase-pool" | "special-symbols" | "comic-workspace" | "toolbox" | "settings";
 
 
 type NavItem = {
@@ -59,13 +59,11 @@ export default function PanelView() {
 
   const navItems: NavItem[] = [
     { id: "draft-board", icon: "pencil", label: "草稿板" },
-    { id: "team-list", icon: "users", label: "汉化组" },
     { id: "comic-workspace", icon: "proofread", label: "漫画翻校" },
     { id: "tag-pool", icon: "tag", label: "标签池" },
     { id: "termbase-pool", icon: "database", label: "术语库" },
-    { id: "font-repo", icon: "font", label: "字体仓库" },
     { id: "special-symbols", icon: "star", label: "特殊符号" },
-    { id: "compressor-helper", icon: "image", label: "压图工具" },
+    { id: "toolbox", icon: "wrench", label: "工具箱" },
   ];
 
   const settingsItem: NavItem = { id: "settings", icon: "settings", label: "设置" };
@@ -76,20 +74,16 @@ export default function PanelView() {
         return (
           <DraftBoard />
         );
+      case "toolbox":
+        return <ToolboxPage />;
       case "comic-workspace":
         return <ComicWorkspacePage />;
-      case "team-list":
-        return <div>汉化组列表页面开发中</div>;
       case "tag-pool":
         return <TagPoolPage />;
       case "termbase-pool":
         return <TermbasePage />;
-      case "font-repo":
-        return <div>字体仓库页面开发中</div>;
       case "special-symbols":
         return <SpecialSymbolPage />;
-      case "compressor-helper":
-        return <CompressorPage />;
       case "settings":
         return <div>设置页面开发中</div>;
       default:
@@ -141,6 +135,8 @@ export default function PanelView() {
             </span>
             <span className="nav-text">{settingsItem.label}</span>
           </a>
+
+          {/* 工具箱已移入主导航 */}
         </div>
       </nav>
 
