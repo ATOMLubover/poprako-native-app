@@ -5,6 +5,7 @@ import TagPoolPage from "./TagPoolPage";
 import SpecialSymbolPage from "./SpecialSymbolPage";
 import ComicWorkspacePage from "./ComicWorkspacePage";
 import ToolboxPage from "./ToolboxPage.tsx";
+import SettingPage from "./SettingPage.tsx";
 import VerticalStatusCard from "../components/project/VerticalStatusCard";
 import type { Project } from "../models/project";
 import "./PanelView.css";
@@ -85,7 +86,7 @@ export default function PanelView() {
       case "special-symbols":
         return <SpecialSymbolPage />;
       case "settings":
-        return <div>设置页面开发中</div>;
+        return <SettingPage />;
       default:
         return <div>页面开发中</div>;
     }

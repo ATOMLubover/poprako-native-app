@@ -1,6 +1,7 @@
 :root {
   --sidebar-width-collapsed: 70px;
   --sidebar-width-expanded: 240px;
+  --titlebar-height: 24px;
   
   
   /* 自然配色方案 */

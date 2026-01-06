@@ -14,10 +14,12 @@ type ProjectStatusCardProps = {
   onAct?: (project: Project) => void;
   onSync?: (project: Project) => void;
   onDelete?: (project: Project) => void;
+  onExport?: (project: Project) => void;
+  onModify?: (project: Project) => void;
 };
 
 // 极简 ProjectStatusCard 组件，仅接受 Project DTO
-export default function ProjectStatusCard({ project, onAct, onSync, onDelete }: ProjectStatusCardProps) {
+export default function ProjectStatusCard({ project, onAct, onSync, onDelete, onExport, onModify }: ProjectStatusCardProps) {
   const author = project.author ?? "";
   const title = project.title ?? "";
   const pages = project.pageCount ?? 0;
@@ -69,11 +71,15 @@ export default function ProjectStatusCard({ project, onAct, onSync, onDelete }: 
 
   // 占位的动作回调（可由调用方提供具体实现）
   function handleExport() {
-    // TODO: 导出逻辑
+    if (onExport) {
+      onExport(project);
+    }
   }
 
   function handleModify() {
-    // TODO: 修改逻辑
+    if (onModify) {
+      onModify(project);
+    }
   }
 
   function handleSync() {

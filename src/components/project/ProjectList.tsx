@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import ProjectStatusCard from "./ProjectStatusCard";
 import LocalProjectCreator from "./LocalProjectCreator";
+import LocalProjectModifier from "./LocalProjectModifier";
+import LocalProjectExporter from "./LocalProjectExporter";
 import NatureButton from "../NatureButton";
 import { Plus } from "lucide-react";
 import type { Project } from "../../models/project";
@@ -89,6 +91,9 @@ type ProjectListProps = {
 export default function ProjectList({ projects, onAct, onSync, onRefresh, title }: ProjectListProps) {
   const [page, setPage] = useState<number>(0);
   const [showCreator, setShowCreator] = useState<boolean>(false);
+  const [showModifier, setShowModifier] = useState<boolean>(false);
+  const [showExporter, setShowExporter] = useState<boolean>(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const templateRef = useRef<HTMLDivElement>(null);
 
@@ -112,6 +117,30 @@ export default function ProjectList({ projects, onAct, onSync, onRefresh, title 
     if (onRefresh) {
       onRefresh();
     }
+  }
+
+  function handleModify(project: Project) {
+    setSelectedProject(project);
+    setShowModifier(true);
+  }
+
+  function handleModifierSave() {
+    setShowModifier(false);
+    setSelectedProject(null);
+
+    if (onRefresh) {
+      onRefresh();
+    }
+  }
+
+  function handleExport(project: Project) {
+    setSelectedProject(project);
+    setShowExporter(true);
+  }
+
+  function handleExporterSuccess() {
+    setShowExporter(false);
+    setSelectedProject(null);
   }
 
   return (
@@ -159,6 +188,8 @@ export default function ProjectList({ projects, onAct, onSync, onRefresh, title 
                 onDelete={() => {
                   if (onRefresh) onRefresh();
                 }}
+                onModify={handleModify}
+                onExport={handleExport}
               />
             </div>
           ))
@@ -239,6 +270,76 @@ export default function ProjectList({ projects, onAct, onSync, onRefresh, title 
             <LocalProjectCreator
               onSave={handleCreatorSave}
               onCancel={() => setShowCreator(false)}
+            />
+          </div>
+        </div>
+      ) : null}
+
+      {showModifier && selectedProject ? (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(6, 10, 8, 0.45)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 160,
+          }}
+          onClick={() => {
+            setShowModifier(false);
+            setSelectedProject(null);
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: "92%",
+              maxHeight: "86%",
+            }}
+          >
+            <LocalProjectModifier
+              project={selectedProject}
+              onSave={handleModifierSave}
+              onCancel={() => {
+                setShowModifier(false);
+                setSelectedProject(null);
+              }}
+            />
+          </div>
+        </div>
+      ) : null}
+
+      {showExporter && selectedProject ? (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(6, 10, 8, 0.45)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 160,
+          }}
+          onClick={() => {
+            setShowExporter(false);
+            setSelectedProject(null);
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: "92%",
+              maxHeight: "86%",
+            }}
+          >
+            <LocalProjectExporter
+              project={selectedProject}
+              onSuccess={handleExporterSuccess}
+              onCancel={() => {
+                setShowExporter(false);
+                setSelectedProject(null);
+              }}
             />
           </div>
         </div>
