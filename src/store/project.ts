@@ -49,19 +49,8 @@ export async function getProjects(refresh = false): Promise<Project[]> {
 export async function createLocalProject(
   project: NewLocalProject
 ): Promise<void> {
-  const fullProject: Project = {
-    id: crypto.randomUUID(),
-    author: project.author,
-    title: project.title,
-    localImageDir: project.localImageDir,
-    unitCount: 0,
-    translatedUnitCount: 0,
-    proovedUnitCount: 0,
-    pageCount: 0,
-    updatedAt: new Date().toISOString(),
-  };
-
-  await ipcCreateProject(fullProject);
+  // send the NewLocalProject payload to the backend API
+  await ipcCreateProject(project);
   await getProjects(true);
 }
 

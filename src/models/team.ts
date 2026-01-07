@@ -15,3 +15,11 @@ export type TeamBrief = {
   teamId: string;
   name: string;
 };
+
+// 申请创建团队请求
+export type CreateTeamApplicationReq = {
+  name: string;
+  signature: string;
+  qqNumber: string;
+  description: string;
+};

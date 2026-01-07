@@ -48,7 +48,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [text, setText] = useState(initialText);
   const [editingIndex, setEditingIndex] = useState(false);
-  const [indexInput, setIndexInput] = useState(String(indexInPage + 1));
+  const [indexInput, setIndexInput] = useState(String(indexInPage));
 
   useImperativeHandle(ref, () => ({
     focus: (toEnd?: boolean) => {
@@ -100,7 +100,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((
 
   const handleIndexClick = () => {
     setEditingIndex(true);
-    setIndexInput(String(indexInPage + 1));
+    setIndexInput(String(indexInPage));
   };
 
   const confirmIndex = (raw: string) => {
@@ -111,13 +111,15 @@ const Editor = forwardRef<EditorRef, EditorProps>((
       return;
     }
 
-    const maxIndex = Math.max(totalUnits - 1, 0);
+    // 用户输入为 1-based，界面与交互均使用 1-based
+    const maxOneBased = Math.max(totalUnits, 1);
     let userOneBased = parsed;
     if (userOneBased < 1) userOneBased = 1;
-    if (userOneBased - 1 > maxIndex) userOneBased = maxIndex + 1;
+    if (userOneBased > maxOneBased) userOneBased = maxOneBased;
 
-    const target = userOneBased - 1;
-    onIndexChange(target);
+    // 将 1-based 的目标传回给父组件，由父组件决定如何转换到数组索引
+    const targetOneBased = userOneBased;
+    onIndexChange(targetOneBased);
     setEditingIndex(false);
   };
 
@@ -168,7 +170,7 @@ const Editor = forwardRef<EditorRef, EditorProps>((
           />
         ) : (
           <span className="index-label" onClick={handleIndexClick}>
-            {String(indexInPage + 1).padStart(2, "0")}
+            {String(indexInPage).padStart(2, "0")}
           </span>
         )}
 

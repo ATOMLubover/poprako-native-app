@@ -272,7 +272,7 @@ export const Marker: React.FC<MarkerProps> = ({
             ["--marker-border-color" as any]: borderColor,
           } as React.CSSProperties}
         >
-          <span className="marker-index">{unit.indexInPage + 1}</span>
+          <span className="marker-index">{unit.indexInPage}</span>
         </div>
 
         {/* 定位点 */}

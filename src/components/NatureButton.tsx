@@ -77,6 +77,8 @@ export default function NatureButton(props: NatureButtonProps) {
   const classes = ["nb-btn-base", variantClass, disabled ? "nb-disabled" : ""].join(" ");
   const inlineStyle = Object.assign(
     {},
+    // 防止父级 flex 容器让按钮自动拉伸
+    { flex: "0 0 auto" },
     minWidth ? { minWidth: typeof minWidth === "number" ? `${minWidth}px` : minWidth } : undefined,
     props.fontSize ? { fontSize: typeof props.fontSize === "number" ? `${props.fontSize}px` : props.fontSize } : undefined
   );

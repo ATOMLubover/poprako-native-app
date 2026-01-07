@@ -22,9 +22,10 @@ type StageProps = {
   onUnitRemove?: (unitId: string) => void;
   onUnitMove?: (unitId: string, x: number, y: number) => void;
   onUnitMoveEnd?: (unitId: string, x: number, y: number) => void;
+  onScaleChange?: (scale: number) => void;
 };
 
-export const Stage = forwardRef<StageHandle, StageProps>(({ page, units, mode, selectedUnitId, onUnitClick, onUnitCreate, onUnitRemove, onUnitMove, onUnitMoveEnd }, ref) => {
+export const Stage = forwardRef<StageHandle, StageProps>(({ page, units, mode, selectedUnitId, onUnitClick, onUnitCreate, onUnitRemove, onUnitMove, onUnitMoveEnd, onScaleChange }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const imageLayerRef = useRef<ImageLayerHandle>(null);
   const [imageRenderInfo, setImageRenderInfo] = useState({
@@ -62,6 +63,9 @@ export const Stage = forwardRef<StageHandle, StageProps>(({ page, units, mode, s
     setImageRenderInfo(info);
     if (isLoading) {
       setIsLoading(false);
+    }
+    if (onScaleChange) {
+      onScaleChange(info.scale);
     }
   };
 

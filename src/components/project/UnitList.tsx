@@ -137,7 +137,8 @@ export const UnitList: React.FC<UnitListProps> = ({ units, onUnitClick, selected
           // 渲染内容
           const renderContent = () => {
             const hasTranslated = (firstNonEmpty(unit.translatedText) ?? "").toString().trim() !== "";
-            const hasProoved = (firstNonEmpty(unit.proovedText) ?? "").toString().trim() !== "";
+            // 校对文本存在性判断：只要 proovedText 不是 undefined 就认为"已校对"（即使是空字符串）
+            const hasProovedField = unit.proovedText !== undefined;
 
             if (isProofMode) {
               return (
@@ -146,7 +147,7 @@ export const UnitList: React.FC<UnitListProps> = ({ units, onUnitClick, selected
                   {hasTranslated ? (
                     <>
                       <div className="translated-row">
-                        <div className={`translated-text ${hasProoved ? "translated-text--muted" : ""}`}>{unit.translatedText}</div>
+                        <div className={`translated-text ${hasProovedField ? "translated-text--muted" : ""}`}>{unit.translatedText}</div>
                         {/*
                         <button
                           className="copy-button"
@@ -164,16 +165,17 @@ export const UnitList: React.FC<UnitListProps> = ({ units, onUnitClick, selected
                         */}
                       </div>
 
-                      {hasProoved ? <div className="divider-line" /> : null}
+                      {hasProovedField ? <div className="divider-line" /> : null}
                     </>
                   ) : null}
 
                   {/* 3-4. proofed text 显示逻辑 */}
-                  {hasProoved ? (
-                    <div className="proofed-text">{unit.proovedText}</div>
+                  {hasProovedField ? (
+                    <div className="proofed-text">{unit.proovedText === "" ?
+                      "-" : unit.proovedText}</div>
                   ) : (
                     // 没有 proovedText 的两种情况：
-                    // - 如果没有 translatedText：显示 '_'（占位）
+                    // - 如果没有 translatedText：显示 '-'（占位）
                     // - 如果有 translatedText：略去不显示
                     !hasTranslated ? <div className="proofed-text">-</div> : null
                   )}
@@ -208,7 +210,7 @@ export const UnitList: React.FC<UnitListProps> = ({ units, onUnitClick, selected
               onClick={() => handleUnitClick(unit.id)}
             >
               <div className={`unit-index ${indexClass}`}>
-                {unit.indexInPage + 1}
+                {unit.indexInPage}
               </div>
               <div className="unit-content">
                 {renderContent()}

@@ -87,8 +87,9 @@
   z-index: 40;
   /* 移除 translate 偏移，让 JS 传入的 left/top 作为左上角锚点 */
   transform: none;
-  max-width: 240px;
+  /* 完全忠实展示原始文本，不换行、不截断、不滚动 */
   width: max-content;
+  max-width: none;
 }
 
 .marker-preview-content {
@@ -100,12 +101,10 @@
   line-height: 1.5;
   backdrop-filter: blur(6px);
   box-shadow: 0 10px 24px rgba(30, 50, 76, 0.32);
-  white-space: pre-line;
-  max-width: 240px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  line-clamp: 3;
+  /* 精确显示原始文本（保留换行、空格），不产生横向或纵向滚动 */
+  white-space: pre;
+  overflow: visible;
+  word-break: normal;
+  overflow-wrap: normal;
+  max-width: none;
 }

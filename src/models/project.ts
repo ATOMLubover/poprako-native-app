@@ -3,7 +3,7 @@ export type Unit = {
   id: string;
   x: number; // 相对于漫画页左上角的 X 坐标，是 [0, 1] 之间的比例值
   y: number; // 相对于漫画页左上角的 Y 坐标，是 [0, 1] 之间的比例值
-  indexInPage: number; // 在漫画页中的索引位置，从 0 开始
+  indexInPage: number; // 在漫画页中的索引位置，从 1 开始
   isInbox: boolean; // 是否是框内翻译（相反的为框外翻译）
   translatedText?: string; // 翻译提供的文本
   isProoved: boolean; // 翻译文本是否已校对，默认为 false

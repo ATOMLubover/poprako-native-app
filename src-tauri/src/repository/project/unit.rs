@@ -51,52 +51,109 @@ pub async fn save_page_units(
     let _lock_guard = UNIT_UPSERT_LOCK.lock().await;
 
     let mut page_project_cache: HashMap<String, String> = HashMap::new();
+    // (total_delta, translated_delta, prooved_delta, inbox_delta)
     let mut stats_by_project: HashMap<String, (i64, i64, i64, i64)> = HashMap::new();
 
     for unit in units.iter() {
-        // try update
-        let update_res = sqlx::query(
+        // 先尝试获取旧值以计算统计差异
+        let old_unit: Option<(bool, Option<String>, bool)> = sqlx::query_as(
             r#"
-            UPDATE local_unit_tbl
-            SET page_id = ?, index_in_page = ?, x_coordinate = ?, y_coordinate = ?, is_inbox = ?, translated_text = ?, is_prooved = ?, prooved_text = ?, comment = ?, is_local = ?, updated_at = CURRENT_TIMESTAMP
-            WHERE id = ?
+            SELECT is_inbox, translated_text, is_prooved FROM local_unit_tbl WHERE id = ?
             "#,
         )
-        .bind(&unit.page_id)
-        .bind(unit.index_in_page)
-        .bind(unit.x_coordinate)
-        .bind(unit.y_coordinate)
-        .bind(unit.is_inbox)
-        .bind(&unit.translated_text)
-        .bind(unit.is_prooved)
-        .bind(&unit.prooved_text)
-        .bind(&unit.comment)
-        .bind(unit.is_local)
         .bind(&unit.id)
-        .execute(&mut *conn)
+        .fetch_optional(&mut *conn)
         .await
-        .map_err(|e| anyhow!("保存页面单元时更新失败: {}", e))?;
+        .map_err(|e| anyhow!("查询旧单元数据失败: {}", e))?;
 
-        if update_res.rows_affected() == 0 {
-            // need to insert
-            let project_id = if let Some(pid) = page_project_cache.get(&unit.page_id) {
-                pid.clone()
+        // 获取 project_id
+        let project_id = if let Some(pid) = page_project_cache.get(&unit.page_id) {
+            pid.clone()
+        } else {
+            let pid: String = sqlx::query_scalar(
+                r#"
+                SELECT project_id FROM local_page_tbl WHERE id = ?
+                "#,
+            )
+            .bind(&unit.page_id)
+            .fetch_one(&mut *conn)
+            .await
+            .map_err(|e| anyhow!("查询所属 project_id 失败: {}", e))?;
+
+            page_project_cache.insert(unit.page_id.clone(), pid.clone());
+
+            pid
+        };
+
+        if let Some((old_is_inbox, old_translated_text, old_is_prooved)) = old_unit {
+            // UPDATE 已有单元
+            sqlx::query(
+                r#"
+                UPDATE local_unit_tbl
+                SET page_id = ?, index_in_page = ?, x_coordinate = ?, y_coordinate = ?, is_inbox = ?, translated_text = ?, is_prooved = ?, prooved_text = ?, comment = ?, is_local = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+                "#,
+            )
+            .bind(&unit.page_id)
+            .bind(unit.index_in_page)
+            .bind(unit.x_coordinate)
+            .bind(unit.y_coordinate)
+            .bind(unit.is_inbox)
+            .bind(&unit.translated_text)
+            .bind(unit.is_prooved)
+            .bind(&unit.prooved_text)
+            .bind(&unit.comment)
+            .bind(unit.is_local)
+            .bind(&unit.id)
+            .execute(&mut *conn)
+            .await
+            .map_err(|e| anyhow!("保存页面单元时更新失败: {}", e))?;
+
+            // 计算统计差异
+            let old_has_translated = old_translated_text
+                .as_ref()
+                .map(|s| !s.is_empty())
+                .unwrap_or(false);
+            let new_has_translated = unit
+                .translated_text
+                .as_ref()
+                .map(|s| !s.is_empty())
+                .unwrap_or(false);
+
+            let delta_translated: i64 = if new_has_translated && !old_has_translated {
+                1
+            } else if !new_has_translated && old_has_translated {
+                -1
             } else {
-                let pid: String = sqlx::query_scalar(
-                    r#"
-                    SELECT project_id FROM local_page_tbl WHERE id = ?
-                    "#,
-                )
-                .bind(&unit.page_id)
-                .fetch_one(&mut *conn)
-                .await
-                .map_err(|e| anyhow!("查询所属 project_id 失败: {}", e))?;
-
-                page_project_cache.insert(unit.page_id.clone(), pid.clone());
-
-                pid
+                0
             };
 
+            let delta_prooved: i64 = if unit.is_prooved && !old_is_prooved {
+                1
+            } else if !unit.is_prooved && old_is_prooved {
+                -1
+            } else {
+                0
+            };
+
+            let delta_inbox: i64 = if unit.is_inbox && !old_is_inbox {
+                1
+            } else if !unit.is_inbox && old_is_inbox {
+                -1
+            } else {
+                0
+            };
+
+            if delta_translated != 0 || delta_prooved != 0 || delta_inbox != 0 {
+                let entry = stats_by_project
+                    .entry(project_id.clone())
+                    .or_insert((0, 0, 0, 0));
+                entry.1 += delta_translated;
+                entry.2 += delta_prooved;
+                entry.3 += delta_inbox;
+            }
+        } else {
+            // INSERT 新单元
             sqlx::query(
                 r#"
                 INSERT INTO local_unit_tbl (id, page_id, index_in_page, x_coordinate, y_coordinate, is_inbox, translated_text, is_prooved, prooved_text, comment, is_local)
@@ -136,11 +193,8 @@ pub async fn save_page_units(
             let entry = stats_by_project.entry(project_id).or_insert((0, 0, 0, 0));
 
             entry.0 += 1;
-
             entry.1 += inc_translated;
-
             entry.2 += inc_prooved;
-
             entry.3 += inc_inbox;
         }
     }

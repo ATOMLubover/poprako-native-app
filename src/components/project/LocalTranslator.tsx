@@ -1,12 +1,14 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Translator } from "./Translator";
 import type { Project, Page, Unit } from "../../models/project";
-import { getProjectPages, getPageUnits, savePageUnits, setActiveProjectPageIndex, getActiveProjectPageIndex } from "../../store/project";
+import { getProjectPages, getPageUnits, savePageUnits, setActiveProjectPageIndex, getActiveProjectPageIndex, getProjects } from "../../store/project";
 import { useToast } from "../NotificationToast";
 
 export type LocalTranslatorProps = {
   project: Project;
   onExit: () => void;
+  /** 当 project 元数据更新时通知父组件（可选） */
+  onProjectChange?: (project: Project) => void;
 };
 
 /**
@@ -20,9 +22,12 @@ export type LocalTranslatorProps = {
  * 5. 为 Translator 组件提供所需的所有数据和回调
  */
 export const LocalTranslator: React.FC<LocalTranslatorProps> = ({
-  project,
+  project: initialProject,
   onExit,
+  onProjectChange,
 }) => {
+  // 内部维护 project 状态副本，以便 flush 后同步更新
+  const [project, setProject] = useState<Project>(initialProject);
   const [pages, setPages] = useState<Page[]>([]);
   const [currentPageIndex, setCurrentPageIndex] = useState<number>(0);
   const [currentUnits, setCurrentUnits] = useState<Unit[]>([]);
@@ -174,16 +179,34 @@ export const LocalTranslator: React.FC<LocalTranslatorProps> = ({
     [pages, currentPageIndex, flushCurrentPage, loadPageUnits, showToast]
   );
 
-  // 强制刷新：保存当前页
+  // 强制刷新：保存当前页并更新 project 元数据
   const handleFlush = useCallback(async () => {
     try {
       await flushCurrentPage();
+
+      // 重新获取 project 列表，找到当前 project 并通知父组件
+      try {
+        const projects = await getProjects(true);
+        const updatedProject = projects.find((p) => p.id === project.id);
+
+        if (updatedProject) {
+          // 更新内部 project 状态副本
+          setProject(updatedProject);
+
+          // 通知父组件
+          if (onProjectChange) {
+            onProjectChange(updatedProject);
+          }
+        }
+      } catch (refreshErr) {
+        console.error("Failed to refresh project metadata", refreshErr);
+      }
 
       showToast("success", "已保存所有修改");
     } catch (err) {
       showToast("error", "保存失败");
     }
-  }, [flushCurrentPage, showToast]);
+  }, [flushCurrentPage, showToast, project.id, onProjectChange]);
 
   // 处理单元保存（仅更新内存 + 标记 dirty）
   const handleUnitSave = useCallback(
@@ -196,15 +219,29 @@ export const LocalTranslator: React.FC<LocalTranslatorProps> = ({
         let updatedUnits: Unit[];
 
         if (existingUnitIndex >= 0) {
+          // 正确处理字段更新：对于可选字段，如果 unit 中明确包含该 key（即使值为 undefined），则覆盖
+          const updated: Unit = { ...prevUnits[existingUnitIndex] };
+
+          // 逐字段复制，确保 undefined 会覆盖原有值（实现字段删除）
+          if ("x" in unit) updated.x = unit.x!;
+          if ("y" in unit) updated.y = unit.y!;
+          if ("indexInPage" in unit) updated.indexInPage = unit.indexInPage!;
+          if ("isInbox" in unit) updated.isInbox = unit.isInbox!;
+          if ("isProoved" in unit) updated.isProoved = unit.isProoved!;
+          if ("translatedText" in unit) updated.translatedText = unit.translatedText;
+          if ("proovedText" in unit) updated.proovedText = unit.proovedText;
+          if ("comment" in unit) updated.comment = unit.comment;
+
           updatedUnits = prevUnits.map((u, idx) =>
-            idx === existingUnitIndex ? { ...u, ...unit } : u
+            idx === existingUnitIndex ? updated : u
           );
         } else {
           const newUnit: Unit = {
             id: unit.id,
             x: unit.x ?? 0,
             y: unit.y ?? 0,
-            indexInPage: unit.indexInPage ?? prevUnits.length,
+            // Use 1-based default index
+            indexInPage: unit.indexInPage ?? (prevUnits.length + 1),
             isInbox: unit.isInbox ?? true,
             isProoved: unit.isProoved ?? false,
             translatedText: unit.translatedText,
@@ -230,7 +267,7 @@ export const LocalTranslator: React.FC<LocalTranslatorProps> = ({
         const filteredUnits = prevUnits.filter((u) => u.id !== unitId);
         const reindexedUnits = filteredUnits.map((u, idx) => ({
           ...u,
-          indexInPage: idx,
+          indexInPage: idx + 1,
         }));
 
         markCurrentPageDirty();
@@ -272,7 +309,7 @@ export const LocalTranslator: React.FC<LocalTranslatorProps> = ({
 
         const reindexedUnits = nextUnits.map((u, idx) => ({
           ...u,
-          indexInPage: idx,
+          indexInPage: idx + 1,
         }));
 
         markCurrentPageDirty();
@@ -295,11 +332,29 @@ export const LocalTranslator: React.FC<LocalTranslatorProps> = ({
         // ignore
       }
 
+      // 退出前也刷新 project 元数据
+      try {
+        const projects = await getProjects(true);
+        const updatedProject = projects.find((p) => p.id === project.id);
+
+        if (updatedProject) {
+          // 更新内部 project 状态副本
+          setProject(updatedProject);
+
+          // 通知父组件
+          if (onProjectChange) {
+            onProjectChange(updatedProject);
+          }
+        }
+      } catch (refreshErr) {
+        console.error("Failed to refresh project metadata on exit", refreshErr);
+      }
+
       onExit();
     } catch (err) {
       showToast("error", "保存失败，无法退出");
     }
-  }, [flushCurrentPage, currentPageIndex, onExit, showToast]);
+  }, [flushCurrentPage, currentPageIndex, onExit, showToast, project.id, onProjectChange]);
 
   if (loading) {
     return (

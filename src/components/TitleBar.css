@@ -4,6 +4,7 @@
   height: 24px;
   background: #daf7d8;
   border-bottom: none;
+  border: 1px solid #cde89c;
   box-shadow: none !important;
   display: flex;
   justify-content: flex-end;

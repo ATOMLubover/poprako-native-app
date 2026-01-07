@@ -29,7 +29,7 @@ export default function UserProfileCard({
     ],
     avatarUrl: "https://placehold.co/72x72/81C784/ffffff?text=L",
     signature: "树深时见鹿，溪午不闻钟。",
-    lastActive: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
+    lastActive: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
     isMe: true,
   };
 

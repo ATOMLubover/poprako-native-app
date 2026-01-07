@@ -126,10 +126,12 @@ type ShortcutConfig = {
  * - Home: 取消选择单元
  * - Tab: 切换到下一个单元（循环）
  * - Shift+Tab: 切换到上一个单元（循环）
- * - ← : 上一页
- * - → : 下一页
+ * - PageUp: 上一页
+ * - PageDown: 下一页
  * - Ctrl+M: 在翻译和校对模式之间切换
  * - Ctrl+P: 确认校对该页
+ * - Ctrl+Shift+P: 取消当前页所有校对
+ * - Ctrl+U: 清空当前聚焦单元的校对文本
  * - 画布左键: 创建新单元（框内）
  * - 画布右键: 创建新单元（框外）
  * - Marker左键: 聚焦选中单元
@@ -190,6 +192,7 @@ export const Translator: React.FC<TranslatorProps> = ({
   }, [effectiveMode, displaySidebarView]);
   const [showMemo, setShowMemo] = useState(false);
   const [showSymbolCard, setShowSymbolCard] = useState(false);
+  const [currentScale, setCurrentScale] = useState<number>(1);
 
   // 抽离模式切换逻辑以供快捷键复用
   const toggleMode = () => {
@@ -257,7 +260,7 @@ export const Translator: React.FC<TranslatorProps> = ({
   const handleUnitCreate = (unit: Omit<Unit, "id" | "indexInPage">) => {
     // 生成临时ID和索引
     const newId = `unit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const newIndexInPage = currentUnits.length;
+    const newIndexInPage = currentUnits.length + 1;
 
     const newUnit: Unit = {
       ...unit,
@@ -387,6 +390,34 @@ export const Translator: React.FC<TranslatorProps> = ({
       description: "确认校对该页 (Ctrl+P)",
     },
     {
+      key: "P",
+      ctrl: true,
+      shift: true,
+      handler: () => {
+        // 取消当前页所有单元的校对：只将 isProoved 置为 false（保留 proovedText）
+        for (const u of currentUnits) {
+          onUnitSave({ id: u.id, isProoved: false });
+        }
+        showToast("success", "已取消当前页所有校对");
+      },
+      description: "取消当前页所有校对 (Ctrl+Shift+P)",
+    },
+    {
+      key: "u",
+      ctrl: true,
+      handler: () => {
+        // 清空当前聚焦单元的校对文本（效果同 Editor 的 onRestore）
+        if (!selectedUnit) {
+          showToast("info", "未选中任何单元");
+          return;
+        }
+
+        onUnitSave({ id: selectedUnit.id, proovedText: "" });
+        showToast("success", "已清空当前单元的校对文本");
+      },
+      description: "清空当前聚焦单元的校对文本 (Ctrl+U)",
+    },
+    {
       key: "Tab",
       shift: true,
       handler: () => {
@@ -413,7 +444,7 @@ export const Translator: React.FC<TranslatorProps> = ({
       description: "切换到上一个单元（循环）",
     },
     {
-      key: "ArrowLeft",
+      key: "F1",
       handler: () => {
         if (!onRequestPage) return;
 
@@ -425,7 +456,7 @@ export const Translator: React.FC<TranslatorProps> = ({
       description: "上一页",
     },
     {
-      key: "ArrowRight",
+      key: "F2",
       handler: () => {
         if (!onRequestPage) return;
 
@@ -560,13 +591,32 @@ export const Translator: React.FC<TranslatorProps> = ({
             <div
               role="button"
               tabIndex={0}
-              onClick={() => {
+              onClick={async () => {
+                // 切换到审阅模式前先刷新，确保 project 元数据已写入数据库
+                if (typeof onFlush === "function") {
+                  try {
+                    await onFlush();
+                  } catch (err) {
+                    console.error("Failed to flush before entering read mode", err);
+                  }
+                }
+                
                 setLocalMode("read");
                 showToast("success", "已切换到 阅览模式");
               }}
-              onKeyDown={(e) => {
+              onKeyDown={async (e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
+                  
+                  // 切换到审阅模式前先刷新，确保 project 元数据已写入数据库
+                  if (typeof onFlush === "function") {
+                    try {
+                      await onFlush();
+                    } catch (err) {
+                      console.error("Failed to flush before entering read mode", err);
+                    }
+                  }
+                  
                   setLocalMode("read");
                   showToast("success", "已切换到 阅览模式");
                 }
@@ -628,7 +678,7 @@ export const Translator: React.FC<TranslatorProps> = ({
                 <div
                   className="toolbox-pill"
                   aria-label="上一页"
-                  title="上一页 (←)"
+                  title="上一页 (PageUp)"
                   onClick={() => {
                     if (isPrevDisabled) return;
 
@@ -645,7 +695,7 @@ export const Translator: React.FC<TranslatorProps> = ({
                 <div
                   className="toolbox-pill"
                   aria-label="下一页"
-                  title="下一页 (→)"
+                  title="下一页 (PageDown)"
                   onClick={() => {
                     if (isNextDisabled) return;
 
@@ -698,6 +748,7 @@ export const Translator: React.FC<TranslatorProps> = ({
               // 持久化单元位置变更为 patch
               onUnitSave({ id: unitId, x, y });
             }}
+            onScaleChange={setCurrentScale}
           />
         </div>
 
@@ -731,8 +782,8 @@ export const Translator: React.FC<TranslatorProps> = ({
                     symbols={customSymbols}
                     initialText={
                       effectiveMode === "proofread"
-                        ? firstNonEmpty(selectedUnit.proovedText, selectedUnit.translatedText, "") ?? ""
-                        : firstNonEmpty(selectedUnit.translatedText, "") ?? ""
+                        ? (selectedUnit.proovedText !== undefined ? selectedUnit.proovedText : (firstNonEmpty(selectedUnit.translatedText, "") ?? ""))
+                        : (firstNonEmpty(selectedUnit.translatedText, "") ?? "")
                     }
                       translatedText={firstNonEmpty(selectedUnit.translatedText) ?? ""}
                       isProofMode={effectiveMode === "proofread"}
@@ -743,21 +794,35 @@ export const Translator: React.FC<TranslatorProps> = ({
                       const newIsInbox = !selectedUnit.isInbox;
                       onUnitSave({ id: selectedUnit.id, isInbox: newIsInbox });
                     }}
-                    onIndexChange={(targetIndex) => {
+                    onIndexChange={(targetIndexOneBased) => {
                       if (!onRearrangeUnits) return;
 
-                      onRearrangeUnits(selectedUnit.id, targetIndex);
+                      // Editor passes 1-based target; convert to array index (0-based)
+                      const arrayIndex = Math.max(0, targetIndexOneBased - 1);
+                      onRearrangeUnits(selectedUnit.id, arrayIndex);
                     }}
                       onRestore={() => {
-                        // 清空当前单元的校对文本
-                        onUnitSave({ id: selectedUnit.id, proovedText: "" });
-                        showToast("success", "已重置校对文本");
+                          // 将 proovedText 标记为无效（删除该字段），而非设置为空字符串
+                          onUnitSave({ id: selectedUnit.id, proovedText: undefined });
+                          showToast("success", "已重置校对文本");
                       }}
                   />
                 </div>
               )}
             </div>
           )}
+        </div>
+      </div>
+
+      {/* 底部栏 */}
+      <div className="translator-footer">
+        <div className="footer-info-group">
+          <span className="footer-info-item">
+            缩放倍数 {(currentScale * 100).toFixed(0)}%
+          </span>
+          <span className="footer-info-item">
+            当前模式 {effectiveMode === "translate" ? "翻译" : effectiveMode === "proofread" ? "校对" : "审阅"}
+          </span>
         </div>
       </div>
       </div>
@@ -779,4 +844,4 @@ export const Translator: React.FC<TranslatorProps> = ({
 };
 
 // Shortcut description text used in memo card
-const SHORTCUT_TEXT = `- Home: 恢复归中\n- Tab: 切换到下一个单元\n- Shift+Tab: 切换到上一个单元\n- Ctrl+M: 在翻译和校对模式之间切换\n- 左键空白: 创建新框内\n- 右键空白: 创建新框外\n- 左键标记: 聚焦\n- 右键标记: 删除标记`;
+const SHORTCUT_TEXT = `- Home: 恢复归中\n- Tab: 切换到下一个单元\n- Shift+Tab: 切换到上一个单元\n- F1: 上一页\n- F2: 下一页\n- Ctrl+M: 在翻译和校对模式之间切换\n- Ctrl+P: 确认校对该页\n- Ctrl+Shift+P: 取消当前页所有校对\n- Ctrl+U: 清空当前聚焦单元的校对文本\n- 左键空白: 创建新框内\n- 右键空白: 创建新框外\n- 左键标记: 聚焦\n- 右键标记: 删除标记`;

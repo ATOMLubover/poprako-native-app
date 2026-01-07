@@ -103,6 +103,13 @@ export default function ComicWorkspacePage() {
     setActiveProjectIdState(null);
   };
 
+  const handleProjectChange = (updatedProject: Project) => {
+    // 更新 allProjects 中的对应项目
+    setAllProjects((prev) =>
+      prev.map((p) => (p.id === updatedProject.id ? updatedProject : p))
+    );
+  };
+
   // 如果有激活的项目，则渲染 LocalTranslator
   const activeProject = activeProjectId
     ? allProjects.find((p) => p.id === activeProjectId)
@@ -110,7 +117,11 @@ export default function ComicWorkspacePage() {
 
   if (activeProject) {
     return (
-      <LocalTranslator project={activeProject} onExit={handleExitTranslator} />
+      <LocalTranslator 
+        project={activeProject} 
+        onExit={handleExitTranslator}
+        onProjectChange={handleProjectChange}
+      />
     );
   }
 

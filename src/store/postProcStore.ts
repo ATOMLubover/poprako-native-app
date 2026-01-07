@@ -44,16 +44,12 @@ export const usePostProcStore = create<PostProcState>((set, get) => ({
     const previous = get().postProcessors;
 
     // optimistic update: try to replace by name if available, otherwise append
-    const name = (p && (p.name ?? (p.named && p.named.name))) as
-      | string
-      | undefined;
+    const name = p?.name as string | undefined;
 
     let next: PostProcessor[];
 
     if (name) {
-      const idx = previous.findIndex(
-        (x: any) => (x && (x.name ?? (x.named && x.named.name))) === name
-      );
+      const idx = previous.findIndex((x: any) => x?.name === name);
 
       if (idx >= 0) {
         next = [...previous];
