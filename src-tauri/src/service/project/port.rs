@@ -5,13 +5,10 @@ use anyhow::anyhow;
 use crate::{
     model::{
         po::project::{LocalPage, LocalUnit, NewLocalProject},
-        project::{
-            plugin::{PostProcess, PostProcessor},
-            PortPage, PortProject,
-        },
+        project::{plugin::PostProcessor, PortPage, PortProject},
     },
     project::{
-        plugin::get_local_post_processors,
+        plugin::{get_local_post_processors, NamedProcessor as _, PostProcess as _},
         port::{
             export_project as port_export, import_project as port_import,
             open_project_dir as port_open, PortMode,

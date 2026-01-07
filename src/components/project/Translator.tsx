@@ -821,7 +821,7 @@ export const Translator: React.FC<TranslatorProps> = ({
             缩放倍数 {(currentScale * 100).toFixed(0)}%
           </span>
           <span className="footer-info-item">
-            当前模式 {effectiveMode === "translate" ? "翻译" : effectiveMode === "proofread" ? "校对" : "审阅"}
+            当前模式 {effectiveMode === "translate" ? "翻译" : effectiveMode === "proofread" ? "校对" : "阅览"}
           </span>
         </div>
       </div>

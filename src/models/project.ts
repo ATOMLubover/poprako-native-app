@@ -67,8 +67,10 @@ export type NewRemoteProject = {
 };
 
 // Post processor models (frontend view of backend DTOs)
-export type CharConverter = {
-  mapping: Record<string, string>;
+export type StrConverter = {
+  // mapping is an ordered array of [key, value] pairs.
+  // Lower index = higher priority when resolving overlaps.
+  mapping: [string, string][];
 };
 
 export type NamedPostProcessor<P> = {
@@ -77,7 +79,7 @@ export type NamedPostProcessor<P> = {
 };
 
 export type PostProcessor = {
-  kind: "CharConverter";
+  kind: "StrConverter";
   name: string;
-  processor: CharConverter;
+  processor: StrConverter;
 };

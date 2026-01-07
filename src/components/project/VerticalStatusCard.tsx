@@ -7,10 +7,12 @@ import { getLocalPostProcessors } from "../../ipc/project/plugin";
 import { exportProject, openProjectDir } from "../../ipc/project/port";
 import type { PostProcessor } from "../../models/project";
 import { useToast } from "../NotificationToast";
-import { Type, Check, FileText, Layers, Image as ImageIcon, LogIn, LogOut } from "lucide-react";
+import { Type, Check, FileText, Layers, Image as ImageIcon } from "lucide-react";
 import ProgressBar from "../ProgressBar";
 import NatureButton from "../NatureButton";
 import NatureSwitchButton from "../NatureSwitchButton";
+import InPanelIcon from "../InPanelIcon";
+import OutPanelIcon from "../OutPanelIcon";
 
 type VerticalStatusCardProps = {
   project: Project;
@@ -184,7 +186,7 @@ export default function VerticalStatusCard({ project }: VerticalStatusCardProps)
 
           <div className="vsc-metric-card" title="Inbox">
             <div className="vsc-metric-title">
-              <LogIn size={16} />
+              <InPanelIcon size={20} />
               <span>框内</span>
             </div>
             <div className="vsc-metric-value">{project.inboxUnitCount ?? 0}</div>
@@ -192,7 +194,7 @@ export default function VerticalStatusCard({ project }: VerticalStatusCardProps)
 
           <div className="vsc-metric-card" title="Outbox">
             <div className="vsc-metric-title">
-              <LogOut size={16} />
+              <OutPanelIcon size={20} />
               <span>框外</span>
             </div>
             <div className="vsc-metric-value">{project.outboxUnitCount ?? 0}</div>

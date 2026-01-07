@@ -2,23 +2,24 @@ import { invoke } from "@tauri-apps/api/core";
 import type { PostProcessor } from "../../models/project";
 
 // Raw DTOs match serde_json representation produced by the backend
-type RawCharConverter = {
-  mapping: Record<string, string>; // keys are single-character strings
+type RawStrConverter = {
+  // serialized as an array of [key, value] tuples
+  mapping: [string, string][];
 };
 
-type RawNamedCharConverter = {
+type RawNamedStrConverter = {
   name: string;
-  processor: RawCharConverter;
+  processor: RawStrConverter;
 };
 
-// Serde external-tagged enum: { "CharConverter": { name, processor } }
-type RawPostProcessor = { CharConverter: RawNamedCharConverter };
+// Serde external-tagged enum: { "StrConverter": { name, processor } }
+type RawPostProcessor = { StrConverter: RawNamedStrConverter };
 
 function rawToModel(r: RawPostProcessor): PostProcessor {
-  if ((r as any).CharConverter) {
-    const inner = r.CharConverter;
+  if ((r as any).StrConverter) {
+    const inner = r.StrConverter;
     return {
-      kind: "CharConverter",
+      kind: "StrConverter",
       name: inner.name,
       processor: { mapping: inner.processor.mapping },
     };
@@ -28,9 +29,9 @@ function rawToModel(r: RawPostProcessor): PostProcessor {
 }
 
 function modelToRaw(m: PostProcessor): RawPostProcessor {
-  if (m.kind === "CharConverter") {
+  if (m.kind === "StrConverter") {
     return {
-      CharConverter: {
+      StrConverter: {
         name: m.name,
         processor: { mapping: m.processor.mapping },
       },

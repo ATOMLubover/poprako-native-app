@@ -5,7 +5,9 @@ import { exportProject } from "../../ipc/project/port";
 import { getLocalPostProcessors } from "../../ipc/project/plugin";
 import { useToast } from "../NotificationToast";
 import type { Project, PostProcessor } from "../../models/project";
-import { Type, Check, FileText, Layers, LogIn, LogOut } from "lucide-react";
+import { Type, Check, FileText, Layers } from "lucide-react";
+import InPanelIcon from "../InPanelIcon";
+import OutPanelIcon from "../OutPanelIcon";
 import "./LocalProjectExporter.css";
 
 type Props = {
@@ -108,7 +110,7 @@ export default function LocalProjectExporter({ project, onSuccess, onCancel }: P
 
             <div className="lpe-metric-card" title="Inbox">
               <div className="lpe-metric-title">
-                <LogIn size={16} />
+                <InPanelIcon size={20} />
                 <span>框内</span>
               </div>
               <div className="lpe-metric-value">{project.inboxUnitCount ?? 0}</div>
@@ -116,7 +118,7 @@ export default function LocalProjectExporter({ project, onSuccess, onCancel }: P
 
             <div className="lpe-metric-card" title="Outbox">
               <div className="lpe-metric-title">
-                <LogOut size={16} />
+                <OutPanelIcon size={20} />
                 <span>框外</span>
               </div>
               <div className="lpe-metric-value">{project.outboxUnitCount ?? 0}</div>

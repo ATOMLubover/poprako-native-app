@@ -149,21 +149,9 @@ export default function PanelView() {
 }
 
 function DraftBoard() {
-  const mockProject: Project = {
-    id: "proj-001",
-    author: "白杨汉化组",
-    title: "某某漫画第一话",
-    pageCount: 4,
-    unitCount: 25,
-    translatedUnitCount: 25,
-    proovedUnitCount: 3,
-  };
-
   return (
     <div style={{ height: "100%", width: "100%", display: "flex", padding: 12, boxSizing: "border-box", alignItems: "flex-start", gap: 20 }}>
-      <div className="vsc-card">
-        <VerticalStatusCard project={mockProject} />
-      </div>
+
     </div>
   );
 }
