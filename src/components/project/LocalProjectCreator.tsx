@@ -87,29 +87,29 @@ export default function LocalProjectCreator({ initial = {}, onSave, onCancel }: 
       <div className="tbc-header tbc-header-centered">
         <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#111827" }}>新建本地项目</h3>
       </div>
-
-        <div className="tbc-field">
-          <div className="tbc-field-icon">
-            <Folder size={18} />
-          </div>
-
-          <div style={{ flex: 1, display: "flex", gap: 8 }}>
-            <input
-              className="tbc-input tbc-preview"
-              value={localImageDir ?? ""}
-              title={localImageDir ?? ""}
-              readOnly
-              placeholder="请选择本地图片目录"
-              style={{ flex: 1, minWidth: 0 }}
-            />
-
-            <NatureButton variant="mist" onClick={handleSelectDir} minWidth={70}>
-              选择
-            </NatureButton>
-          </div>
-      </div>
       
-      <div className="tbc-body">
+          <div className="tbc-body">
+            <div className="tbc-field">
+              <div className="tbc-field-icon">
+                <Folder size={18} />
+              </div>
+
+              <div style={{ flex: 1, display: "flex", gap: 8 }}>
+                <input
+                  className="tbc-input tbc-preview"
+                  value={localImageDir ?? ""}
+                  title={localImageDir ?? ""}
+                  readOnly
+                  placeholder="请选择本地图片目录"
+                  style={{ flex: 1, minWidth: 0 }}
+                />
+
+                <NatureButton variant="mist" onClick={handleSelectDir} minWidth={70}>
+                  选择
+                </NatureButton>
+              </div>
+            </div>
+      
         <div className="tbc-field">
           <div className="tbc-field-icon">
             <User size={18} />

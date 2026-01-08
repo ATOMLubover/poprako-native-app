@@ -10,6 +10,11 @@
   box-shadow: 0 6px 12px rgba(15, 23, 42, 0.12);
   border: 1px solid rgba(148, 163, 184, 0.22);
   backdrop-filter: blur(8px);
+  /* 缩小 30%，整体透明度 80% */
+  transform: scale(0.85);
+  transform-origin: top left;
+  opacity: 0.8;
+  will-change: transform, opacity;
 }
 
 .unit-stats-bar__row {
@@ -33,6 +38,14 @@
   background: rgba(148, 163, 184, 0.32);
 }
 
+.unit-stats-bar__hdivider {
+  width: 100%;
+  height: 2px;
+  background: rgba(9, 27, 53, 0.16);
+  margin: 2px 0;
+  border-radius: 1px;
+}
+
 .unit-stats-bar__tags {
   display: flex;
   gap: 4px;
@@ -46,6 +59,29 @@
   width: 100%;
   padding: 2px 4px;
   border-radius: 6px;
+}
+.stats-badge--pink {
+  background: #fff1f2; /* 淡粉色背景 */
+  color: #9f1239;
+}
+.stats-badge--yellow {
+  background: #fffbeb; /* 淡黄色背景 */
+  color: #92400e;
+}
+.unit-stats-bar__badge {
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 0.72rem;
+}
+.unit-stats-bar__text {
+  font-weight: 600;
+  color: inherit;
+}
+.unit-stats-bar__count {
+  font-weight: 700;
+  min-width: 20px;
+  text-align: right;
+  color: inherit;
 }
 
 .unit-stats-bar__count {

@@ -6,8 +6,8 @@ import SpecialSymbolPage from "./SpecialSymbolPage";
 import ComicWorkspacePage from "./ComicWorkspacePage";
 import ToolboxPage from "./ToolboxPage.tsx";
 import SettingPage from "./SettingPage.tsx";
-import BriefComicCard from "../components/BriefComicCard";
-import type { ComicBrief } from "../models/comic/comic";
+import ComicDetailCard from "../components/comic/ComicDetailCard";
+import type { ComicInfo } from "../models/comic/comic";
 import "./PanelView.css";
 
 type MenuItem = "draft-board" | "tag-pool" | "termbase-pool" | "special-symbols" | "comic-workspace" | "toolbox" | "settings";
@@ -149,93 +149,57 @@ export default function PanelView() {
 }
 
 function DraftBoard() {
-  const mockComics: ComicBrief[] = [
-    {
-      id: "comic-001",
-      collectionId: "COL-001",
-      index: 1,
-      author: "米二",
-      title: "一人之下 - 第560话",
-      isSeries: true,
-      likesCount: 128,
-      tags: [
-        { tagId: "tag-1", name: "热血" },
-        { tagId: "tag-2", name: "动作" },
-        { tagId: "tag-3", name: "剧情" },
-        { tagId: "tag-4", name: "武侠" },
-      ],
-      isHidden: false,
-      translationStartedAt: new Date("2026-01-01"),
-      translationCompletedAt: new Date("2026-01-03"),
-      proofreadingStartedAt: new Date("2026-01-04"),
-      proofreadingCompletedAt: undefined,
-      typesettingStartedAt: undefined,
-      typesettingCompletedAt: undefined,
-      reviewedAt: undefined,
-      publishedAt: undefined,
-      createdAt: new Date("2026-01-01"),
-      updatedAt: new Date("2026-01-06"),
-    },
-    {
-      id: "comic-002",
-      collectionId: "COL-002",
-      index: 15,
-      author: "尾田荣一郎",
-      title: "ONE PIECE 第1095话 世界即将崩塌",
-      isSeries: true,
-      likesCount: 256,
-      tags: [
-        { tagId: "tag-5", name: "冒险" },
-        { tagId: "tag-6", name: "热血" },
-        { tagId: "tag-7", name: "搞笑" },
-      ],
-      isHidden: false,
-      translationStartedAt: new Date("2026-01-02"),
-      translationCompletedAt: new Date("2026-01-03"),
-      proofreadingStartedAt: new Date("2026-01-04"),
-      proofreadingCompletedAt: new Date("2026-01-05"),
-      typesettingStartedAt: new Date("2026-01-05"),
-      typesettingCompletedAt: new Date("2026-01-06"),
-      reviewedAt: new Date("2026-01-06"),
-      publishedAt: new Date("2026-01-07"),
-      createdAt: new Date("2026-01-02"),
-      updatedAt: new Date("2026-01-07"),
-    },
-    {
-      id: "comic-003",
-      collectionId: "COL-001",
-      index: 2,
-      author: "米二",
-      title: "一人之下 - 第561话",
-      isSeries: true,
-      likesCount: 89,
-      tags: [
-        { tagId: "tag-1", name: "热血" },
-        { tagId: "tag-8", name: "奇幻" },
-      ],
-      isHidden: false,
-      translationStartedAt: undefined,
-      translationCompletedAt: undefined,
-      proofreadingStartedAt: undefined,
-      proofreadingCompletedAt: undefined,
-      typesettingStartedAt: undefined,
-      typesettingCompletedAt: undefined,
-      reviewedAt: undefined,
-      publishedAt: undefined,
-      createdAt: new Date("2026-01-05"),
-      updatedAt: new Date("2026-01-05"),
-    },
-  ];
+  const mockComicInfo: ComicInfo = {
+    id: "comic-001",
+    coverImageUrl: "https://images.unsplash.com/photo-1618336753974-aae8e04506aa?q=80&w=800&auto=format&fit=crop",
+    collectionId: "COL-001",
+    index: 1,
+    author: "未知艺术家",
+    title: "幻象之城",
+    description: "寻找失落记忆的故事",
+    isSeries: false,
+    likesCount: 42,
+    tags: [
+      { tagId: "t1", name: "赛博朋克" },
+      { tagId: "t2", name: "治愈" },
+    ],
+    pageCount: 20,
+    assignments: [
+      { userId: "user-001", userNickname: "小明", assignedTranslatorAt: new Date(), assignedReviewerAt: new Date() },
+      { userId: "user-002", userNickname: "艾莉丝", assignedTranslatorAt: new Date(), assignedProofreaderAt: new Date(), assignedTypesetterAt: new Date() },
+      { userId: "user-003", userNickname: "老王", assignedRedrawerAt: new Date() },
+      { userId: "user-004", userNickname: "苏珊", assignedTranslatorAt: new Date() },
+    ],
+    // Progress timestamps for testing status-driven styles
+    translationStartedAt: new Date(Date.now() - 7 * 24 * 3600 * 1000),
+    // translationCompletedAt: undefined, // leave undefined to indicate in-progress
+
+    proofreadingStartedAt: new Date(Date.now() - 2 * 24 * 3600 * 1000),
+    // proofreadingCompletedAt: undefined,
+
+    typesettingStartedAt: new Date(Date.now() - 5 * 24 * 3600 * 1000),
+    typesettingCompletedAt: new Date(Date.now() - 1 * 24 * 3600 * 1000),
+
+    // reviewedAt: undefined,
+    // publishedAt: undefined,
+    pages: Array.from({ length: 20 }, (_, i) => ({
+      id: `p-${i}`,
+      index: i + 1,
+      unitCount: 10,
+      translatedCount: 10,
+      proovedCount: 5,
+      inboxCount: Math.floor(Math.random() * 12) + 2,
+      outboxCount: Math.floor(Math.random() * 8) + 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })),
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
 
   return (
-    <div style={{ height: "100%", width: "100%", display: "flex", flexDirection: "column", padding: 12, boxSizing: "border-box", gap: 20 }}>
-      <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>BriefComicCard 预览</h2>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 8, maxWidth: 900 }}>
-        {mockComics.map((comic) => (
-          <BriefComicCard key={comic.id} comic={comic} />
-        ))}
-      </div>
+    <div style={{ height: "100%", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", padding: 12, boxSizing: "border-box", backgroundColor: "#f8f8f7" }}>
+      <ComicDetailCard comic={mockComicInfo} currentUserId="user-001" />
     </div>
   );
 }

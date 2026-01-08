@@ -19,3 +19,15 @@ export type AssignmentInfo = {
   createdAt: Date;
   updatedAt: Date;
 };
+
+// 漫画中分配任务的简要信息
+export type AssignmentBrief = {
+  userId: string;
+  userNickname: string;
+
+  assignedTranslatorAt?: Date;
+  assignedProofreaderAt?: Date;
+  assignedTypesetterAt?: Date;
+  assignedRedrawerAt?: Date;
+  assignedReviewerAt?: Date;
+};

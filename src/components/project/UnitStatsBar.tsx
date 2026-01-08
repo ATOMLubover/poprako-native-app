@@ -22,14 +22,20 @@ export const UnitStatsBar: React.FC<UnitStatsBarProps> = ({ stats }) => {
       aria-label={`框内 ${inboxCount} 框外 ${outboxCount} 未 ${unTranslatedCount} 翻 ${pendingProofCount} 校 ${proovedCount}`}>
 
       <div className="unit-stats-bar__row">
-        <span className="unit-stats-bar__text">框内</span>
-        <span className="unit-stats-bar__text">{inboxCount}</span>
+        <div className="unit-stats-bar__badge stats-badge--pink">
+          <span className="unit-stats-bar__text">框内</span>
+          <span className="unit-stats-bar__count">{inboxCount}</span>
+        </div>
       </div>
 
       <div className="unit-stats-bar__row">
-        <span className="unit-stats-bar__text">框外</span>
-        <span className="unit-stats-bar__text">{outboxCount}</span>
+        <div className="unit-stats-bar__badge stats-badge--yellow">
+          <span className="unit-stats-bar__text">框外</span>
+          <span className="unit-stats-bar__count">{outboxCount}</span>
+        </div>
       </div>
+
+      <div className="unit-stats-bar__hdivider" />
 
       <div className="unit-stats-bar__row">
         <div className="unit-stats-bar__badge stats-badge--gray">

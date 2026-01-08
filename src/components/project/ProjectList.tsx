@@ -155,7 +155,7 @@ export default function ProjectList({ projects, onAct, onSync, onRefresh, title 
         </div>
       ) : null}
 
-      <div ref={containerRef} style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", gap: 6 }}>
+      <div ref={containerRef} style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", gap: 1 }}>
         {/* 隐藏的测量模板（如果没有项目则用固定高度占位，避免传入 undefined 导致运行时访问错误） */}
         <div ref={templateRef} style={{ visibility: "hidden", position: "absolute" }}>
           {projects.length > 0 ? (

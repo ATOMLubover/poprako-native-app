@@ -7,13 +7,13 @@
 .psc-root {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 12px 16px;
-  margin-left: 10px;
-  margin-right: 10px;
+  gap: 10px;
+  padding: 6px 10px;
+  margin-left: 6px;
+  margin-right: 6px;
   background: #ffffff;
   /* subtle "mist" border */
-  border: 1px solid var(--accent-mist-border, #edf2f7);
+  border: 2px solid transparent;
   border-radius: 8px;
   cursor: pointer;
   transition: box-shadow 0.12s ease, transform 0.12s ease, border-color 0.12s ease;
@@ -21,9 +21,8 @@
 
 .psc-root:hover {
   /* slightly stronger mist border on hover and subtle scale up */
-  border-color: var(--accent-mist-border-hover, #7bb77d);
-  transform: scale(1.003);
-  border-width: 1px;
+  border-color: #7bb77d;
+  border-width: 2px;
   transform-origin: center;
 }
 
@@ -58,20 +57,20 @@
 }
 
 .psc-metrics {
-  min-width: 280px;
+  min-width: 220px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 3px;
   color: #4b5563;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.72rem;
   flex-shrink: 0;
   min-width: 0;
 }
 
 .psc-metric-row {
   display: flex;
-  gap: 18px;
+  gap: 10px;
   align-items: center;
 }
 
@@ -106,17 +105,31 @@
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 10px;
   flex-shrink: 0;
+
+  /* 默认隐藏右侧操作区，只有在卡片 hover 时显示 */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition: opacity 0.12s ease, transform 0.12s ease, visibility 0.12s;
 }
 
 .psc-progress {
-  width: 140px;
-  height: 8px;
+  width: 108px;
+  height: 5px;
   background: #eeeff2;
   border-radius: 4px;
   position: relative;
   overflow: hidden;
+}
+
+.psc-root:hover .psc-right {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
 }
 
 .psc-tr-fill {
