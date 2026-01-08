@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, KeyboardEvent } from "react";
 import SimpleComicItem from "./SimpleComicItem";
 import NatureButton from "./NatureButton";
 import "./ComicSelector.css";
-import type { SimpleComicInfo } from "../models/comic";
+import type { SimpleComicInfo } from "../models/comic/comic";
 
 type ComicSelectorProps = {
   onSearchComics?: (query: string) => Promise<SimpleComicInfo[]>;

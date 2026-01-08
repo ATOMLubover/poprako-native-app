@@ -1,0 +1,81 @@
+:root {
+  --collection-transition: all 0.18s ease;
+}
+
+.collection-card {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 6px; /* reduced padding */
+  margin: 6px 8px; /* reduced outer margins */
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: var(--collection-transition);
+  font-family: inherit;
+}
+
+.collection-card:hover {
+  border-color: #2f8b57; /* green on hover */
+  transform: translateY(-2px) rotate(-0.5deg);
+}
+
+.collection-card .row {
+  display: flex;
+  align-items: center;
+}
+
+.collection-card .row--top {
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+
+.collection-card .collection-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.collection-card .collection-updated {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.collection-card .divider {
+  height: 1px;
+  background-color: #eef2f6;
+  margin: 4px 0;
+}
+
+.collection-card .row--bottom {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.modifier-info {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #475569;
+  background: #f1f5f9;
+  padding: 1px 4px; /* reduced */
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.modifier-info svg {
+  width: 10px;
+  height: 10px;
+  opacity: 0.85;
+}
+
+.modifier-info__count {
+  display: inline-block;
+  font-size: 11px;
+  color: #475569;
+}

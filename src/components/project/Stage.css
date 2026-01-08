@@ -17,6 +17,18 @@
   z-index: 100;
 }
 
+.stage-stats-container {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 120;
+  pointer-events: none;
+}
+
+.stage-stats-container .unit-stats-bar {
+  pointer-events: auto;
+}
+
 .stage-placeholder {
   text-align: center;
   color: #9ca3af;

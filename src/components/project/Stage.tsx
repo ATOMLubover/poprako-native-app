@@ -3,6 +3,7 @@ import "./Stage.css";
 import ImageLayer, { type ImageLayerHandle } from "./ImageLayer.tsx";
 import MarkerOverlay from "./MarkerOverlay.tsx";
 import DotLoadSpinner from "../DotLoadSpinner.tsx";
+import { UnitStatsBar, type UnitStatsSummary } from "./UnitStatsBar.tsx";
 import type { Page, Unit } from "../../models/project.ts";
 import type { TranslatorMode } from "./Translator.tsx";
 
@@ -23,9 +24,10 @@ type StageProps = {
   onUnitMove?: (unitId: string, x: number, y: number) => void;
   onUnitMoveEnd?: (unitId: string, x: number, y: number) => void;
   onScaleChange?: (scale: number) => void;
+  unitStats?: UnitStatsSummary;
 };
 
-export const Stage = forwardRef<StageHandle, StageProps>(({ page, units, mode, selectedUnitId, onUnitClick, onUnitCreate, onUnitRemove, onUnitMove, onUnitMoveEnd, onScaleChange }, ref) => {
+export const Stage = forwardRef<StageHandle, StageProps>(({ page, units, mode, selectedUnitId, onUnitClick, onUnitCreate, onUnitRemove, onUnitMove, onUnitMoveEnd, onScaleChange, unitStats }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const imageLayerRef = useRef<ImageLayerHandle>(null);
   const [imageRenderInfo, setImageRenderInfo] = useState({
@@ -125,6 +127,12 @@ export const Stage = forwardRef<StageHandle, StageProps>(({ page, units, mode, s
         console.log("[Stage] onPointerDownCapture button=", (e as unknown as any).button, "client=", e.clientX, e.clientY);
       }}
     >
+      {unitStats ? (
+        <div className="stage-stats-container">
+          <UnitStatsBar stats={unitStats} />
+        </div>
+      ) : null}
+
       {isLoading && (
         <div className="stage-loading">
           <DotLoadSpinner />

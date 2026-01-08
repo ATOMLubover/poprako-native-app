@@ -17,3 +17,9 @@ export type NewTag = {
 
 // 更新标签时使用的类型
 export type PatchTag = Partial<NewTag>;
+
+// 简单标签类型定义
+export type TagBrief = {
+  tagId: string;
+  name: string;
+};

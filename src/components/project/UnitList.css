@@ -20,67 +20,6 @@
   overflow: hidden;
 }
 
-.list-header {
-  padding: 6px 20px;
-  border-bottom: 1px solid #f0f0f0;
-  background: #fff;
-  z-index: 20;
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-/* 左侧计数信息 */
-.box-stats {
-  font-size: 0.75rem;
-  color: #9ca3af;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 400;
-}
-
-.box-stats .divider {
-  color: #e5e7eb;
-  font-size: 0.65rem;
-}
-
-/* Tags 容器 */
-.status-tags {
-  display: flex;
-  gap: 6px;
-}
-
-/* Tag 基础样式 */
-.tag {
-  font-size: 0.7rem;
-  padding: 2px 8px;
-  border-radius: 6px;
-  font-weight: 500;
-  border: 1px solid transparent;
-}
-
-.tag-gray {
-  background-color: #f3f4f6;
-  color: #6b7280;
-  border-color: #e5e7eb;
-}
-
-.tag-orange {
-  background-color: #fff7ed;
-  color: #c2410c;
-  border-color: #ffedd5;
-}
-
-.tag-green {
-  background-color: #f0fdf4;
-  color: #15803d;
-  border-color: #dcfce7;
-}
-
 .list-content {
   flex-grow: 1;
   overflow-y: auto;

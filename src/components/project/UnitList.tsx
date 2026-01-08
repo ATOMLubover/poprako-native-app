@@ -47,28 +47,6 @@ export const UnitList: React.FC<UnitListProps> = ({ units, onUnitClick, selected
     }
   }, [selectedUnitId]);
 
-  // 计算统计数据（仅逻辑，保留现有 JSX/样式不变）
-  const total = units.length;
-
-  // 已完成：所有 isProoved === true 的单元数
-  const proovedCount = units.filter((u) => !!u.isProoved).length;
-
-  // 待校对：严格定义为 总数 - 已完成
-  const unProoved = total - proovedCount;
-
-  // 已完成（用于显示）
-  const prooved = proovedCount;
-
-  // 未翻译：既没有 translatedText 也没有 proovedText 的单元数
-  const unTranslated = units.filter((u) => {
-    const hasTranslated = (firstNonEmpty(u.translatedText) ?? "").toString().trim() !== "";
-    const hasProovedText = (firstNonEmpty(u.proovedText) ?? "").toString().trim() !== "";
-    return !hasTranslated && !hasProovedText;
-  }).length;
-
-  const inboxCount = units.filter((u) => !!u.isInbox).length;
-  const outboxCount = total - inboxCount;
-
   const handleUnitClick = (unitId: string) => {
     if (onUnitClick) {
       if (unitId === selectedUnitId) {
@@ -81,26 +59,6 @@ export const UnitList: React.FC<UnitListProps> = ({ units, onUnitClick, selected
 
   return (
     <div className="unit-list">
-      {/* 列表头部 */}
-      <div className="list-header">
-        <div className="header-content">
-          {/* 左侧框计数 */}
-          <div className="box-stats">
-            <span>框内 {inboxCount}</span>
-            <span className="divider">|</span>
-            <span>框外 {outboxCount}</span>
-          </div>
-
-          {/* 右侧统计标签 */}
-          <div className="status-tags">
-            <span className="tag tag-gray">未翻译 {unTranslated}</span>
-            <span className="tag tag-orange">待校对 {unProoved}</span>
-            <span className="tag tag-green">已校对 {prooved}</span>
-          </div>
-        </div>
-      </div>
-      {/* 列表内容 */}
-
       {/* 确认对话框 */}
       <ConfirmDialogBox
         visible={!!confirmVisible}

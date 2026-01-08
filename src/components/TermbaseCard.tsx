@@ -41,7 +41,6 @@ function shortText(s: string): string {
 export default function TermbaseCard({ data }: TermbaseCardProps) {
   const [open, setOpen] = useState(false);
 
-  const createdAtStr = formatDate(data.createdAt);
   const updatedAtStr = formatDate(data.updatedAt);
 
   return (
@@ -62,7 +61,7 @@ export default function TermbaseCard({ data }: TermbaseCardProps) {
             {data.name}
           </h2>
           <span className="time-range">
-            {createdAtStr} ~ {updatedAtStr}
+            {updatedAtStr}
           </span>
         </div>
 

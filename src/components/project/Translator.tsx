@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./Translator.css";
 import { UnitList } from "./UnitList";
 import Editor, { type EditorRef } from "./Editor";
@@ -11,6 +11,7 @@ import type { Project, Page, Unit } from "../../models/project";
 import { SpecialSymbolCard } from "./SpecialSymbolCard";
 import VerticalStatusCard from "../project/VerticalStatusCard";
 import { firstNonEmpty } from "../../util/string";
+import type { UnitStatsSummary } from "./UnitStatsBar";
 
 export type TranslatorMode = "translate" | "proofread" | "read";
 
@@ -121,6 +122,28 @@ type ShortcutConfig = {
   description: string;
 };
 
+// 计算当前页的单元统计数据
+const deriveUnitStats = (units: Unit[]): UnitStatsSummary => {
+  const total = units.length;
+  const inboxCount = units.filter((u) => !!u.isInbox).length;
+  const outboxCount = total - inboxCount;
+  const proovedCount = units.filter((u) => !!u.isProoved).length;
+  const pendingProofCount = total - proovedCount;
+  const unTranslatedCount = units.filter((u) => {
+    const hasTranslated = (firstNonEmpty(u.translatedText) ?? "").toString().trim() !== "";
+    const hasProovedText = (firstNonEmpty(u.proovedText) ?? "").toString().trim() !== "";
+    return !hasTranslated && !hasProovedText;
+  }).length;
+
+  return {
+    inboxCount,
+    outboxCount,
+    unTranslatedCount,
+    pendingProofCount,
+    proovedCount,
+  };
+};
+
 /**
  * 快捷键说明：
  * - Home: 取消选择单元
@@ -193,6 +216,7 @@ export const Translator: React.FC<TranslatorProps> = ({
   const [showMemo, setShowMemo] = useState(false);
   const [showSymbolCard, setShowSymbolCard] = useState(false);
   const [currentScale, setCurrentScale] = useState<number>(1);
+  const unitStats = useMemo(() => deriveUnitStats(currentUnits), [currentUnits]);
 
   // 抽离模式切换逻辑以供快捷键复用
   const toggleMode = () => {
@@ -749,6 +773,7 @@ export const Translator: React.FC<TranslatorProps> = ({
               onUnitSave({ id: unitId, x, y });
             }}
             onScaleChange={setCurrentScale}
+            unitStats={unitStats}
           />
         </div>
 

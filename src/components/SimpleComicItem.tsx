@@ -1,4 +1,4 @@
-import type { SimpleComicInfo } from "../models/comic";
+import type { SimpleComicInfo } from "../models/comic/comic.ts";
 import SimpleComicTeamTag from "./SimpleComicTeamTag.tsx";
 import "./SimpleComicItem.css";
 

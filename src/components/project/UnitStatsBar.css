@@ -1,0 +1,96 @@
+.unit-stats-bar {
+  width: auto;
+  max-width: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 6px 12px rgba(15, 23, 42, 0.12);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  backdrop-filter: blur(8px);
+}
+
+.unit-stats-bar__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.68rem;
+  color: #475467;
+  font-weight: 600;
+}
+
+.unit-stats-bar__text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.unit-stats-bar__divider {
+  width: 1px;
+  height: 10px;
+  background: rgba(148, 163, 184, 0.32);
+}
+
+.unit-stats-bar__tags {
+  display: flex;
+  gap: 4px;
+  justify-content: space-between;
+}
+
+.unit-stats-bar__badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 2px 4px;
+  border-radius: 6px;
+}
+
+.unit-stats-bar__count {
+  font-weight: 700;
+  min-width: 20px;
+  text-align: right;
+  font-size: 0.68rem;
+}
+
+.stats-tag {
+  font-size: 0.62rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-weight: 500;
+}
+
+.stats-tag--gray {
+  background: #f4f4f5;
+  color: #4b5563;
+  border-color: #e4e4e7;
+}
+
+.stats-tag--orange {
+  background: #fff7ed;
+  color: #b45309;
+  border-color: #ffedd5;
+}
+
+.stats-tag--green {
+  background: transparent;
+  color: #166534;
+  border-color: #dcfce7;
+}
+
+.stats-badge--gray {
+  background: #f4f4f5;
+  color: #374151;
+}
+
+.stats-badge--orange {
+  background: #fff7ed;
+  color: #b45309;
+}
+
+.stats-badge--green {
+  background: #f0fdf4;
+  color: #166534;
+}

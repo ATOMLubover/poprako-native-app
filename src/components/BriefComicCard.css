@@ -1,0 +1,114 @@
+/* 漫画摘要卡片 - 极简瘦长布局 */
+.brief-comic-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  padding: 4px 8px;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background-color: #ffffff;
+
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.brief-comic-card:hover {
+  border-color: #C8E6C9;
+}
+
+/* 第一行: 标题区 + 进度区 */
+.card-row-1 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 22px;
+}
+
+/* 标题区 - 限制最大宽度 */
+.title-area {
+  max-width: 50%;
+  flex-shrink: 1;
+  overflow: hidden;
+}
+
+.title-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+/* 进度区 */
+.progress-area {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+}
+
+/* 进度标签 - 类似 NatureTag 但更紧凑 */
+.progress-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 2px 8px;
+  min-width: 48px;
+  border-radius: 5px;
+  border: 0.5px solid rgba(0,0,0,0.06);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.2;
+  white-space: nowrap;
+
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* 进度状态配色 */
+.progress-pending {
+  background-color: #F0EEE9;
+  color: #5D5448;
+}
+
+.progress-in-progress {
+  background-color: #FFF4E5;
+  color: #D26A00;
+}
+
+.progress-completed {
+  background-color: #E3F2E5;
+  color: #2E5C33;
+}
+
+/* 第二行: 标签区 + 日期区 */
+.card-row-2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 20px;
+}
+
+/* 标签区 */
+.tags-area {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+/* 日期区 */
+.date-area {
+  font-size: 12px;
+  color: #999999;
+  white-space: nowrap;
+  flex-shrink: 0;
+}

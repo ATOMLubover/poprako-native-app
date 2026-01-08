@@ -53,6 +53,7 @@
   flex-wrap: wrap;
   gap: 8px;
   align-content: flex-start;
+  padding: 12px 8px 8px; /* add top padding to avoid hover clipping */
 }
 
 .termbase-list-container .termbase-list::-webkit-scrollbar {

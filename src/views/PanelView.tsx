@@ -6,8 +6,8 @@ import SpecialSymbolPage from "./SpecialSymbolPage";
 import ComicWorkspacePage from "./ComicWorkspacePage";
 import ToolboxPage from "./ToolboxPage.tsx";
 import SettingPage from "./SettingPage.tsx";
-import VerticalStatusCard from "../components/project/VerticalStatusCard";
-import type { Project } from "../models/project";
+import BriefComicCard from "../components/BriefComicCard";
+import type { ComicBrief } from "../models/comic/comic";
 import "./PanelView.css";
 
 type MenuItem = "draft-board" | "tag-pool" | "termbase-pool" | "special-symbols" | "comic-workspace" | "toolbox" | "settings";
@@ -149,9 +149,93 @@ export default function PanelView() {
 }
 
 function DraftBoard() {
-  return (
-    <div style={{ height: "100%", width: "100%", display: "flex", padding: 12, boxSizing: "border-box", alignItems: "flex-start", gap: 20 }}>
+  const mockComics: ComicBrief[] = [
+    {
+      id: "comic-001",
+      collectionId: "COL-001",
+      index: 1,
+      author: "米二",
+      title: "一人之下 - 第560话",
+      isSeries: true,
+      likesCount: 128,
+      tags: [
+        { tagId: "tag-1", name: "热血" },
+        { tagId: "tag-2", name: "动作" },
+        { tagId: "tag-3", name: "剧情" },
+        { tagId: "tag-4", name: "武侠" },
+      ],
+      isHidden: false,
+      translationStartedAt: new Date("2026-01-01"),
+      translationCompletedAt: new Date("2026-01-03"),
+      proofreadingStartedAt: new Date("2026-01-04"),
+      proofreadingCompletedAt: undefined,
+      typesettingStartedAt: undefined,
+      typesettingCompletedAt: undefined,
+      reviewedAt: undefined,
+      publishedAt: undefined,
+      createdAt: new Date("2026-01-01"),
+      updatedAt: new Date("2026-01-06"),
+    },
+    {
+      id: "comic-002",
+      collectionId: "COL-002",
+      index: 15,
+      author: "尾田荣一郎",
+      title: "ONE PIECE 第1095话 世界即将崩塌",
+      isSeries: true,
+      likesCount: 256,
+      tags: [
+        { tagId: "tag-5", name: "冒险" },
+        { tagId: "tag-6", name: "热血" },
+        { tagId: "tag-7", name: "搞笑" },
+      ],
+      isHidden: false,
+      translationStartedAt: new Date("2026-01-02"),
+      translationCompletedAt: new Date("2026-01-03"),
+      proofreadingStartedAt: new Date("2026-01-04"),
+      proofreadingCompletedAt: new Date("2026-01-05"),
+      typesettingStartedAt: new Date("2026-01-05"),
+      typesettingCompletedAt: new Date("2026-01-06"),
+      reviewedAt: new Date("2026-01-06"),
+      publishedAt: new Date("2026-01-07"),
+      createdAt: new Date("2026-01-02"),
+      updatedAt: new Date("2026-01-07"),
+    },
+    {
+      id: "comic-003",
+      collectionId: "COL-001",
+      index: 2,
+      author: "米二",
+      title: "一人之下 - 第561话",
+      isSeries: true,
+      likesCount: 89,
+      tags: [
+        { tagId: "tag-1", name: "热血" },
+        { tagId: "tag-8", name: "奇幻" },
+      ],
+      isHidden: false,
+      translationStartedAt: undefined,
+      translationCompletedAt: undefined,
+      proofreadingStartedAt: undefined,
+      proofreadingCompletedAt: undefined,
+      typesettingStartedAt: undefined,
+      typesettingCompletedAt: undefined,
+      reviewedAt: undefined,
+      publishedAt: undefined,
+      createdAt: new Date("2026-01-05"),
+      updatedAt: new Date("2026-01-05"),
+    },
+  ];
 
+  return (
+    <div style={{ height: "100%", width: "100%", display: "flex", flexDirection: "column", padding: 12, boxSizing: "border-box", gap: 20 }}>
+      <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>BriefComicCard 预览</h2>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, maxWidth: 900 }}>
+        {mockComics.map((comic) => (
+          <BriefComicCard key={comic.id} comic={comic} />
+        ))}
+      </div>
     </div>
   );
 }

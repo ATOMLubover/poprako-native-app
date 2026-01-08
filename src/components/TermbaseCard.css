@@ -22,6 +22,7 @@
   margin-left: 3px;
   margin-right: 3px;
   background-color: var(--card-bg);
+  border: 1px solid transparent;
   border-radius: 12px;
   padding: 12px;
   box-shadow: var(--shadow-soft);
@@ -33,11 +34,9 @@
 }
 
 .termbase-card:hover {
-  transform: translateY(-2px) rotate(-1deg);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.07);
-  /* 颜色略微变浅（比 #436d58 亮一些，阅读上更舒适） */
-  background-color: #f0f4f1;
-  /* 默认文本色为非日期的柔和深灰绿 */
+  transform: translateY(-2px) rotate(-0.5deg);
+  border-color: #2f8b57; /* change border to green on hover */
+  /* keep background unchanged on hover */
   color: #3d403d;
 }
 
