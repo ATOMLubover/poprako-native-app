@@ -42,6 +42,7 @@ export type ComicInfo = {
   coverImageUrl?: string;
 
   collectionId: string;
+  collectionIndex: number;
   index: number;
 
   author: string;

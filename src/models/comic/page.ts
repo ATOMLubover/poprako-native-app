@@ -10,6 +10,8 @@ export type PageBrief = {
   inboxCount: number;
   outboxCount: number;
 
+  imageUrl: string;
+
   createdAt: Date;
   updatedAt: Date;
 };

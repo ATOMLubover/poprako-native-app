@@ -149,10 +149,19 @@ export default function PanelView() {
 }
 
 function DraftBoard() {
+  const files = [
+    "D:/my_projects/poprako-native-app/tests/images/01_001.jpg",
+    "D:/my_projects/poprako-native-app/tests/images/02_003.jpg",
+    "D:/my_projects/poprako-native-app/tests/images/03_004.jpg",
+    "D:/my_projects/poprako-native-app/tests/images/04_005.jpg",
+  ];
+
   const mockComicInfo: ComicInfo = {
     id: "comic-001",
-    coverImageUrl: "https://images.unsplash.com/photo-1618336753974-aae8e04506aa?q=80&w=800&auto=format&fit=crop",
+    // cover 使用绝对本地路径，由下游组件通过 store/ipc 代理加载
+    coverImageUrl: files[0],
     collectionId: "COL-001",
+    collectionIndex: 1,
     index: 1,
     author: "未知艺术家",
     title: "幻象之城",
@@ -190,16 +199,19 @@ function DraftBoard() {
       proovedCount: 5,
       inboxCount: Math.floor(Math.random() * 12) + 2,
       outboxCount: Math.floor(Math.random() * 8) + 1,
+      // 本地图片绝对路径（mock 数据在 DraftBoard 中），下游组件负责通过 store/ipc 代理读取
+      imageUrl: files[i % files.length],
       createdAt: new Date(),
       updatedAt: new Date(),
     })),
     createdAt: new Date(),
     updatedAt: new Date(),
   };
+  const comicWithCover = mockComicInfo;
 
   return (
     <div style={{ height: "100%", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", padding: 12, boxSizing: "border-box", backgroundColor: "#f8f8f7" }}>
-      <ComicDetailCard comic={mockComicInfo} currentUserId="user-001" />
+      <ComicDetailCard comic={comicWithCover} currentUserId="user-001" />
     </div>
   );
 }

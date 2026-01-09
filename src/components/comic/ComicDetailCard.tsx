@@ -1,11 +1,14 @@
-import { useState, useMemo } from "react";
-import { UserPlus, LogOut, Download, Edit3, CheckCircle, Trash2, BarChart2, Grid } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { UserPlus, LogOut, Download, Edit3, CheckCircle, Save, Trash2, FileText, Layers, Type, Check } from "lucide-react";
+import InPanelIcon from "../InPanelIcon";
+import OutPanelIcon from "../OutPanelIcon";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
 import NatureButton from "../NatureButton";
 import NatureTag from "../NatureTag";
 import type { ComicInfo } from "../../models/comic/comic";
 import type { AssignmentBrief } from "../../models/comic/assignment";
 import type { Tag } from "../../models/tag";
+import { getLocalImage } from "../../store/image";
 import "./ComicDetailCard.css";
 
 type Props = {
@@ -75,25 +78,105 @@ function RoleRow({ label, users, status, currentUserId }: RoleRowProps) {
 type CompactStatProps = {
   label: string;
   value: number;
+  icon: React.ReactNode;
 };
 
-function CompactStat({ label, value }: CompactStatProps) {
+function CompactStat({ label, value, icon }: CompactStatProps) {
   return (
     <div className="compact-stat">
-      <span className="stat-value">{value}</span>
-      <span className="stat-label">{label}</span>
+      <div className="stat-title">
+        {icon}
+        <span>{label}</span>
+      </div>
+      <div className="stat-value">{value}</div>
     </div>
   );
 }
 
 export default function ComicDetailCard({ comic, currentUserId }: Props) {
-  const [activeTab, setActiveTab] = useState<"chart" | "preview">("chart");
+  const [activeTab, setActiveTab] = useState<"chart" | "preview">("preview");
+  const [visibleCount, setVisibleCount] = useState<number>(4);
 
-  // Mock current user id (will be provided by store in real app)
+  // 小组件：负责从 store 加载本地图片并返回可用于 <img> 的 src（objectUrl）
+  function PageThumb({ srcPath, alt }: { srcPath: string; alt?: string }) {
+    const [src, setSrc] = useState<string | null>(null);
+
+    useEffect(() => {
+      let mounted = true;
+
+      async function load() {
+        try {
+          // 使用 store 的 getLocalImage 代理读取本地图片（返回 objectUrl + blob）
+          const res = await getLocalImage(srcPath);
+          if (mounted && res && res.objectUrl) {
+            setSrc(res.objectUrl);
+            return;
+          }
+        } catch (e) {
+          // 忽略，尝试直接使用原始路径（在某些运行环境下可能是 data: 或 http(s)）
+        }
+
+        if (mounted) {
+          setSrc(srcPath);
+        }
+      }
+
+      load();
+
+      return () => {
+        mounted = false;
+      };
+    }, [srcPath]);
+
+    return (
+      <div className="preview-item">
+        {src ? <img src={src} alt={alt ?? "preview"} /> : <div className="cover-placeholder">加载中</div>}
+        <div className="preview-overlay" />
+      </div>
+    );
+  }
+
+  // 封面图片源：运行时加载（优先使用 coverImageUrl，否则使用第一页的 imageUrl）
+  const [coverSrc, setCoverSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadCover() {
+      try {
+        // prefer explicit coverImageUrl if provided, otherwise use first page imageUrl
+        const path = comic.coverImageUrl ?? (comic.pages.length > 0 ? comic.pages[0].imageUrl : undefined);
+        if (!path) return;
+
+        try {
+          const res = await getLocalImage(path);
+          if (mounted && res && res.objectUrl) {
+            setCoverSrc(res.objectUrl);
+            return;
+          }
+        } catch (e) {
+          // fall back to using the raw path
+        }
+
+        if (mounted) {
+          setCoverSrc(path);
+        }
+      } catch (e) {
+        console.error("Failed to load cover image", e);
+      }
+    }
+
+    loadCover();
+
+    return () => {
+      mounted = false;
+    };
+  }, [comic.coverImageUrl, comic.pages]);
+
+  // 模拟当前用户 id（真实场景由 store 提供）
   const mockCurrentUserId = "user-001";
   const effectiveCurrentUserId = currentUserId ?? mockCurrentUserId;
-
-  // Permission check by userId. Currently mock: evaluate assigned reviewer for current user.
+  // 基于 userId 的权限检查，当前为 mock：判断是否被指派为监修
   const isReviewer = (() => {
     return comic.assignments.some((a) => a.userId === effectiveCurrentUserId && !!a.assignedReviewerAt);
   })();
@@ -144,20 +227,22 @@ export default function ComicDetailCard({ comic, currentUserId }: Props) {
     outbox: p.outboxCount,
   }));
 
+  
+
   return (
     <div className="comic-detail-card">
       {/* 左侧栏 */}
       <div className="left-sidebar">
         <div className="cover-image">
-          {comic.coverImageUrl ? (
-            <img src={comic.coverImageUrl} alt="Cover" />
+          {coverSrc ? (
+            <img src={coverSrc} alt="Cover" />
           ) : (
             <div className="cover-placeholder">暂无封面</div>
           )}
         </div>
 
         <div className="sidebar-title">
-          <div className="title-index">[{comic.collectionId}-{comic.index}]</div>
+          <div className="title-index">[{comic.collectionIndex}-{comic.index}]</div>
           <div className="title-content">
             <span className="title-author">【{comic.author}】</span>
             <span className="title-text">{comic.title}</span>
@@ -194,6 +279,14 @@ export default function ComicDetailCard({ comic, currentUserId }: Props) {
               <NatureButton variant="cloud" minWidth="100%" fontSize={10} onClick={() => console.log("修改")}>
                 <Edit3 size={11} style={{ marginRight: 6 }} />
                 修改
+              </NatureButton>
+            )}
+
+            {/* 缓存按钮：仅译者或校对可见；当前 mock 权限始终返回 true，onClick 留空 */}
+            {true && (
+              <NatureButton variant="cloud" minWidth="100%" fontSize={10} onClick={() => {}}>
+                <Save size={11} style={{ marginRight: 6 }} />
+                缓存
               </NatureButton>
             )}
           </div>
@@ -234,35 +327,44 @@ export default function ComicDetailCard({ comic, currentUserId }: Props) {
           </div>
           <div className="column-divider" />
           <div className="stats-column">
-            <CompactStat label="总页数" value={comic.pageCount} />
-            <CompactStat label="总单元" value={stats.units} />
-            <CompactStat label="已翻译" value={stats.translated} />
-            <CompactStat label="已校对" value={stats.proofed} />
-            <CompactStat label="框外" value={stats.outbox} />
-            <CompactStat label="框内" value={stats.inbox} />
+            <CompactStat label="总页数" value={comic.pageCount} icon={<FileText size={16} />} />
+            <CompactStat label="总单元" value={stats.units} icon={<Layers size={16} />} />
+            <CompactStat label="已翻译" value={stats.translated} icon={<Type size={16} />} />
+            <CompactStat label="已校对" value={stats.proofed} icon={<Check size={16} />} />
+            <CompactStat label="框外" value={stats.outbox} icon={<OutPanelIcon size={20} />} />
+            <CompactStat label="框内" value={stats.inbox} icon={<InPanelIcon size={20} />} />
           </div>
         </div>
 
         {/* 可视化区域 */}
         <div className="visualization-area">
           <div className="visualization-header">
-            <h3 className="visualization-title">
-              {activeTab === "chart" ? <BarChart2 size={10} /> : <Grid size={10} />}
-              Data Analytics
-            </h3>
-            <div className="tab-switcher">
-              <button
-                className={`tab-btn ${activeTab === "chart" ? "active" : ""}`}
-                onClick={() => setActiveTab("chart")}
-              >
-                Chart
-              </button>
-              <button
-                className={`tab-btn ${activeTab === "preview" ? "active" : ""}`}
-                onClick={() => setActiveTab("preview")}
-              >
-                Preview
-              </button>
+            <div className="visualization-left">
+              
+
+              <div className="tab-switcher">
+                <button
+                  className={`tab-btn ${activeTab === "preview" ? "active" : ""}`}
+                  onClick={() => setActiveTab("preview")}
+                >
+                  预览
+                </button>
+                <button
+                  className={`tab-btn ${activeTab === "chart" ? "active" : ""}`}
+                  onClick={() => setActiveTab("chart")}
+                >
+                  图表
+                </button>
+
+              </div>
+            </div>
+
+            <div className="visualization-right">
+              {activeTab === "preview" && (
+                <NatureButton variant="cloud" fontSize={11} onClick={() => setVisibleCount((v) => Math.min(comic.pages.length, v + 4))}>
+                  加载更多
+                </NatureButton>
+              )}
             </div>
           </div>
 
@@ -306,11 +408,8 @@ export default function ComicDetailCard({ comic, currentUserId }: Props) {
               </ResponsiveContainer>
             ) : (
               <div className="preview-grid">
-                {comic.pages.slice(0, 10).map((page) => (
-                  <div key={page.id} className="preview-item">
-                    <img src={`https://placehold.co/150x200/fcfcfb/a8a29e?text=P${page.index}`} alt={`Page ${page.index}`} />
-                    <div className="preview-overlay" />
-                  </div>
+                {comic.pages.slice(0, visibleCount).map((page) => (
+                  <PageThumb key={page.id} srcPath={page.imageUrl} alt={`P${page.index}`} />
                 ))}
               </div>
             )}

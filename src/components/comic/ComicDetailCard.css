@@ -248,8 +248,8 @@
 .role-row {
   display: flex;
   align-items: center;
-  padding: 6px 8px; /* 缩小内间距以减少视觉空白 */
-  border-radius: 8px;
+  padding: 8px 8px; /* 缩小内间距以减少视觉空白 */
+  border-radius: 4px;
   transition: background-color 0.12s, border-color 0.12s, box-shadow 0.12s;
   border: 2px solid rgba(2, 6, 23, 0.08);
   box-sizing: border-box;
@@ -302,7 +302,7 @@
   grid-template-columns: repeat(2, 1fr);
   grid-template-rows: repeat(3, 1fr);
   gap: 4px 4px;
-  padding-left: 16px;
+  padding-left: 4px;
   padding-top: 4px;
   flex-shrink: 0;
   height: 100%; /* 跟随父容器高度，保证与 roles-column 等高 */
@@ -310,45 +310,49 @@
 }
 
 .compact-stat {
+  border: 1px solid #afafe7;
+  border-radius: 10px;
+  padding: 4px 8px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfcfd 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4px 6px 1px 6px;
-  box-sizing: border-box;
-  background-color: transparent;
-  border-radius: 8px;
-  border: 2px solid rgba(2,6,23,0.18);
-  box-shadow: 0 2px 6px rgba(2,6,23,0.06);
-  transition: box-shadow 0.12s, transform 0.12s, border-color 0.12s;
+  cursor: default;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
 }
 
 .compact-stat:hover {
-  box-shadow: 0 6px 18px rgba(2,6,23,0.09);
   transform: translateY(-1px);
-  border-color: rgba(2,6,23,0.28);
+  box-shadow: 0 6px 18px rgba(111, 148, 222, 0.06);
+  border-color: #acacef;
+}
+
+.compact-stat:active {
+  transform: translateY(-1px) scale(0.997);
+  box-shadow: 0 3px 10px rgba(16, 24, 40, 0.06);
+}
+
+.stat-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #6b7280;
+  justify-content: center;
 }
 
 .stat-value {
-  font-size: 18px; /* 显著放大数字 */
-  font-weight: 900;
-  color: #0b1220;
-  line-height: 1;
-}
-
-.stat-label {
-  font-size: 11px;
-  color: #6b6b68;
+  margin-top: 6px;
+  font-size: 18px;
   font-weight: 700;
-  margin-top: 1px;
-  text-transform: uppercase;
-  letter-spacing: -0.02em;
+  color: #111827;
 }
 
 /* 可视化区域 */
 .visualization-area {
   flex: 1;
-  padding: 12px 20px;
+  padding: 2px 20px;
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -361,6 +365,51 @@
   align-items: center;
   margin-bottom: 10px;
   flex-shrink: 0;
+}
+
+/* 左侧组：图标 + tab，提供独立的视觉边缘以便与右侧操作区分 */
+.visualization-left {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* 缩小图标与 tabs 的间距 */
+  padding: 2px 2px; /* 减小内边距，让按钮更靠近边缘 */
+  border: 1px solid #cbd5df; /* 加重边框，突出分割 */
+  border-radius: 6px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(250,250,249,0.98) 100%);
+  box-shadow: 0 6px 18px rgba(2,6,23,0.08); /* 加强阴影以提高视觉权重 */
+}
+
+.visualization-icon {
+  display: inline-flex;
+  align-items: center;
+  color: #9ca3a8;
+  flex-shrink: 0;
+  margin-right: 4px; /* 图标与文本间距更紧凑 */
+}
+
+.visualization-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.visualization-left {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* 图标与 tab 之间的间距 */
+}
+
+.visualization-icon {
+  display: inline-flex;
+  align-items: center;
+  color: #9ca3a8;
+  flex-shrink: 0;
+}
+
+.visualization-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .visualization-title {
@@ -409,17 +458,22 @@
   border: 1px solid #f5f5f4;
   padding: 10px;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
+  /* ensure chart container has measurable height for Recharts */
+  min-height: 180px;
 }
 
 /* 预览网格 */
 .preview-grid {
   height: 100%;
-  overflow-y: auto;
-  padding-right: 4px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  display: flex;
+  gap: 10px;
+  padding-bottom: 4px;
 }
 
 .preview-grid::-webkit-scrollbar {
-  width: 6px;
+  height: 6px;
 }
 
 .preview-grid::-webkit-scrollbar-track {
@@ -435,16 +489,10 @@
   background-color: #d6d3d1;
 }
 
-.preview-grid > div {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
-  width: 100%;
-}
-
 .preview-item {
   position: relative;
-  aspect-ratio: 3 / 4;
+  height: 100%;
+  flex-shrink: 0;
   border-radius: 6px;
   background-color: #fafaf9;
   border: 1px solid #f5f5f4;
@@ -455,9 +503,9 @@
 }
 
 .preview-item img {
-  width: 100%;
   height: 100%;
-  object-fit: cover;
+  width: auto;
+  object-fit: contain;
 }
 
 .preview-overlay {
