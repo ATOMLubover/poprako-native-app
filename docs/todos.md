@@ -16,3 +16,4 @@
 - [ ] Batch delete collection.
 - [ ] Preview of images in local project translator.
 - [ ] Progress bar in comic status card.
+- [ ] Termbases entry in translator.

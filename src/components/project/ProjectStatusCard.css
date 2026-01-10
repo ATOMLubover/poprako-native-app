@@ -66,6 +66,7 @@
   font-size: 0.72rem;
   flex-shrink: 0;
   min-width: 0;
+  margin-left: 50%;
 }
 
 .psc-metric-row {
@@ -108,11 +109,11 @@
   gap: 10px;
   flex-shrink: 0;
 
-  /* 默认隐藏右侧操作区，只有在卡片 hover 时显示 */
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transform: translateY(4px);
+  /* 始终显示右侧操作区 */
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
   transition: opacity 0.12s ease, transform 0.12s ease, visibility 0.12s;
 }
 
@@ -126,10 +127,8 @@
 }
 
 .psc-root:hover .psc-right {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-  transform: translateY(0);
+  /* keep slight hover interaction for future adjustments */
+  transform-origin: center;
 }
 
 .psc-tr-fill {

@@ -6,6 +6,7 @@ import LoginPage from "./LoginPage";
 import ApplyTeamPage from "./ApplyTeamPage";
 import { __mockCheckLoginStatus } from "../../ipc/mock_login";
 import { setOnlineStatus, setCurrentUser, setAppView } from "../../store/app";
+import TabBar from "../../components/TabBar";
 import "./LoginView.css";
 
 type LoginPhase = "check-update" | "auth";
@@ -80,20 +81,14 @@ export default function LoginView() {
           </div>
         </div>
 
-        <div className="login-view-tab-bar">
-          <button
-            className={`login-view-tab ${activeTab === "login" ? "active" : ""}`}
-            onClick={() => setActiveTab("login")}
-          >
-            登录
-          </button>
-          <button
-            className={`login-view-tab ${activeTab === "apply" ? "active" : ""}`}
-            onClick={() => setActiveTab("apply")}
-          >
-            申请建组
-          </button>
-        </div>
+        <TabBar
+          items={[
+            { id: "login", label: "登录" },
+            { id: "apply", label: "申请建组" },
+          ]}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
       </div>
     </div>
   );

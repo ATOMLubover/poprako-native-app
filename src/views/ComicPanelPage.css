@@ -1,0 +1,38 @@
+/* 漫画仪表盘页面样式 */
+
+.comic-panel-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* Invisible wrapper around TabBar to keep surrounding elements 8px apart vertically */
+.tab-bar-wrapper {
+  margin-block: 8px;
+  display: flex;
+  justify-content: center;
+  background-color: transparent;
+}
+
+.comic-panel-content {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 0 16px 16px 16px;
+}
+
+.placeholder-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.placeholder-content p {
+  margin: 0;
+}

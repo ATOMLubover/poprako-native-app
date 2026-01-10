@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { CompressorPage } from "./CompressorPage";
 import FontRepoPage from "./FontRepoPage";
+import TabBar from "../components/TabBar";
 import "./ToolboxPage.css";
 
 type ToolItem = "compressor" | "font-repo";
@@ -13,19 +14,15 @@ export default function ToolboxPage() {
 
   return (
     <div className="toolbox-page">
-      <div className="toolbox-tab-bar">
-        <button
-          className={`toolbox-tab ${activeTool === "compressor" ? "active" : ""}`}
-          onClick={() => setActiveTool("compressor")}
-        >
-          压图工具
-        </button>
-        <button
-          className={`toolbox-tab ${activeTool === "font-repo" ? "active" : ""}`}
-          onClick={() => setActiveTool("font-repo")}
-        >
-          字体仓库
-        </button>
+      <div className="tab-bar-wrapper">
+        <TabBar
+          items={[
+            { id: "compressor", label: "压图工具" },
+            { id: "font-repo", label: "字体仓库" },
+          ]}
+          activeTab={activeTool}
+          onTabChange={setActiveTool}
+        />
       </div>
 
       <div className="toolbox-content">

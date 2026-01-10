@@ -71,13 +71,15 @@ export default function ComicStatusCard({ comic, onClick }: ComicStatusCardProps
 
   return (
     <div className="csc-root" onClick={handleClick}>
-      {/* 标题 + 标签，共享剩余宽度，标签紧跟标题 */}
+      {/* 左侧：标题+标签紧密排列 */}
       <div className="csc-main">
         <div className="csc-title-wrap">
+          {/* 标题：最多占card宽度40%，左对齐 */}
           <span className="csc-title">
             [{comic.collectionIndex}-{comic.index}]【{comic.author}】{comic.title}
           </span>
 
+          {/* 标签：紧跟标题，最多占card宽度30% */}
           <div className="csc-tags">
             {displayTags.map((tag) => (
               <NatureTag
@@ -91,7 +93,7 @@ export default function ComicStatusCard({ comic, onClick }: ComicStatusCardProps
         </div>
       </div>
 
-      {/* 进度部分 */}
+      {/* 进度：固定200px */}
       <div className="csc-progress-section">
         {progressItems.map((item) => (
           <span
@@ -103,7 +105,7 @@ export default function ComicStatusCard({ comic, onClick }: ComicStatusCardProps
         ))}
       </div>
 
-      {/* 点赞小区块：使用 NatureTagLikesButton 的拇指图标（SVG），但不是按钮组件 */}
+      {/* 点赞：固定50px */}
       <div className="csc-like-compact" aria-hidden>
         <svg className="csc-like-icon" viewBox="0 0 24 24" aria-hidden>
           <path d="M14,9V5a3,3,0,0,0-3-3l-4,9v11h11.28a2,2,0,0,0,2-1.7l1.38-9a2,2,0,0,0-2-2.3zM7,22H4a2,2,0,0,1-2-2V14a2,2,0,0,1,2-2H7Z" />

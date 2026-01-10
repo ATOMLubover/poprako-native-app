@@ -28,48 +28,6 @@ const ArrowButton: React.FC<{ direction: "prev" | "next" }> = ({ direction }) =>
   );
 };
 
-// 动态容量计算 Hook
-const useDynamicCapacity = (containerRef: React.RefObject<HTMLDivElement | null>, templateRef: React.RefObject<HTMLDivElement | null>) => {
-  const [capacity, setCapacity] = useState(0);
-  const [itemHeight, setItemHeight] = useState(0);
-
-  useEffect(() => {
-    if (!containerRef.current || !templateRef.current) return;
-
-    const calculate = () => {
-      const container = containerRef.current;
-      const template = templateRef.current;
-
-      if (!container || !template) return; // Add null checks
-
-      const style = window.getComputedStyle(container);
-      const gap = parseFloat(style.gap) || 0;
-      const pt = parseFloat(style.paddingTop) || 0;
-      const pb = parseFloat(style.paddingBottom) || 0;
-
-      const containerRect = container.getBoundingClientRect();
-      const availableHeight = containerRect.height - pt - pb;
-
-      const singleItemHeight = template.getBoundingClientRect().height;
-      setItemHeight(singleItemHeight);
-
-      if (singleItemHeight > 0) {
-        const count = Math.floor((availableHeight + gap + 0.1) / (singleItemHeight + gap));
-        setCapacity(Math.max(1, count));
-      }
-    };
-
-    const observer = new ResizeObserver(calculate);
-    observer.observe(containerRef.current!);
-    observer.observe(templateRef.current!);
-
-    calculate();
-    return () => observer.disconnect();
-  }, []);
-
-  return { capacity, itemHeight };
-};
-
 type ProjectListProps = {
   projects: Project[];
   onAct?: (project: Project) => void;
@@ -95,9 +53,47 @@ export default function ProjectList({ projects, onAct, onSync, onRefresh, title 
   const [showExporter, setShowExporter] = useState<boolean>(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const templateRef = useRef<HTMLDivElement>(null);
+  const firstItemRef = useRef<HTMLDivElement>(null);
+  const [capacity, setCapacity] = useState<number>(0);
+  const [itemHeight, setItemHeight] = useState<number>(64);
 
-  const { capacity, itemHeight } = useDynamicCapacity(containerRef, templateRef);
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const measure = () => {
+      const container = containerRef.current;
+      if (!container) return;
+
+      const style = window.getComputedStyle(container);
+      const gap = parseFloat(style.gap) || 0;
+      const pt = parseFloat(style.paddingTop) || 0;
+      const pb = parseFloat(style.paddingBottom) || 0;
+      const containerRect = container.getBoundingClientRect();
+      const availableHeight = containerRect.height - pt - pb;
+
+      const measuredHeight = firstItemRef.current
+        ? firstItemRef.current.getBoundingClientRect().height
+        : itemHeight;
+
+      const safeHeight = measuredHeight > 0 ? measuredHeight : 64;
+      setItemHeight(safeHeight);
+
+      const count = Math.floor((availableHeight + gap + 0.1) / (safeHeight + gap));
+      const nextCapacity = Math.max(1, count || 1);
+      setCapacity(nextCapacity);
+    };
+
+    const ro = new ResizeObserver(measure);
+    ro.observe(containerRef.current);
+    if (firstItemRef.current) {
+      ro.observe(firstItemRef.current);
+    }
+
+    // 延迟一次，确保首项已渲染后测量
+    requestAnimationFrame(measure);
+
+    return () => ro.disconnect();
+  }, [projects.length]);
 
   // 根据当前页码和容量裁剪数据
   const pageProjects = useMemo(() => {
@@ -156,15 +152,6 @@ export default function ProjectList({ projects, onAct, onSync, onRefresh, title 
       ) : null}
 
       <div ref={containerRef} style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", gap: 1 }}>
-        {/* 隐藏的测量模板（如果没有项目则用固定高度占位，避免传入 undefined 导致运行时访问错误） */}
-        <div ref={templateRef} style={{ visibility: "hidden", position: "absolute" }}>
-          {projects.length > 0 ? (
-            <ProjectStatusCard project={projects[0]} />
-          ) : (
-            <div style={{ width: 1, height: 56 }} />
-          )}
-        </div>
-
         {projects.length === 0 ? (
           <div
             style={{
@@ -179,8 +166,12 @@ export default function ProjectList({ projects, onAct, onSync, onRefresh, title 
             暂时没有项目哦？
           </div>
         ) : (
-          pageProjects.map((project) => (
-            <div key={project.id} style={{ height: itemHeight }}>
+          pageProjects.map((project, idx) => (
+            <div
+              key={project.id}
+              ref={idx === 0 ? firstItemRef : undefined}
+              style={{ height: itemHeight || undefined }}
+            >
               <ProjectStatusCard
                 project={project}
                 onAct={onAct}

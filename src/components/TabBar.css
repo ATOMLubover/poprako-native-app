@@ -1,0 +1,54 @@
+/* 通用标签栏样式 */
+
+.tab-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  background-color: transparent;
+  border-radius: 12px;
+  width: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.02);
+  box-sizing: border-box;
+}
+
+.tab-item {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 150px;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+  background-color: #f8fafc;
+  border: none;
+  cursor: pointer;
+  transition: color 0.18s ease, background-color 0.18s ease;
+  border-radius: 0;
+  margin: 0;
+  outline: none;
+  text-align: center;
+}
+
+.tab-item + .tab-item {
+  border-left: 1px solid rgba(15, 23, 42, 0.03);
+}
+
+.tab-item:hover {
+  color: #334155;
+  background-color: #eef3fb;
+}
+
+.tab-item.active {
+  background-color: #ffffff;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.tab-item:first-child {
+  border-radius: 8px 0 0 8px;
+}
+
+.tab-item:last-child {
+  border-radius: 0 8px 8px 0;
+}

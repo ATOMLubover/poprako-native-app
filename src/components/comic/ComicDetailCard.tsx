@@ -10,6 +10,7 @@ import type { AssignmentBrief } from "../../models/comic/assignment";
 import type { Tag } from "../../models/tag";
 import { getLocalImage } from "../../store/image";
 import "./ComicDetailCard.css";
+import DotLoadSpinner from "../DotLoadSpinner";
 
 type Props = {
   comic: ComicInfo;
@@ -130,7 +131,13 @@ export default function ComicDetailCard({ comic, currentUserId }: Props) {
 
     return (
       <div className="preview-item">
-        {src ? <img src={src} alt={alt ?? "preview"} /> : <div className="cover-placeholder">加载中</div>}
+        {src ? (
+          <img src={src} alt={alt ?? "preview"} />
+        ) : (
+          <div className="cover-placeholder">
+            <DotLoadSpinner />
+          </div>
+        )}
         <div className="preview-overlay" />
       </div>
     );

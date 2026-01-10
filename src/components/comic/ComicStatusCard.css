@@ -1,56 +1,63 @@
 .csc-root {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 4px 8px;
-  background: linear-gradient(90deg, rgba(223,244,235,0.5) 0%, rgba(255,255,255,1) 50%);
+  gap: 8px;
+  padding: 8px 12px;
+  min-height: 48px;
+  width: 100%;
+  background: #ffffff;
   border: 2px solid transparent;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: border-color 0.12s ease;
+  transition: box-shadow 0.12s ease, transform 0.12s ease, border-color 0.12s ease;
   box-sizing: border-box;
 }
 
 .csc-root:hover {
-  border-color: rgba(123,183,125,0.45);
+  border-color: #7bb77d;
+  border-width: 2px;
+  transform-origin: center;
 }
 
+/* 左侧内容区：标题+标签紧密排列 */
 .csc-main {
-  flex: 1 1 auto;
-  min-width: 0;
   display: flex;
   align-items: center;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .csc-title-wrap {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  flex: 1 1 auto;
   min-width: 0;
-  overflow: hidden;
 }
 
-/* 标题部分 */
+/* 标题部分：最多占整个card宽度的40%，左对齐，实际宽度由内容决定 */
 .csc-title {
   color: #111827;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 16px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: block;
-  /* title 可缩小，优先被截断，保证 tags 完整 */
-  flex: 1 1 0;
-  min-width: 0;
+  flex: 0 0 auto;
+  width: fit-content;
+  max-width: 55%;
 }
 
-/* 标签部分（紧跟在 title 右侧） */
+/* 标签部分：紧跟在标题后，最多占整个card宽度的30% */
 .csc-tags {
   display: flex;
   gap: 6px;
   flex-wrap: nowrap;
   overflow: hidden;
   flex: 0 0 auto;
+  width: fit-content;
+  max-width: 30%;
 }
 
 .csc-tags > * {
@@ -58,29 +65,24 @@
   white-space: nowrap;
 }
 
-/* 进度部分 */
+/* 进度部分：固定200px */
 .csc-progress-section {
   display: flex;
   gap: 6px;
   flex-shrink: 0;
-  /* 进度区宽度为卡片宽度的固定比例，适配 >=1280px */
-  flex-basis: 32%;
-  max-width: 36%;
-  min-width: 240px;
-  /* 增加左侧间距，防止 title/tags 与 progress 重叠 */
-  margin-left: 24px;
+  min-width: 160px;
+  max-width: 40%;
   justify-content: flex-end;
 }
 
-/* 紧凑的点赞区域（仅图标+数字） */
+/* 紧凑的点赞区域（仅图标+数字）：固定50px */
 .csc-like-compact {
   display: flex;
   align-items: center;
   gap: 4px;
-  /* shrink area to be smaller */
-  flex: 0 0 40px;
-  min-width: 32px;
   justify-content: center;
+  flex-shrink: 0;
+  width: 50px;
 }
 
 .csc-like-icon {

@@ -38,15 +38,14 @@ export default function ProjectStatusCard({ project, onAct, onSync, onDelete, on
 
   const translatedCount = project.translatedUnitCount;
   const proovedCount = project.proovedUnitCount;
-  // 下拉菜单开关状态
+  
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<HTMLElement | null>(null);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
 
-  // 点击外部时关闭下拉菜单
   useEffect(() => {
-    function handleDocClick(e: MouseEvent) {
+    function handleDocClick(e: Event) {
       const target = e.target as Node;
 
       if (menuRef.current && menuRef.current.contains(target)) {
@@ -69,7 +68,6 @@ export default function ProjectStatusCard({ project, onAct, onSync, onDelete, on
     };
   }, [menuOpen]);
 
-  // 占位的动作回调（可由调用方提供具体实现）
   function handleExport() {
     if (onExport) {
       onExport(project);
@@ -89,7 +87,6 @@ export default function ProjectStatusCard({ project, onAct, onSync, onDelete, on
   }
 
   async function handleDelete() {
-    // kept for compatibility; replaced by ConfirmDialogBox below
     setConfirmVisible(true);
   }
 
@@ -115,7 +112,12 @@ export default function ProjectStatusCard({ project, onAct, onSync, onDelete, on
   }
 
   return (
-    <div className="psc-root">
+    <div
+      className="psc-root"
+      onClick={() => {
+        if (onAct) onAct(project);
+      }}
+    >
       <div className="psc-left">
         <div className="psc-icon" aria-hidden>
           {remote ? <Cloud size={18} /> : <HardDrive size={18} />}
@@ -178,28 +180,22 @@ export default function ProjectStatusCard({ project, onAct, onSync, onDelete, on
 
       <div className="psc-right">
         <div style={{ marginLeft: 8, display: "flex", alignItems: "center", gap: 8 }}>
-          <NatureButton
-            variant="mist"
-            minWidth={56}
-            onClick={() => {
-              if (onAct) onAct(project);
-            }}
-          >开始</NatureButton>
 
           <div className="psc-extra">
-            <div ref={buttonRef as any} style={{ display: "inline-block" }}>
-              <NatureButton
-                variant="cloud"
-                minWidth={40}
-                onClick={() => {
-                  if (!menuOpen && buttonRef.current) {
-                    const rect = buttonRef.current.getBoundingClientRect();
-                    setPos({ left: rect.left + rect.width / 2, top: rect.bottom });
-                  }
+            <div
+              ref={buttonRef as any}
+              style={{ display: "inline-block" }}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!menuOpen && buttonRef.current) {
+                  const rect = buttonRef.current.getBoundingClientRect();
+                  setPos({ left: rect.left + rect.width / 2, top: rect.bottom });
+                }
 
-                  setMenuOpen((s) => !s);
-                }}
-              >⋯</NatureButton>
+                setMenuOpen((s) => !s);
+              }}
+            >
+              <NatureButton variant="cloud" minWidth={40} onClick={() => {}}>⋯</NatureButton>
             </div>
 
             {menuOpen && pos
@@ -221,7 +217,8 @@ export default function ProjectStatusCard({ project, onAct, onSync, onDelete, on
                     <>
                       <div
                         className="psc-dropdown-item"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           handleSync();
                           setMenuOpen(false);
                         }}
@@ -231,7 +228,8 @@ export default function ProjectStatusCard({ project, onAct, onSync, onDelete, on
 
                       <div
                         className="psc-dropdown-item"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           handleExport();
                           setMenuOpen(false);
                         }}
@@ -241,7 +239,8 @@ export default function ProjectStatusCard({ project, onAct, onSync, onDelete, on
 
                       <div
                         className="psc-dropdown-item"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           handleDelete();
                         }}
                       >
@@ -252,7 +251,8 @@ export default function ProjectStatusCard({ project, onAct, onSync, onDelete, on
                     <>
                       <div
                         className="psc-dropdown-item"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           handleExport();
                           setMenuOpen(false);
                         }}
@@ -262,7 +262,8 @@ export default function ProjectStatusCard({ project, onAct, onSync, onDelete, on
 
                       <div
                         className="psc-dropdown-item"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           handleModify();
                           setMenuOpen(false);
                         }}
@@ -272,7 +273,8 @@ export default function ProjectStatusCard({ project, onAct, onSync, onDelete, on
 
                       <div
                         className="psc-dropdown-item"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           handleDelete();
                         }}
                       >
