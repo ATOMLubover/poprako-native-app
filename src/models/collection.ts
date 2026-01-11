@@ -11,3 +11,9 @@ export type Collection = {
   createdAt: Date;
   updatedAt: Date;
 };
+
+// 用于创建或更新作品集的数据结构
+export type NewCollection = {
+  teamId: string;
+  name: string;
+};

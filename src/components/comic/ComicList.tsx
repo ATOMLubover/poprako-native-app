@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import ComicStatusCard from "./ComicStatusCard";
+import NatureButton from "../NatureButton";
+import ConfirmDialogBox from "../ConfirmDialogBox";
+import CollectionCreator from "../collection/CollectionCreator";
 import type { ComicBrief } from "../../models/comic/comic";
-import type { Collection } from "../../models/collection";
+import type { Collection, NewCollection } from "../../models/collection";
 import type { ComicFilterOptions, ProgressStatus } from "../../models/comic/option";
 import { PROGRESS_STATUS_LABELS, DEFAULT_FILTER_OPTIONS } from "../../models/comic/option";
 
@@ -123,6 +126,7 @@ type ComicListProps = {
   title?: string;
   filterOptions?: ComicFilterOptions;
   onFilterChange?: (options: ComicFilterOptions) => void;
+  onCollectionCreate?: (payload: NewCollection) => Promise<void> | void;
 };
 
 /**
@@ -135,18 +139,22 @@ type ComicListProps = {
  * - 如果当前页的项数 < capacity，禁用下一页按钮（确定无下一页）
  * - 如果当前页的项数 === capacity，允许点击下一页（试探是否还有数据）
  */
-export default function ComicList({ 
-  comics, 
-  collections = [], 
-  onClick, 
+export default function ComicList({
+  comics,
+  collections = [],
+  onClick,
   filterOptions = DEFAULT_FILTER_OPTIONS,
-  onFilterChange
+  onFilterChange,
+  onCollectionCreate,
 }: ComicListProps) {
   const [page, setPage] = useState<number>(0);
+  const [collectionCreatorVisible, setCollectionCreatorVisible] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const templateRef = useRef<HTMLDivElement>(null);
 
   const { capacity, itemHeight } = useDynamicCapacity(containerRef, templateRef);
+
+  const [helpVisible, setHelpVisible] = useState<boolean>(false);
 
   const pageComics = useMemo(() => {
     if (capacity <= 0) {
@@ -177,28 +185,52 @@ export default function ComicList({
     }
   };
 
+  const handleCollectionSave = async (payload: NewCollection) => {
+    if (onCollectionCreate) {
+      await onCollectionCreate(payload);
+    }
+
+    setCollectionCreatorVisible(false);
+  };
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8, height: "100%", width: "100%", maxWidth: 1080, margin: "0 auto", overflow: "hidden", boxSizing: "border-box" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 8, height: "100%", width: "100%", overflow: "hidden", boxSizing: "border-box", position: "relative" }}>
       {/* Title removed as requested */}
 
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        <input
-          type="text"
-          placeholder="搜索作者名、漫画名或成员名..."
-          value={filterOptions.searchText}
-          onChange={(e) => handleFilterUpdate({ searchText: e.target.value })}
-          style={{
-            padding: "8px 12px",
-            fontSize: 13,
-            border: "1px solid #d1d5db",
-            borderRadius: 6,
-            outline: "none",
-            width: "100%",
-            boxSizing: "border-box",
-          }}
-        />
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <input
+            type="text"
+            placeholder="搜索作者名、漫画名或成员名..."
+            value={filterOptions.searchText}
+            onChange={(e) => handleFilterUpdate({ searchText: e.target.value })}
+            style={{
+              padding: "8px 12px",
+              fontSize: 13,
+              border: "1px solid #d1d5db",
+              borderRadius: 6,
+              outline: "none",
+              flex: 1,
+              boxSizing: "border-box",
+            }}
+          />
 
-        <div style={{ display: "flex", gap: 8, width: "100%", flexWrap: "nowrap", paddingBottom: 4 }}>
+          <div style={{ display: "flex", gap: 8 }}>
+            <NatureButton variant="mist" minWidth={110} onClick={() => setCollectionCreatorVisible(true)}>
+              新建作品集
+            </NatureButton>
+
+            <NatureButton variant="mist" minWidth={110} onClick={() => {}}>
+              新建漫画
+            </NatureButton>
+
+            <NatureButton variant="cloud" minWidth={110} onClick={() => setHelpVisible(true)}>
+              帮助
+            </NatureButton>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: 8, width: "98%", flexWrap: "nowrap", paddingBottom: 4, margin: "0 auto" }}>
           <FilterSelect
             label="作品集"
             value={filterOptions.collectionId}
@@ -236,9 +268,18 @@ export default function ComicList({
             onChange={(value) => handleFilterUpdate({ publishStatus: value as ProgressStatus | null })}
           />
         </div>
+        <ConfirmDialogBox
+          visible={helpVisible}
+          title="搜索帮助"
+          description={`搜索时，可以使用“author:”来模糊查询作者，"member:"来模糊查询组员。条件之间应该使用空格分开。
+示例：“魔王 author:rev member:LB”可以搜索到LB参加的rev3漫画《魔王姫は好意が弱い》。`}
+          confirmText="知道了"
+          onConfirm={() => setHelpVisible(false)}
+          onCancel={() => setHelpVisible(false)}
+        />
       </div>
 
-      <div ref={containerRef} style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", gap: 1, width: "100%", overflow: "hidden" }}>
+      <div ref={containerRef} style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", gap: "2px", width: "98%", margin: "0 auto", overflow: "hidden" }}>
         <div ref={templateRef} style={{ visibility: "hidden", position: "absolute" }}>
           {comics.length > 0 ? (
             <ComicStatusCard comic={comics[0]} />
@@ -319,6 +360,11 @@ export default function ComicList({
           </div>
         </div>
       </div>
+      <CollectionCreator
+        visible={collectionCreatorVisible}
+        onClose={() => setCollectionCreatorVisible(false)}
+        onSave={handleCollectionSave}
+      />
     </div>
   );
 }

@@ -151,7 +151,7 @@ export default function ProjectList({ projects, onAct, onSync, onRefresh, title 
         </div>
       ) : null}
 
-      <div ref={containerRef} style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", gap: 1 }}>
+      <div ref={containerRef} style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", gap: 2 }}>
         {projects.length === 0 ? (
           <div
             style={{
@@ -170,7 +170,7 @@ export default function ProjectList({ projects, onAct, onSync, onRefresh, title 
             <div
               key={project.id}
               ref={idx === 0 ? firstItemRef : undefined}
-              style={{ height: itemHeight || undefined }}
+              style={{ height: idx === 0 ? undefined : (itemHeight || undefined) }}
             >
               <ProjectStatusCard
                 project={project}

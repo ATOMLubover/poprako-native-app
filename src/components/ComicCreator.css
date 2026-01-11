@@ -1,0 +1,283 @@
+.comic-creator-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 500px; /* fixed height budget required */
+  max-width: 850px;
+  margin: 0 auto;
+  background-color: #fff;
+  border-radius: 8px;
+  overflow: hidden; /* outer container must not scroll */
+}
+
+.cc-main {
+  display: flex;
+  flex: 1 1 auto;
+  height: calc(100% - 48px); /* reserve footer height */
+  gap: 10px;
+  padding: 10px;
+  min-height: 0; /* allow children to shrink */
+}
+
+.cc-left {
+  flex: 2 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow: hidden; /* no scrolling in left panel */
+  padding-right: 6px;
+  min-height: 0;
+}
+
+.cc-right {
+  flex: 1 0 300px;
+  max-width: 320px;
+  min-width: 260px;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid #f0f3f5;
+  padding-left: 10px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* right panel selector area is the only place allowed to scroll */
+.cc-right .selector-scrollable {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.cc-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 8px 12px;
+  background-color: #fcfcfc;
+  border-top: 1px solid #f0f3f5;
+  height: 48px; /* fixed footer height used in calc above */
+  flex-shrink: 0;
+}
+
+/* Form Styles */
+.cc-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cc-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+.cc-input,
+.cc-textarea,
+.cc-select {
+  padding: 6px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 13px;
+  transition: border-color 0.2s;
+  outline: none;
+}
+
+/* Normalize native select rendering and add a custom arrow */
+.cc-select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: #fff;
+  background-image: linear-gradient(45deg, transparent 50%, #94a3b8 50%),
+    linear-gradient(135deg, #94a3b8 50%, transparent 50%);
+  background-position: calc(100% - 14px) calc(50% - 2px),
+    calc(100% - 9px) calc(50% - 2px);
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 28px; /* room for arrow */
+}
+
+.cc-textarea {
+  resize: none;
+  min-height: 40px;
+  max-height: 72px;
+}
+
+.cc-input:focus,
+.cc-textarea:focus,
+.cc-select:focus {
+  border-color: #3182ce; /* Example blue */
+}
+
+.cc-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 4px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid #edf2f7;
+  display: inline-block;
+}
+
+.cc-section-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cc-add-tag-btn-inline {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+/* compact field: icon + single-line input/select */
+.cc-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cc-field-icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.cc-input-inline,
+.cc-select-inline {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 6px 8px;
+  font-size: 13px;
+}
+
+/* Tags View */
+.cc-tags-container {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 28px;
+  align-items: center;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cc-tags-container > div,
+.cc-tags-container > button,
+.cc-tags-container > .nature-tag {
+  flex: 0 0 auto; /* keep items inline */
+}
+
+/* hide scrollbar but keep scrollable */
+.cc-tags-container::-webkit-scrollbar {
+  height: 6px;
+}
+.cc-tags-container::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+.cc-tags-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.cc-add-tag-btn {
+  color: #718096;
+  border: 1px dashed #cbd5e0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  background: transparent;
+  flex-shrink: 0;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cc-add-tag-btn:hover {
+  background: #edf2f7;
+  color: #4a5568;
+}
+
+/* Assignments List */
+.cc-assignments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cc-assignment-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 8px;
+  background: #f8fafc;
+  border-radius: 5px;
+  border: 1px solid #f1f5f9;
+}
+
+.cc-role-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #4a5568;
+  width: 60px;
+}
+
+.cc-assignee {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #2d3748;
+  font-size: 13px;
+}
+
+.cc-assign-placeholder {
+  color: #a0aec0;
+  font-style: italic;
+  font-size: 12px;
+}
+
+.cc-assignee-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: #e6f2ff;
+  border-radius: 12px;
+  font-size: 12px;
+  color: #2563eb;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cc-assignee-tag:hover {
+  background: #dbeafe;
+}
+
+.cc-assignee-remove {
+  font-size: 14px;
+  color: #64748b;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.cc-empty-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #cbd5e0;
+  font-size: 14px;
+  text-align: center;
+}

@@ -1,0 +1,84 @@
+/* 与 TeamSelector 类似的样式 */
+
+/* 复用 .project-selector 结构，但可以覆盖特定的样式 */
+.member-req-selector-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+  /* 不强制 max-width，由父容器决定 */
+}
+
+.ps-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.ps-input {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid #e6e9ee;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.ps-result-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* 成员列表项样式 */
+.member-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: #f9fafb; /* 稍微深一点的背景区分 */
+  border: 1px solid #edf2f7;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.member-item:hover {
+  background: #f0f4f8;
+  border-color: #dbe4ef;
+}
+
+.member-item-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.member-item-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.member-item-id {
+  font-size: 0.75rem;
+  color: #999;
+}
+
+/* Loading / Error */
+.ps-loading,
+.ps-error,
+.ps-empty {
+  padding: 20px;
+  text-align: center;
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.ps-error {
+  color: #e53e3e;
+}

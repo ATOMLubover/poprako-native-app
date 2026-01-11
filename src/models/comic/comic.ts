@@ -1,5 +1,5 @@
 import { TagBrief } from "../tag";
-import { AssignmentBrief } from "./assignment";
+import { AssignmentBrief, NewAssignment } from "./assignment";
 import { PageBrief } from "./page";
 
 // 漫画的基本信息，包含最新一章的摘要
@@ -12,12 +12,9 @@ export type ComicBrief = {
 
   author: string;
   title: string;
-  isSeries: boolean;
 
   likesCount: number;
   tags: TagBrief[];
-
-  isHidden: boolean;
 
   translationStartedAt?: Date;
   translationCompletedAt?: Date;
@@ -48,7 +45,6 @@ export type ComicInfo = {
   author: string;
   title: string;
   description?: string;
-  isSeries: boolean;
 
   likesCount: number;
   tags: TagBrief[];
@@ -72,4 +68,17 @@ export type ComicInfo = {
 
   createdAt: Date;
   updatedAt: Date;
+};
+
+// 用于创建或更新漫画的数据结构
+export type NewComic = {
+  collectionId: string;
+
+  author: string;
+  title: string;
+  description?: string;
+
+  tagIds: string[];
+
+  preAssignments: NewAssignment[];
 };

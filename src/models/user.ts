@@ -16,10 +16,13 @@ export type LoginReq = {
   qqNumber?: string;
   email?: string;
   password: string;
+  teamId?: string;
   invitaionCode?: string;
 };
 
 // 登录响应
 export type LoginResp = {
+  teamId: string;
   token: string;
 };
+

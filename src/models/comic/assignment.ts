@@ -31,3 +31,15 @@ export type AssignmentBrief = {
   assignedRedrawerAt?: Date;
   assignedReviewerAt?: Date;
 };
+
+// 用于创建或更新漫画任务分配的数据结构
+export type NewAssignment = {
+  comicId: string;
+  userId: string;
+
+  assignTranslator?: boolean;
+  assignProofreader?: boolean;
+  assignTypesetter?: boolean;
+  assignRedrawer?: boolean;
+  assignReviewer?: boolean;
+};

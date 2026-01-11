@@ -63,6 +63,21 @@ export default function Icon({ name, size = 19, className }: IconProps) {
   }
 
   switch (name) {
+    case "cloud":
+      return (
+        <svg {...svgProps}>
+          <path d="M20 17.58A4.5 4.5 0 0 0 18 9h-1.26A8 8 0 1 0 4 16.25" />
+        </svg>
+      );
+
+    case "mist":
+      return (
+        <svg {...svgProps}>
+          <path d="M3 12h18" />
+          <path d="M3 16h18" />
+          <path d="M3 20h18" />
+        </svg>
+      );
     case "pencil":
       return (
         <svg {...svgProps}>

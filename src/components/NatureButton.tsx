@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "./NatureButton.css";
 
 // 按钮变体类型说明
-type ButtonVariant = "mist" | "rose" | "cloud" | "clay" | "outline" | "glass";
+type ButtonVariant = "mist" | "rose" | "cloud" | "clay" | "glass";
 
 // 组件 props 类型定义
 type NatureButtonProps = {
@@ -65,8 +65,8 @@ export default function NatureButton(props: NatureButtonProps) {
         return "nb-cloud";
       case "clay":
         return "nb-clay";
-      case "outline":
-        return "nb-outline";
+      // case "outline":
+      //   return "nb-outline";
       case "glass":
         return "nb-glass";
       default:
