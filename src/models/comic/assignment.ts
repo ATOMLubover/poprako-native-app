@@ -2,13 +2,8 @@
 export type AssignmentInfo = {
   id: string;
 
-  uerId: string;
-  userNickname: string;
-
   comicId: string;
-  comicCollectionId: string;
-  comicIndex: string;
-  comicTitle: string;
+  userId: string;
 
   assignedTranslatorAt?: Date;
   assignedProofreaderAt?: Date;

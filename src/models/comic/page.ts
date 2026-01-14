@@ -2,7 +2,14 @@
 export type PageBrief = {
   id: string;
 
+  comicId: string;
   index: number;
+
+  ossKey: string;
+  sizeBytes: number;
+
+  uploaded: boolean;
+
   unitCount: number;
   translatedCount: number;
   proovedCount: number;
@@ -10,8 +17,14 @@ export type PageBrief = {
   inboxCount: number;
   outboxCount: number;
 
-  imageUrl: string;
-
   createdAt: Date;
   updatedAt: Date;
+};
+
+// 新建漫画页时使用的类型
+export type NewPage = {
+  comicId: string;
+  index: number;
+  ossKey: string;
+  sizeBytes: number;
 };

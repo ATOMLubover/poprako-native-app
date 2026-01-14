@@ -50,7 +50,7 @@ export default function CheckUpdatePage({
 
       if (retryCount < 1) {
         setRetryCount(retryCount + 1);
-        
+
         setTimeout(() => {
           checkUpdate();
         }, 1000);
@@ -92,7 +92,11 @@ export default function CheckUpdatePage({
             <NatureButton variant="mist" onClick={handleRetry} minWidth={150}>
               重试
             </NatureButton>
-            <NatureButton variant="outline" onClick={onOfflineMode} minWidth={150}>
+            <NatureButton
+              variant="cloud"
+              onClick={onOfflineMode}
+              minWidth={150}
+            >
               以离线模式启动
             </NatureButton>
           </div>
@@ -123,15 +127,31 @@ export default function CheckUpdatePage({
 
           <div className="check-update-footer">
             {updateInfo.allowUsage ? (
-              <NatureButton variant="mist" onClick={handleConfirm} minWidth={150}>
+              <NatureButton
+                variant="mist"
+                onClick={handleConfirm}
+                minWidth={150}
+              >
                 确认
               </NatureButton>
             ) : (
-              <div style={{ display: "flex", width: "100%", flexDirection: "column", gap: 8, alignItems: "flex-end" }}>
+              <div
+                style={{
+                  display: "flex",
+                  width: "100%",
+                  flexDirection: "column",
+                  gap: 8,
+                  alignItems: "flex-end",
+                }}
+              >
                 <div style={{ color: "#b91c1c", fontWeight: 600 }}>
                   客户端版本过低，不再支持在线使用
                 </div>
-                <NatureButton variant="cloud" onClick={onOfflineMode} minWidth={150}>
+                <NatureButton
+                  variant="cloud"
+                  onClick={onOfflineMode}
+                  minWidth={150}
+                >
                   以离线模式启动
                 </NatureButton>
               </div>

@@ -1,7 +1,5 @@
 import type { CheckUpdateResp } from "../models/update";
-import type { LoginReq, LoginResp } from "../models/user";
-import type { CreateTeamApplicationReq } from "../models/team";
-import type { MemberInfo } from "../models/member";
+import type { LoginReq, LoginResp, UserProfile } from "../models/user";
 
 // Mock 获取本地版本号
 export async function __mockGetLocalVersion(): Promise<string> {
@@ -30,22 +28,23 @@ export async function __mockLogin(req: LoginReq): Promise<LoginResp> {
   console.log("Mock login with request", req);
 
   return {
+    userId: "mock-user-" + Date.now(),
     token: "mock-jwt-token-" + Date.now(),
   };
 }
 
 // Mock 检查登录状态
-export async function __mockCheckLoginStatus(): Promise<MemberInfo | null> {
+export async function __mockCheckLoginStatus(): Promise<UserProfile | null> {
   await new Promise((resolve) => setTimeout(resolve, 400));
 
   return null;
 }
 
-// Mock 申请创建团队
-export async function __mockApplyTeam(
-  req: CreateTeamApplicationReq
-): Promise<void> {
-  await new Promise((resolve) => setTimeout(resolve, 700));
+// // Mock 申请创建团队
+// export async function __mockApplyTeam(
+//   req: CreateTeamApplicationReq
+// ): Promise<void> {
+//   await new Promise((resolve) => setTimeout(resolve, 700));
 
-  console.log("Mock apply team with request", req);
-}
+//   console.log("Mock apply team with request", req);
+// }

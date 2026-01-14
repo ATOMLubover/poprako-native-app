@@ -1,14 +1,25 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import ComicStatusCard from "./ComicStatusCard";
+import ComicDetailCard from "./ComicDetailCard";
 import NatureButton from "../NatureButton";
 import ConfirmDialogBox from "../ConfirmDialogBox";
 import CollectionCreator from "../collection/CollectionCreator";
-import type { ComicBrief } from "../../models/comic/comic";
-import type { Collection, NewCollection } from "../../models/collection";
-import type { ComicFilterOptions, ProgressStatus } from "../../models/comic/option";
-import { PROGRESS_STATUS_LABELS, DEFAULT_FILTER_OPTIONS } from "../../models/comic/option";
+import DotLoadSpinner from "../DotLoadSpinner";
+import type { ComicBrief, ComicInfo } from "../../models/comic/comic";
+import type { Workset, NewWorkset } from "../../models/workset";
+import type {
+  ComicFilterOptions,
+  ProgressStatus,
+} from "../../models/comic/option";
+import {
+  PROGRESS_STATUS_LABELS,
+  DEFAULT_FILTER_OPTIONS,
+} from "../../models/comic/option";
+import { getComicInfo } from "../../ipc/comic";
 
-const ArrowButton: React.FC<{ direction: "prev" | "next" }> = ({ direction }) => {
+const ArrowButton: React.FC<{ direction: "prev" | "next" }> = ({
+  direction,
+}) => {
   const isPrev = direction === "prev";
 
   return (
@@ -31,7 +42,7 @@ const ArrowButton: React.FC<{ direction: "prev" | "next" }> = ({ direction }) =>
 
 /**
  * 动态容量计算 Hook
- * 
+ *
  * 基于容器尺寸和模板项尺寸，实时计算可容纳的项目数量
  */
 const useDynamicCapacity = (
@@ -62,7 +73,9 @@ const useDynamicCapacity = (
       setItemHeight(singleItemHeight);
 
       if (singleItemHeight > 0) {
-        const count = Math.floor((availableHeight + gap + 0.1) / (singleItemHeight + gap));
+        const count = Math.floor(
+          (availableHeight + gap + 0.1) / (singleItemHeight + gap)
+        );
         setCapacity(Math.max(1, count));
       }
     };
@@ -90,11 +103,34 @@ const FilterSelect: React.FC<{
   placeholder?: string;
 }> = ({ label, value, options, onChange, placeholder = "全部" }) => {
   return (
-    <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 8, flex: "1 1 0", minWidth: 0 }}>
-      <label style={{ width: 64, fontSize: 12, color: "#6b7280", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label}</label>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
+        flex: "1 1 0",
+        minWidth: 0,
+      }}
+    >
+      <label
+        style={{
+          width: 64,
+          fontSize: 12,
+          color: "#6b7280",
+          fontWeight: 500,
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+        }}
+      >
+        {label}
+      </label>
       <select
         value={value ?? ""}
-        onChange={(e) => onChange(e.target.value === "" ? null : e.target.value)}
+        onChange={(e) =>
+          onChange(e.target.value === "" ? null : e.target.value)
+        }
         style={{
           padding: "6px 10px",
           fontSize: 13,
@@ -121,17 +157,17 @@ const FilterSelect: React.FC<{
 
 type ComicListProps = {
   comics: ComicBrief[];
-  collections?: Collection[];
-  onClick?: (comic: ComicBrief) => void;
+  collections?: Workset[];
   title?: string;
   filterOptions?: ComicFilterOptions;
   onFilterChange?: (options: ComicFilterOptions) => void;
-  onCollectionCreate?: (payload: NewCollection) => Promise<void> | void;
+  onCollectionCreate?: (payload: NewWorkset) => Promise<void> | void;
+  onCreateNewComic?: () => void;
 };
 
 /**
  * 漫画列表组件
- * 
+ *
  * 试探性分页机制：
  * - capacity 表示当前每页容量，由动态计算得出
  * - page 表示当前页码（从 0 开始）
@@ -142,17 +178,25 @@ type ComicListProps = {
 export default function ComicList({
   comics,
   collections = [],
-  onClick,
   filterOptions = DEFAULT_FILTER_OPTIONS,
   onFilterChange,
   onCollectionCreate,
+  onCreateNewComic,
 }: ComicListProps) {
   const [page, setPage] = useState<number>(0);
-  const [collectionCreatorVisible, setCollectionCreatorVisible] = useState<boolean>(false);
+  const [collectionCreatorVisible, setCollectionCreatorVisible] =
+    useState<boolean>(false);
+  const [selectedComicInfo, setSelectedComicInfo] = useState<ComicInfo | null>(
+    null
+  );
+  const [isLoadingDetail, setIsLoadingDetail] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const templateRef = useRef<HTMLDivElement>(null);
 
-  const { capacity, itemHeight } = useDynamicCapacity(containerRef, templateRef);
+  const { capacity, itemHeight } = useDynamicCapacity(
+    containerRef,
+    templateRef
+  );
 
   const [helpVisible, setHelpVisible] = useState<boolean>(false);
 
@@ -168,7 +212,11 @@ export default function ComicList({
   const isNextPageDisabled = capacity > 0 && pageComics.length < capacity;
 
   const collectionOptions = useMemo(
-    () => collections.map((c) => ({ value: c.id, label: c.name })),
+    () =>
+      collections.map((c) => ({
+        value: c.id,
+        label: c.description ?? `#${c.index}`,
+      })),
     [collections]
   );
 
@@ -185,7 +233,7 @@ export default function ComicList({
     }
   };
 
-  const handleCollectionSave = async (payload: NewCollection) => {
+  const handleCollectionSave = async (payload: NewWorkset) => {
     if (onCollectionCreate) {
       await onCollectionCreate(payload);
     }
@@ -193,8 +241,67 @@ export default function ComicList({
     setCollectionCreatorVisible(false);
   };
 
+  const handleComicClick = async (comic: ComicBrief) => {
+    setIsLoadingDetail(true);
+
+    try {
+      const comicInfo = await getComicInfo(comic.id);
+      setSelectedComicInfo(comicInfo);
+    } catch (error) {
+      console.error("Failed to load comic details", error);
+    } finally {
+      setIsLoadingDetail(false);
+    }
+  };
+
+  if (isLoadingDetail) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100%",
+          width: "100%",
+        }}
+      >
+        <DotLoadSpinner />
+      </div>
+    );
+  }
+
+  if (selectedComicInfo) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100%",
+          width: "100%",
+        }}
+      >
+        <ComicDetailCard
+          comic={selectedComicInfo}
+          onReturn={() => setSelectedComicInfo(null)}
+        />
+      </div>
+    );
+  }
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8, height: "100%", width: "100%", overflow: "hidden", boxSizing: "border-box", position: "relative" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 8,
+        height: "100%",
+        width: "100%",
+        overflow: "hidden",
+        boxSizing: "border-box",
+        position: "relative",
+      }}
+    >
       {/* Title removed as requested */}
 
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -216,56 +323,97 @@ export default function ComicList({
           />
 
           <div style={{ display: "flex", gap: 8 }}>
-            <NatureButton variant="mist" minWidth={110} onClick={() => setCollectionCreatorVisible(true)}>
+            <NatureButton
+              variant="mist"
+              minWidth={110}
+              onClick={() => setCollectionCreatorVisible(true)}
+            >
               新建作品集
             </NatureButton>
 
-            <NatureButton variant="mist" minWidth={110} onClick={() => {}}>
+            <NatureButton
+              variant="mist"
+              minWidth={110}
+              onClick={() => onCreateNewComic?.()}
+            >
               新建漫画
             </NatureButton>
 
-            <NatureButton variant="cloud" minWidth={110} onClick={() => setHelpVisible(true)}>
+            <NatureButton
+              variant="cloud"
+              minWidth={110}
+              onClick={() => setHelpVisible(true)}
+            >
               帮助
             </NatureButton>
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: 8, width: "98%", flexWrap: "nowrap", paddingBottom: 4, margin: "0 auto" }}>
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            width: "98%",
+            flexWrap: "nowrap",
+            paddingBottom: 4,
+            margin: "0 auto",
+          }}
+        >
           <FilterSelect
             label="作品集"
-            value={filterOptions.collectionId}
+            value={filterOptions.worksetId}
             options={collectionOptions}
-            onChange={(value) => handleFilterUpdate({ collectionId: value })}
+            onChange={(value) => handleFilterUpdate({ worksetId: value })}
           />
           <FilterSelect
             label="翻译进度"
-            value={filterOptions.translationStatus}
+            value={filterOptions.translatingStatus}
             options={progressOptions}
-            onChange={(value) => handleFilterUpdate({ translationStatus: value as ProgressStatus | null })}
+            onChange={(value) =>
+              handleFilterUpdate({
+                translatingStatus: value as ProgressStatus | null,
+              })
+            }
           />
           <FilterSelect
             label="校对进度"
             value={filterOptions.proofreadingStatus}
             options={progressOptions}
-            onChange={(value) => handleFilterUpdate({ proofreadingStatus: value as ProgressStatus | null })}
+            onChange={(value) =>
+              handleFilterUpdate({
+                proofreadingStatus: value as ProgressStatus | null,
+              })
+            }
           />
           <FilterSelect
             label="嵌字进度"
             value={filterOptions.typesettingStatus}
             options={progressOptions}
-            onChange={(value) => handleFilterUpdate({ typesettingStatus: value as ProgressStatus | null })}
+            onChange={(value) =>
+              handleFilterUpdate({
+                typesettingStatus: value as ProgressStatus | null,
+              })
+            }
           />
           <FilterSelect
             label="监修进度"
-            value={filterOptions.reviewStatus}
+            value={filterOptions.reviewingStatus}
             options={progressOptions}
-            onChange={(value) => handleFilterUpdate({ reviewStatus: value as ProgressStatus | null })}
+            onChange={(value) =>
+              handleFilterUpdate({
+                reviewingStatus: value as ProgressStatus | null,
+              })
+            }
           />
           <FilterSelect
             label="发布进度"
-            value={filterOptions.publishStatus}
+            value={filterOptions.uploadingStatus}
             options={progressOptions}
-            onChange={(value) => handleFilterUpdate({ publishStatus: value as ProgressStatus | null })}
+            onChange={(value) =>
+              handleFilterUpdate({
+                uploadingStatus: value as ProgressStatus | null,
+              })
+            }
           />
         </div>
         <ConfirmDialogBox
@@ -279,8 +427,24 @@ export default function ComicList({
         />
       </div>
 
-      <div ref={containerRef} style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", gap: "2px", width: "98%", margin: "0 auto", overflow: "hidden" }}>
-        <div ref={templateRef} style={{ visibility: "hidden", position: "absolute" }}>
+      <div
+        ref={containerRef}
+        style={{
+          flex: 1,
+          minHeight: 0,
+          display: "flex",
+          flexDirection: "column",
+          gap: "2px",
+          width: "98%",
+          margin: "0 auto",
+          overflow: "hidden",
+          paddingBottom: 25,
+        }}
+      >
+        <div
+          ref={templateRef}
+          style={{ visibility: "hidden", position: "absolute" }}
+        >
           {comics.length > 0 ? (
             <ComicStatusCard comic={comics[0]} />
           ) : (
@@ -304,60 +468,83 @@ export default function ComicList({
         ) : (
           pageComics.map((comic) => (
             <div key={comic.id} style={{ height: itemHeight }}>
-              <ComicStatusCard comic={comic} onClick={onClick} />
+              <ComicStatusCard
+                comic={comic}
+                onClick={() => handleComicClick(comic)}
+              />
             </div>
           ))
         )}
 
-        <div style={{ display: "flex", justifyContent: "center", marginTop: 8 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            {(() => {
-              const isPrevDisabled = page === 0;
-              const isNextDisabled = isNextPageDisabled;
+        {/* pagination moved outside the scroll container to avoid clipping */}
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          left: "50%",
+          transform: "translateX(-50%)",
+          bottom: 8,
+          display: "flex",
+          justifyContent: "center",
+          padding: 4,
+          pointerEvents: "auto",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            borderRadius: 8,
+            padding: 2,
+          }}
+        >
+          {(() => {
+            const isPrevDisabled = page === 0;
+            const isNextDisabled = isNextPageDisabled;
 
-              return (
-                <>
-                  <button
-                    aria-label="上一页"
-                    title="上一页"
-                    onClick={() => {
-                      if (isPrevDisabled) return;
-                      setPage((prev) => Math.max(0, prev - 1));
-                    }}
-                    style={{
-                      cursor: isPrevDisabled ? "default" : "pointer",
-                      opacity: isPrevDisabled ? 0.4 : 1,
-                      pointerEvents: isPrevDisabled ? "none" : "auto",
-                      background: "none",
-                      border: "none",
-                      padding: 6,
-                    }}
-                  >
-                    <ArrowButton direction="prev" />
-                  </button>
+            return (
+              <>
+                <button
+                  aria-label="上一页"
+                  title="上一页"
+                  onClick={() => {
+                    if (isPrevDisabled) return;
+                    setPage((prev) => Math.max(0, prev - 1));
+                  }}
+                  style={{
+                    cursor: isPrevDisabled ? "default" : "pointer",
+                    opacity: isPrevDisabled ? 0.4 : 1,
+                    pointerEvents: isPrevDisabled ? "none" : "auto",
+                    background: "none",
+                    border: "2px solid #e5e7eb",
+                    padding: 6,
+                  }}
+                >
+                  <ArrowButton direction="prev" />
+                </button>
 
-                  <button
-                    aria-label="下一页"
-                    title="下一页"
-                    onClick={() => {
-                      if (isNextDisabled) return;
-                      setPage((prev) => prev + 1);
-                    }}
-                    style={{
-                      cursor: isNextDisabled ? "default" : "pointer",
-                      opacity: isNextDisabled ? 0.4 : 1,
-                      pointerEvents: isNextDisabled ? "none" : "auto",
-                      background: "none",
-                      border: "none",
-                      padding: 6,
-                    }}
-                  >
-                    <ArrowButton direction="next" />
-                  </button>
-                </>
-              );
-            })()}
-          </div>
+                <button
+                  aria-label="下一页"
+                  title="下一页"
+                  onClick={() => {
+                    if (isNextDisabled) return;
+                    setPage((prev) => prev + 1);
+                  }}
+                  style={{
+                    cursor: isNextDisabled ? "default" : "pointer",
+                    opacity: isNextDisabled ? 0.4 : 1,
+                    pointerEvents: isNextDisabled ? "none" : "auto",
+                    background: "none",
+                    border: "none",
+                    padding: 6,
+                  }}
+                >
+                  <ArrowButton direction="next" />
+                </button>
+              </>
+            );
+          })()}
         </div>
       </div>
       <CollectionCreator

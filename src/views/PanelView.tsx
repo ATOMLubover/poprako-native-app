@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Icon from "../components/Icon";
-import TermbasePage from "./TermbasePage";
-import TagPoolPage from "./TagPoolPage";
+// import TermbasePage from "./TermbasePage";
+// import TagPoolPage from "./TagPoolPage";
 import SpecialSymbolPage from "./SpecialSymbolPage";
 import ComicWorkspacePage from "./ComicWorkspacePage";
 import ToolboxPage from "./ToolboxPage.tsx";
@@ -9,11 +9,22 @@ import SettingPage from "./SettingPage.tsx";
 import ComicPanelPage from "./ComicPanelPage";
 import "./PanelView.css";
 import ComicCreator from "../components/ComicCreator";
-import { setCollectionIds, setCurrentTeamId, setCurrentUser } from "../store/app";
-import type { MemberInfo } from "../models/member";
+import {
+  setCollectionIds,
+  setCurrentTeamId,
+  setCurrentUser,
+} from "../store/app";
+import type { UserProfile } from "../models/user";
 
-type MenuItem = "draft-board" | "comic-panel" | "tag-pool" | "termbase-pool" | "special-symbols" | "comic-workspace" | "toolbox" | "settings";
-
+type MenuItem =
+  | "draft-board"
+  | "comic-panel"
+  | "tag-pool"
+  | "termbase-pool"
+  | "special-symbols"
+  | "comic-workspace"
+  | "toolbox"
+  | "settings";
 
 type NavItem = {
   id: MenuItem;
@@ -23,29 +34,29 @@ type NavItem = {
 
 /**
  * draft-board 测试组件注意事项
- * 
+ *
  * 在 draft-board 中集成需要内部滚动的组件（如 TermList）时，必须确保整个高度约束链路正确传递：
- * 
+ *
  * 1. 最外层容器：使用 `display: flex; flex-direction: column; height: 100%; minHeight: 0`
  *    - height: 100% 使其占满父容器（PanelView.main-content）
  *    - minHeight: 0 允许 flex 在空间不足时收缩子项（关键！）
- * 
+ *
  * 2. 固定高度项（如 h2 标题）：添加 `flexShrink: 0`
  *    - 防止 flex 自动压缩该项目，保证其完整显示
- * 
+ *
  * 3. 卡片容器（.nb-card）：改为 flex 容器
  *    - `display: flex; flex-direction: column; flex: 1; minHeight: 0`
  *    - flex: 1 使其占满剩余空间
  *    - minHeight: 0 允许其进一步压缩内部子项
- * 
+ *
  * 4. 包裹测试组件的 div：必须指定
  *    - `flex: 1; minHeight: 0; overflow: hidden`
  *    - 这样测试组件才能接收完整的可用高度
- * 
+ *
  * 5. 测试组件本身（如 TermList）：需要支持高度约束
  *    - 在组件中使用 `height: 100%; overflow-y: auto` 实现内部滚动
  *    - 结构：`.term-list-container { height: 100%; display: flex; flex-direction: column; min-height: 0; }`
- * 
+ *
  * 错误示例（会导致无法滚动）：
  * - 移除 minHeight: 0
  * - 给中间层设置固定高度
@@ -64,30 +75,32 @@ export default function PanelView() {
     { id: "draft-board", icon: "pencil", label: "草稿板" },
     { id: "comic-panel", icon: "dashboard", label: "仪表盘" },
     { id: "comic-workspace", icon: "proofread", label: "工作区" },
-    { id: "tag-pool", icon: "tag", label: "标签池" },
-    { id: "termbase-pool", icon: "database", label: "术语库" },
+    // { id: "tag-pool", icon: "tag", label: "标签池" },
+    // { id: "termbase-pool", icon: "database", label: "术语库" },
     { id: "special-symbols", icon: "star", label: "特殊符号" },
     { id: "toolbox", icon: "wrench", label: "工具箱" },
   ];
 
-  const settingsItem: NavItem = { id: "settings", icon: "settings", label: "设置" };
+  const settingsItem: NavItem = {
+    id: "settings",
+    icon: "settings",
+    label: "设置",
+  };
 
   const renderContent = () => {
     switch (activeItem) {
       case "draft-board":
-        return (
-          <DraftBoard />
-        );
+        return <DraftBoard />;
       case "comic-panel":
         return <ComicPanelPage />;
       case "toolbox":
         return <ToolboxPage />;
       case "comic-workspace":
         return <ComicWorkspacePage />;
-      case "tag-pool":
-        return <TagPoolPage />;
-      case "termbase-pool":
-        return <TermbasePage />;
+      // case "tag-pool":
+      //   return <TagPoolPage />;
+      // case "termbase-pool":
+      //   return <TermbasePage />;
       case "special-symbols":
         return <SpecialSymbolPage />;
       case "settings":
@@ -130,7 +143,9 @@ export default function PanelView() {
         <div className="footer-section">
           <a
             href="#"
-            className={`nav-item ${activeItem === settingsItem.id ? "active" : ""}`}
+            className={`nav-item ${
+              activeItem === settingsItem.id ? "active" : ""
+            }`}
             onClick={(e) => {
               e.preventDefault();
               setActiveItem(settingsItem.id);
@@ -146,9 +161,7 @@ export default function PanelView() {
         </div>
       </nav>
 
-      <main className="main-content">
-        {renderContent()}
-      </main>
+      <main className="main-content">{renderContent()}</main>
     </div>
   );
 }
@@ -159,13 +172,11 @@ function DraftBoard() {
     setCollectionIds(["demo_collection_1", "demo_collection_2"]);
     setCurrentTeamId("t_demo_001");
 
-    const mockUser: MemberInfo = {
-      memberId: "m_demo_1",
+    const mockUser: UserProfile = {
+      id: "m_demo_1",
       nickname: "DemoUser",
-      teamId: "t_demo_001",
-      teamName: "Demo Team",
-      tags: [],
-      is_admin: true,
+      qq: "123456789",
+      isAdmin: true,
       createdAt: new Date(),
       updatedAt: new Date(),
     };

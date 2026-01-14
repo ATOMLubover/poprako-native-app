@@ -1,8 +1,9 @@
 import { useState } from "react";
 import TabBar from "../components/TabBar";
 import ComicList from "../components/comic/ComicList";
+import ComicCreator from "../components/ComicCreator";
 import type { ComicBrief } from "../models/comic/comic";
-import type { Collection } from "../models/collection";
+import type { Workset } from "../models/workset";
 import type { ComicFilterOptions } from "../models/comic/option";
 import { DEFAULT_FILTER_OPTIONS } from "../models/comic/option";
 import "./ComicPanelPage.css";
@@ -11,7 +12,7 @@ type TabId = "comic-list" | "assignment-list" | "member-list";
 
 /**
  * 漫画仪表盘页面
- * 
+ *
  * 包含三个标签页：
  * - 漫画列表：展示所有漫画
  * - 派活列表：展示任务分配情况（待实现）
@@ -19,7 +20,10 @@ type TabId = "comic-list" | "assignment-list" | "member-list";
  */
 export default function ComicPanelPage() {
   const [activeTab, setActiveTab] = useState<TabId>("comic-list");
-  const [filterOptions, setFilterOptions] = useState<ComicFilterOptions>(DEFAULT_FILTER_OPTIONS);
+  const [filterOptions, setFilterOptions] = useState<ComicFilterOptions>(
+    DEFAULT_FILTER_OPTIONS
+  );
+  const [viewMode, setViewMode] = useState<"list" | "creator">("list");
 
   const tabItems = [
     { id: "comic-list" as TabId, label: "漫画列表" },
@@ -27,42 +31,42 @@ export default function ComicPanelPage() {
     { id: "member-list" as TabId, label: "成员列表" },
   ];
 
-  const mockCollections: Collection[] = [
-    { 
-      id: "collection-1", 
-      teamId: "team-1",
-      name: "科幻系列", 
+  const mockCollections: Workset[] = [
+    {
+      id: "collection-1",
+      index: 1,
+      name: "科幻系列",
       comicCount: 12,
-      createdAt: new Date(), 
-      updatedAt: new Date() 
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
-    { 
-      id: "collection-2", 
-      teamId: "team-1",
-      name: "恋爱系列", 
+    {
+      id: "collection-2",
+      index: 2,
+      name: "恋爱系列",
       comicCount: 8,
-      createdAt: new Date(), 
-      updatedAt: new Date() 
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
-    { 
-      id: "collection-3", 
-      teamId: "team-1",
-      name: "冒险系列", 
+    {
+      id: "collection-3",
+      index: 3,
+      name: "冒险系列",
       comicCount: 15,
-      createdAt: new Date(), 
-      updatedAt: new Date() 
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
-    { 
-      id: "collection-4", 
-      teamId: "team-1",
-      name: "治愈系列", 
+    {
+      id: "collection-4",
+      index: 4,
+      name: "治愈系列",
       comicCount: 10,
-      createdAt: new Date(), 
-      updatedAt: new Date() 
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
   ];
 
-  const mockComics: ComicBrief[] = Array.from({ length: 50 }, (_, i) => {
+  const initialComics: ComicBrief[] = Array.from({ length: 50 }, (_, i) => {
     const titles = [
       "幻象之城",
       "时空旅人",
@@ -133,19 +137,24 @@ export default function ComicPanelPage() {
       ? `${titles[i % titles.length]}——超长标题测试用例随机字符串追加内容`
       : titles[i % titles.length];
 
-    const likesCount = i % 12 === 0 ? Math.floor(Math.random() * 500000) + 5000 : Math.floor(Math.random() * 300);
+    const likesCount =
+      i % 12 === 0
+        ? Math.floor(Math.random() * 500000) + 5000
+        : Math.floor(Math.random() * 300);
 
     const isHidden = i % 20 === 0;
 
     const maybeDate = (daysAgo: number) =>
-      Math.random() > 0.3 ? new Date(Date.now() - Math.random() * daysAgo * 24 * 3600 * 1000) : undefined;
+      Math.random() > 0.3
+        ? new Date(Date.now() - Math.random() * daysAgo * 24 * 3600 * 1000)
+        : undefined;
 
     const collectionIndex = Math.floor(i / 10) + 1;
     const indexInCollection = (i % 10) + 1;
 
     return {
       id: `comic-${String(i + 1).padStart(3, "0")}`,
-      collectionId: `collection-${((i % 4) + 1)}`,
+      collectionId: `collection-${(i % 4) + 1}`,
       collectionIndex: String(collectionIndex),
       index: indexInCollection,
       author: authors[i % authors.length],
@@ -154,6 +163,11 @@ export default function ComicPanelPage() {
       likesCount,
       tags,
       isHidden,
+      // 补充缺失的字段以匹配 `ComicBrief` 类型
+      worksetId: `workset-${(i % 4) + 1}`,
+      worksetIndex: collectionIndex,
+      creatorId: `creator-${i % authors.length}`,
+      pageCount: Math.floor(Math.random() * 50) + 1,
       translationStartedAt: i % 3 === 0 ? maybeDate(40) : undefined,
       translationCompletedAt: i % 7 === 0 ? maybeDate(30) : undefined,
       proofreadingStartedAt: i % 5 === 0 ? maybeDate(35) : undefined,
@@ -167,16 +181,53 @@ export default function ComicPanelPage() {
     } as ComicBrief;
   });
 
+  const [mockComics, _setMockComics] = useState<ComicBrief[]>(initialComics);
+
+  const handleCreateNewComic = () => {
+    setViewMode("creator");
+  };
+
+  const handleCreatorClose = () => {
+    setViewMode("list");
+  };
+
+  const handleComicCreated = async (newComic: any) => {
+    // TODO: 实际调用 IPC 创建漫画
+    // await ipcCreateComic(newComic);
+
+    // Mock: 为演示目的，暂时只切换回列表（实际应添加新漫画到列表）
+    console.log("Comic created:", newComic);
+    setViewMode("list");
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case "comic-list":
+        if (viewMode === "creator") {
+          return (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "100%",
+                padding: "20px",
+              }}
+            >
+              <ComicCreator
+                onClose={handleCreatorClose}
+                onCreate={handleComicCreated}
+              />
+            </div>
+          );
+        }
         return (
           <ComicList
             comics={mockComics}
             collections={mockCollections}
-            onClick={(comic) => console.log("点击漫画", comic)}
             filterOptions={filterOptions}
             onFilterChange={setFilterOptions}
+            onCreateNewComic={handleCreateNewComic}
           />
         );
       case "assignment-list":
@@ -199,7 +250,11 @@ export default function ComicPanelPage() {
   return (
     <div className="comic-panel-page">
       <div className="tab-bar-wrapper">
-        <TabBar items={tabItems} activeTab={activeTab} onTabChange={setActiveTab} />
+        <TabBar
+          items={tabItems}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
       </div>
 
       <div className="comic-panel-content">{renderContent()}</div>

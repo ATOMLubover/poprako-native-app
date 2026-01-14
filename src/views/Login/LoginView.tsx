@@ -3,18 +3,17 @@
 import { useState, useEffect } from "react";
 import CheckUpdatePage from "./CheckUpdatePage";
 import LoginPage from "./LoginPage";
-import ApplyTeamPage from "./ApplyTeamPage";
 import { __mockCheckLoginStatus } from "../../ipc/mock_login";
 import { setOnlineStatus, setCurrentUser, setAppView } from "../../store/app";
-import TabBar from "../../components/TabBar";
+// import TabBar from "../../components/TabBar";
 import "./LoginView.css";
 
 type LoginPhase = "check-update" | "auth";
-type AuthTab = "login" | "apply";
+// type AuthTab = "login" | "apply";
 
 export default function LoginView() {
   const [phase, setPhase] = useState<LoginPhase>("check-update");
-  const [activeTab, setActiveTab] = useState<AuthTab>("login");
+  // const [activeTab, setActiveTab] = useState<AuthTab>("login");
   const [allowUsage, setAllowUsage] = useState<boolean>(true);
 
   useEffect(() => {
@@ -64,31 +63,12 @@ export default function LoginView() {
 
   return (
     <div className="login-view">
-      <div className={`login-view-wrapper active-tab-${activeTab}`}>
+      <div className="login-view-wrapper active-tab-login">
         <div className="login-view-content">
-          <div
-            className={`login-view-panel ${activeTab === "login" ? "active" : ""}`}
-            aria-hidden={activeTab !== "login"}
-          >
+          <div className="login-view-panel active" aria-hidden={false}>
             <LoginPage allowOnline={allowUsage} />
           </div>
-
-          <div
-            className={`login-view-panel ${activeTab === "apply" ? "active" : ""}`}
-            aria-hidden={activeTab !== "apply"}
-          >
-            <ApplyTeamPage />
-          </div>
         </div>
-
-        <TabBar
-          items={[
-            { id: "login", label: "登录" },
-            { id: "apply", label: "申请建组" },
-          ]}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-        />
       </div>
     </div>
   );

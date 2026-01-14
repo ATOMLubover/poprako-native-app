@@ -1,19 +1,18 @@
 import { useState, useEffect, type KeyboardEvent } from "react";
 import "./ComicCreator.css";
 import NatureButton from "./NatureButton";
-import NatureTag from "./NatureTag";
 import Icon from "./Icon";
 import { useToast } from "./NotificationToast";
-import MemberSelector from "./MemberSelector";
-import TagSelector from "./TagSelector";
+import UserSelector from "./UserSelector";
+// import TagSelector from "./TagSelector";
 import { getAppState } from "../store/app";
 import type { NewComic } from "../models/comic/comic";
 import type { NewAssignment } from "../models/comic/assignment";
-import type { MemberBrief } from "../models/member";
-import type { TagBrief } from "../models/tag";
+import type { UserBrief } from "../models/user";
 
 type ComicCreatorProps = {
   onClose?: () => void;
+  onCreate?: (payload: NewComic) => Promise<void> | void;
 };
 
 type RightPanelMode =
@@ -27,14 +26,14 @@ type RightPanelMode =
   | "DESC";
 
 type AssignmentMap = {
-  translator: MemberBrief[];
-  proofreader: MemberBrief[];
-  typesetter: MemberBrief[];
-  redrawer: MemberBrief[];
-  reviewer: MemberBrief[];
+  translator: UserBrief[];
+  proofreader: UserBrief[];
+  typesetter: UserBrief[];
+  redrawer: UserBrief[];
+  reviewer: UserBrief[];
 };
 
-export default function ComicCreator({ onClose }: ComicCreatorProps) {
+export default function ComicCreator({ onClose, onCreate }: ComicCreatorProps) {
   const { showToast } = useToast();
   const appState = getAppState();
   const currentUser = appState.currentUser;
@@ -44,7 +43,7 @@ export default function ComicCreator({ onClose }: ComicCreatorProps) {
   const [title, setTitle] = useState<string>("");
   const [author, setAuthor] = useState<string>("");
   const [description, setDescription] = useState<string>("");
-  const [selectedTags, setSelectedTags] = useState<TagBrief[]>([]);
+  // const [selectedTags, setSelectedTags] = useState<TagBrief[]>([]);
 
   // 任务分配状态（每个职位允许多个人）
   const [assignments, setAssignments] = useState<AssignmentMap>({
@@ -64,9 +63,9 @@ export default function ComicCreator({ onClose }: ComicCreatorProps) {
         ...prev,
         reviewer: [
           {
-            memberId: currentUser.memberId,
+            id: currentUser.id,
             nickname: currentUser.nickname,
-            tags: currentUser.tags,
+            // tags: currentUser.tags,
           },
         ],
       }));
@@ -82,22 +81,18 @@ export default function ComicCreator({ onClose }: ComicCreatorProps) {
 
   // --- Handlers ---
 
-  const handleAddTag = (tag: TagBrief) => {
-    if (selectedTags.find((t) => t.tagId === tag.tagId)) {
-      return;
-    }
-    if (selectedTags.length >= 3) {
-      showToast("info", "最多只允许添加三个标签");
-      return;
-    }
-    setSelectedTags([...selectedTags, tag]);
-  };
+  // const handleAddTag = (tag: TagBrief) => {
+  //   if (selectedTags.find((t) => t.id === tag.id)) {
+  //     return;
+  //   }
+  //   if (selectedTags.length >= 3) {
+  //     showToast("info", "最多只允许添加三个标签");
+  //     return;
+  //   }
+  //   setSelectedTags([...selectedTags, tag]);
+  // };
 
-  const handleRemoveTag = (tagId: string) => {
-    setSelectedTags(selectedTags.filter((t) => t.tagId !== tagId));
-  };
-
-  const handleAssignMember = (member: MemberBrief) => {
+  const handleAssignMember = (member: UserBrief) => {
     let roleKey: keyof AssignmentMap | null = null;
     switch (panelMode) {
       case "ASSIGN_TRANS":
@@ -122,7 +117,7 @@ export default function ComicCreator({ onClose }: ComicCreatorProps) {
     if (roleKey) {
       setAssignments((prev) => {
         const existing = prev[roleKey] || [];
-        if (existing.find((m) => m.memberId === member.memberId)) {
+        if (existing.find((m) => m.id === member.id)) {
           return prev;
         }
         return { ...prev, [roleKey]: [...existing, member] };
@@ -136,7 +131,7 @@ export default function ComicCreator({ onClose }: ComicCreatorProps) {
     if (!collectionId) errors.push("请选择所属 Collection");
     if (!title.trim()) errors.push("请输入标题");
     if (!author.trim()) errors.push("请输入作者");
-    if (selectedTags.length === 0) errors.push("请至少选择一个标签");
+    // if (selectedTags.length === 0) errors.push("请至少选择一个标签");
 
     if (errors.length > 0) {
       showToast("error", errors[0]);
@@ -151,7 +146,7 @@ export default function ComicCreator({ onClose }: ComicCreatorProps) {
     const userRoles = new Map<
       string,
       {
-        member: MemberBrief;
+        member: UserBrief;
         roles: Set<string>;
       }
     >();
@@ -162,10 +157,10 @@ export default function ComicCreator({ onClose }: ComicCreatorProps) {
     ) => {
       const members = assignments[key];
       members.forEach((member) => {
-        if (!userRoles.has(member.memberId)) {
-          userRoles.set(member.memberId, { member, roles: new Set() });
+        if (!userRoles.has(member.id)) {
+          userRoles.set(member.id, { member, roles: new Set() });
         }
-        userRoles.get(member.memberId)!.roles.add(roleProp as string);
+        userRoles.get(member.id)!.roles.add(roleProp as string);
       });
     };
 
@@ -189,11 +184,11 @@ export default function ComicCreator({ onClose }: ComicCreatorProps) {
     });
 
     const newComic: NewComic = {
-      collectionId,
+      worksetId: collectionId,
       title,
       author,
       description,
-      tagIds: selectedTags.map((t) => t.tagId),
+      // tagIds: selectedTags.map((t) => t.id),
       preAssignments,
     };
 
@@ -203,6 +198,11 @@ export default function ComicCreator({ onClose }: ComicCreatorProps) {
       // await ipcCreateComic(newComic);
       await new Promise((r) => setTimeout(r, 800)); // Mock
       showToast("success", `漫画 "${title}" 已创建`);
+
+      if (onCreate) {
+        await onCreate(newComic);
+      }
+
       onClose?.();
     } catch (err) {
       showToast("error", "IPC 调用异常");
@@ -213,12 +213,12 @@ export default function ComicCreator({ onClose }: ComicCreatorProps) {
 
   const handleRemoveMember = (role: keyof AssignmentMap, memberId: string) => {
     // 监修角色：不允许删除当前用户
-    if (role === "reviewer" && memberId === currentUser?.memberId) {
+    if (role === "reviewer" && memberId === currentUser?.id) {
       return;
     }
     setAssignments((prev) => ({
       ...prev,
-      [role]: prev[role].filter((m) => m.memberId !== memberId),
+      [role]: prev[role].filter((m) => m.id !== memberId),
     }));
   };
 
@@ -237,8 +237,7 @@ export default function ComicCreator({ onClose }: ComicCreatorProps) {
           {members.length > 0 ? (
             members.map((member) => {
               const isReviewer = role === "reviewer";
-              const canRemove =
-                !isReviewer || member.memberId !== currentUser?.memberId;
+              const canRemove = !isReviewer || member.id !== currentUser?.id;
               const displayName =
                 member.nickname && member.nickname.length > 4
                   ? member.nickname.slice(0, 4) + "..."
@@ -248,10 +247,10 @@ export default function ComicCreator({ onClose }: ComicCreatorProps) {
               }`;
               return (
                 <span
-                  key={member.memberId}
+                  key={member.id}
                   className="cc-assignee-tag"
                   onClick={() =>
-                    canRemove && handleRemoveMember(role, member.memberId)
+                    canRemove && handleRemoveMember(role, member.id)
                   }
                   title={title}
                   style={{
@@ -317,7 +316,7 @@ export default function ComicCreator({ onClose }: ComicCreatorProps) {
               className="cc-input cc-input-inline"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="标题"
+              placeholder="在此输入标题"
             />
           </div>
 
@@ -329,7 +328,7 @@ export default function ComicCreator({ onClose }: ComicCreatorProps) {
               className="cc-input cc-input-inline"
               value={author}
               onChange={(e) => setAuthor(e.target.value)}
-              placeholder="作者"
+              placeholder="在此输入作者"
             />
           </div>
 
@@ -347,16 +346,16 @@ export default function ComicCreator({ onClose }: ComicCreatorProps) {
             />
           </div>
 
-          <div className="cc-field">
+          {/* <div className="cc-field">
             <div className="cc-field-icon">
               <Icon name="tag" size={16} />
             </div>
             <div className="cc-tags-container">
               {selectedTags.map((tag) => (
                 <NatureTag
-                  key={tag.tagId}
-                  tag={{ ...tag, isPinned: false, likedNum: 0 } as any}
-                  onClick={() => handleRemoveTag(tag.tagId)}
+                  key={tag.id}
+                  tag={tag as any}
+                  onClick={() => handleRemoveTag(tag.id)}
                   theme="theme-mist"
                   fontSize={12}
                 />
@@ -371,7 +370,7 @@ export default function ComicCreator({ onClose }: ComicCreatorProps) {
             >
               +
             </button>
-          </div>
+          </div> */}
 
           <div className="cc-field" style={{ marginBottom: 2 }}>
             <div className="cc-field-icon">
@@ -403,13 +402,13 @@ export default function ComicCreator({ onClose }: ComicCreatorProps) {
               </div>
             )}
 
-            {panelMode === "TAGS" && (
+            {/* {panelMode === "TAGS" && (
               <TagSelector
                 onSelect={handleAddTag}
                 onExit={() => setPanelMode("NONE")}
                 placeholder="搜索标签..."
               />
-            )}
+            )} */}
 
             {panelMode === "DESC" && (
               <div
@@ -441,11 +440,22 @@ export default function ComicCreator({ onClose }: ComicCreatorProps) {
               panelMode === "ASSIGN_TYPE" ||
               panelMode === "ASSIGN_ART" ||
               panelMode === "ASSIGN_REVIEW") && (
-              <MemberSelector
+              <UserSelector
                 teamId={appState.currentTeamId}
                 onSelect={handleAssignMember}
                 onExit={() => setPanelMode("NONE")}
                 placeholder="搜索成员..."
+                allowedRole={
+                  panelMode === "ASSIGN_TRANS"
+                    ? "translator"
+                    : panelMode === "ASSIGN_PROOF"
+                    ? "proofreader"
+                    : panelMode === "ASSIGN_TYPE"
+                    ? "typesetter"
+                    : panelMode === "ASSIGN_ART"
+                    ? "redrawer"
+                    : "reviewer"
+                }
               />
             )}
           </div>

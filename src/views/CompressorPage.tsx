@@ -1,13 +1,17 @@
-import { useState, useRef, useEffect } from 'react';
-import { WorkerQueue, WorkerQueueStatus } from '../util/workerQueue';
-import { compressImage, selectImageFiles, openCompressDir } from '../ipc/compress';
-import NatureButton from '../components/NatureButton';
-import NatureSwitchButton from '../components/NatureSwitchButton';
-import NatureTag from '../components/NatureTag';
-import { Image, FileText } from 'lucide-react';
-import { useToast } from '../components/NotificationToast';
-import type { Tag } from '../models/tag';
-import './CompressorPage.css';
+import { useState, useRef, useEffect } from "react";
+import { WorkerQueue, WorkerQueueStatus } from "../util/workerQueue";
+import {
+  compressImage,
+  selectImageFiles,
+  openCompressDir,
+} from "../ipc/compress";
+import NatureButton from "../components/NatureButton";
+import NatureSwitchButton from "../components/NatureSwitchButton";
+import NatureTag from "../components/NatureTag";
+import { Image, FileText } from "lucide-react";
+import { useToast } from "../components/NotificationToast";
+import "./CompressorPage.css";
+import { Tag } from "../models/tag";
 
 type ImageTask = {
   id: string;
@@ -26,10 +30,13 @@ const DEFAULT_MIN_SCALE = 0.4;
 const DEFAULT_MIN_QUALITY = 35;
 
 const buildTag = (label: string, tagId: string): Tag => ({
-  tagId,
+  id: tagId,
   name: label,
-  isPinned: false,
-  likedNum: 0,
+  picaCandidates: [],
+  ehentaiCandidates: [],
+  creatorId: "system",
+  createdAt: new Date(),
+  updatedAt: new Date(),
 });
 
 export function CompressorPage() {
@@ -48,44 +55,68 @@ export function CompressorPage() {
   const isFirstBatchRef = useRef<boolean>(true);
 
   const totalCount = tasks.length;
-  const runningCount = tasks.filter((task) => task.status === 'running').length;
-  const completedCount = tasks.filter((task) => task.status === 'completed').length;
-  const failedCount = tasks.filter((task) => task.status === 'failed').length;
+  const runningCount = tasks.filter((task) => task.status === "running").length;
+  const completedCount = tasks.filter(
+    (task) => task.status === "completed"
+  ).length;
+  const failedCount = tasks.filter((task) => task.status === "failed").length;
 
-  const updateTaskStatus = (taskId: string, status: WorkerQueueStatus, error?: string) => {
-    setTasks((prev) => prev.map((task) => (task.id === taskId ? { ...task, status, error } : task)));
+  const updateTaskStatus = (
+    taskId: string,
+    status: WorkerQueueStatus,
+    error?: string
+  ) => {
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === taskId ? { ...task, status, error } : task
+      )
+    );
   };
 
-  const scheduleCompression = (taskId: string, path: string, prefix = '[content]', customMaxBytes?: number) => {
-    updateTaskStatus(taskId, 'running', undefined);
+  const scheduleCompression = (
+    taskId: string,
+    path: string,
+    prefix = "[content]",
+    customMaxBytes?: number
+  ) => {
+    updateTaskStatus(taskId, "running", undefined);
 
     queueRef.current.addTask(
       async () => {
-        console.log('Start compress:', path);
+        console.log("Start compress:", path);
 
-        const fileName = path.split(/[\\/]/).pop() || 'compressed';
+        const fileName = path.split(/[\\/]/).pop() || "compressed";
         const dstPath = `${prefix}${fileName}`;
         const targetMaxBytes = customMaxBytes ?? maxBytes;
 
-        console.log('Validate path:', path);
+        console.log("Validate path:", path);
 
-        await compressImage(path, dstPath, targetMaxBytes, DEFAULT_MIN_SCALE, DEFAULT_MIN_QUALITY);
+        await compressImage(
+          path,
+          dstPath,
+          targetMaxBytes,
+          DEFAULT_MIN_SCALE,
+          DEFAULT_MIN_QUALITY
+        );
 
-        console.log('Compress completed:', path);
+        console.log("Compress completed:", path);
       },
       () => {
-        console.log('Task success:', taskId);
+        console.log("Task success:", taskId);
 
-        updateTaskStatus(taskId, 'completed', undefined);
+        updateTaskStatus(taskId, "completed", undefined);
       },
       (error) => {
-        console.error('Task failed:', taskId, error);
+        console.error("Task failed:", taskId, error);
 
-        const errorMessage = error instanceof Error ? error.message : '未知错误';
+        const errorMessage =
+          error instanceof Error ? error.message : "未知错误";
 
         setTasks((prev) =>
           prev.map((task) =>
-            task.id === taskId ? { ...task, status: 'failed', error: errorMessage } : task
+            task.id === taskId
+              ? { ...task, status: "failed", error: errorMessage }
+              : task
           )
         );
       }
@@ -101,8 +132,8 @@ export function CompressorPage() {
 
       processFilePaths(selected);
     } catch (error) {
-      console.error('selectImageFiles failed', error);
-      showToast('error', '选择文件失败');
+      console.error("selectImageFiles failed", error);
+      showToast("error", "选择文件失败");
     }
   };
 
@@ -117,7 +148,7 @@ export function CompressorPage() {
         id: `${Date.now()}-${Math.random()}`,
         name,
         path,
-        status: 'pending',
+        status: "pending",
       };
     });
 
@@ -126,10 +157,10 @@ export function CompressorPage() {
     newTasks.forEach((task, index) => {
       if (picaMode) {
         if (isFirstBatch && index === 0) {
-          scheduleCompression(task.id, task.path, '[cover]', 512 * 1024);
+          scheduleCompression(task.id, task.path, "[cover]", 512 * 1024);
         }
 
-        scheduleCompression(task.id, task.path, '', 1024 * 1024);
+        scheduleCompression(task.id, task.path, "", 1024 * 1024);
       } else {
         scheduleCompression(task.id, task.path);
       }
@@ -144,10 +175,10 @@ export function CompressorPage() {
   const handleOpenCompressedDir = async () => {
     try {
       await openCompressDir();
-      showToast('success', '已打开压缩目录');
+      showToast("success", "已打开压缩目录");
     } catch (err) {
-      console.error('openCompressDir failed', err);
-      showToast('error', '打开目录失败');
+      console.error("openCompressDir failed", err);
+      showToast("error", "打开目录失败");
     }
   };
 
@@ -165,7 +196,9 @@ export function CompressorPage() {
 
   // 重试单个失败任务
   const handleRetryTask = (taskId: string) => {
-    const targetTask = tasks.find((task) => task.id === taskId && task.status === 'failed');
+    const targetTask = tasks.find(
+      (task) => task.id === taskId && task.status === "failed"
+    );
 
     if (!targetTask) {
       return;
@@ -173,7 +206,9 @@ export function CompressorPage() {
 
     setTasks((prev) =>
       prev.map((task) =>
-        task.id === taskId ? { ...task, status: 'pending', error: undefined } : task
+        task.id === taskId
+          ? { ...task, status: "pending", error: undefined }
+          : task
       )
     );
 
@@ -182,7 +217,7 @@ export function CompressorPage() {
 
   // 重试全部失败任务
   const handleRetryFailedGroup = () => {
-    const failedTasks = tasks.filter((task) => task.status === 'failed');
+    const failedTasks = tasks.filter((task) => task.status === "failed");
 
     if (failedTasks.length === 0) {
       return;
@@ -190,7 +225,9 @@ export function CompressorPage() {
 
     setTasks((prev) =>
       prev.map((task) =>
-        task.status === 'failed' ? { ...task, status: 'pending', error: undefined } : task
+        task.status === "failed"
+          ? { ...task, status: "pending", error: undefined }
+          : task
       )
     );
 
@@ -202,16 +239,16 @@ export function CompressorPage() {
   // 获取状态文本
   const getStatusText = (status: WorkerQueueStatus): string => {
     switch (status) {
-      case 'pending':
-        return '等待中';
-      case 'running':
-        return '压缩中';
-      case 'completed':
-        return '已完成';
-      case 'failed':
-        return '失败';
+      case "pending":
+        return "等待中";
+      case "running":
+        return "压缩中";
+      case "completed":
+        return "已完成";
+      case "failed":
+        return "失败";
       default:
-        return '未知';
+        return "未知";
     }
   };
 
@@ -254,7 +291,7 @@ export function CompressorPage() {
             <NatureSwitchButton
               initialState="off"
               onToggle={(newState) => {
-                const enabled = newState === 'on';
+                const enabled = newState === "on";
                 setPicaMode(enabled);
                 isFirstBatchRef.current = true;
               }}
@@ -268,11 +305,10 @@ export function CompressorPage() {
 
       <div className="compressor-content">
         {/* 点击上传区域 */}
-        <div
-          className="compressor-drop-zone"
-          onClick={handleClickUpload}
-        >
-          <div className="drop-zone-icon"><Image /></div>
+        <div className="compressor-drop-zone" onClick={handleClickUpload}>
+          <div className="drop-zone-icon">
+            <Image />
+          </div>
           <div className="drop-zone-text">点击选择图片（PNG/JPG）</div>
           <div className="drop-zone-hint">考虑到性能，不支持拖入</div>
         </div>
@@ -284,20 +320,22 @@ export function CompressorPage() {
 
             <div className="status-tag-group">
               <NatureTag
-                tag={buildTag(`压缩中 ${runningCount}`, 'compress-running')}
+                tag={buildTag(`压缩中 ${runningCount}`, "compress-running")}
                 theme="theme-glacier"
               />
               <NatureTag
-                tag={buildTag(`已完成 ${completedCount}`, 'compress-completed')}
+                tag={buildTag(`已完成 ${completedCount}`, "compress-completed")}
                 theme="theme-mist"
               />
               <NatureTag
-                tag={buildTag(`已失败 ${failedCount}`, 'compress-failed')}
+                tag={buildTag(`已失败 ${failedCount}`, "compress-failed")}
                 theme="theme-rose"
-                onClick={failedCount > 0 ? () => handleRetryFailedGroup() : undefined}
+                onClick={
+                  failedCount > 0 ? () => handleRetryFailedGroup() : undefined
+                }
               />
               <NatureTag
-                tag={buildTag(`总数 ${totalCount}`, 'compress-total')}
+                tag={buildTag(`总数 ${totalCount}`, "compress-total")}
                 theme="theme-amber"
               />
             </div>
@@ -306,7 +344,9 @@ export function CompressorPage() {
           <div className="list-panel-content">
             {tasks.length === 0 ? (
               <div className="empty-list">
-                <div className="empty-list-icon"><FileText /></div>
+                <div className="empty-list-icon">
+                  <FileText />
+                </div>
                 <div className="empty-list-text">暂无压缩任务</div>
               </div>
             ) : (
@@ -324,7 +364,7 @@ export function CompressorPage() {
                       {getStatusText(task.status)}
                     </div>
 
-                    {task.status === 'failed' && (
+                    {task.status === "failed" && (
                       <button
                         className="retry-button"
                         onClick={() => handleRetryTask(task.id)}
@@ -340,13 +380,21 @@ export function CompressorPage() {
 
           <div className="list-panel-footer">
             <div className="button-wrapper">
-              <NatureButton onClick={handleRetryFailedGroup} disabled={failedCount === 0} variant="outline">
+              <NatureButton
+                onClick={handleRetryFailedGroup}
+                disabled={failedCount === 0}
+                variant="cloud"
+              >
                 重试所有失败
               </NatureButton>
             </div>
 
             <div className="button-wrapper">
-              <NatureButton onClick={handleClearTasks} variant="rose" disabled={tasks.length === 0}>
+              <NatureButton
+                onClick={handleClearTasks}
+                variant="rose"
+                disabled={tasks.length === 0}
+              >
                 清除已有任务
               </NatureButton>
             </div>

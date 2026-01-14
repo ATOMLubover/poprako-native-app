@@ -1,21 +1,43 @@
 import { useState, useMemo, useEffect } from "react";
-import { UserPlus, LogOut, Download, Edit3, CheckCircle, Save, Trash2, FileText, Layers, Type, Check } from "lucide-react";
+import {
+  UserPlus,
+  LogOut,
+  Download,
+  Edit3,
+  CheckCircle,
+  Save,
+  Trash2,
+  FileText,
+  Layers,
+  Type,
+  Check,
+} from "lucide-react";
 import InPanelIcon from "../InPanelIcon";
 import OutPanelIcon from "../OutPanelIcon";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+} from "recharts";
 import NatureButton from "../NatureButton";
-import NatureTag from "../NatureTag";
+// import NatureTag from "../NatureTag";
 import type { ComicInfo } from "../../models/comic/comic";
 import type { AssignmentBrief } from "../../models/comic/assignment";
-import type { Tag } from "../../models/tag";
+// tag type not required here (we use TagBrief in comic model)
 import { getLocalImage } from "../../store/image";
 import "./ComicDetailCard.css";
 import DotLoadSpinner from "../DotLoadSpinner";
+import ComicModifier from "./ComicModifier";
 
 type Props = {
   comic: ComicInfo;
   /** mock: id of current user (will come from store later) */
   currentUserId?: string;
+  onReturn?: () => void;
 };
 
 type RoleStats = {
@@ -44,7 +66,9 @@ type RoleRowProps = {
 
 function RoleRow({ label, users, status, currentUserId }: RoleRowProps) {
   const hasUsers = users.length > 0;
-  const isCurrentUserInRole = (users || []).some((u) => u.userId === currentUserId);
+  const isCurrentUserInRole = (users || []).some(
+    (u) => u.userId === currentUserId
+  );
   let bgColor = "transparent";
   let textColor = "#a8a29e";
   let dotColor = "#e7e5e4";
@@ -66,7 +90,10 @@ function RoleRow({ label, users, status, currentUserId }: RoleRowProps) {
   }
 
   return (
-    <div className={`role-row ${isCurrentUserInRole ? "interactive" : ""}`} style={{ backgroundColor: bgColor }}>
+    <div
+      className={`role-row ${isCurrentUserInRole ? "interactive" : ""}`}
+      style={{ backgroundColor: bgColor }}
+    >
       <div className="role-dot" style={{ backgroundColor: dotColor }} />
       <span className="role-label">{label}：</span>
       <span className="role-users" style={{ color: textColor }}>
@@ -94,9 +121,14 @@ function CompactStat({ label, value, icon }: CompactStatProps) {
   );
 }
 
-export default function ComicDetailCard({ comic, currentUserId }: Props) {
+export default function ComicDetailCard({
+  comic,
+  currentUserId,
+  onReturn,
+}: Props) {
   const [activeTab, setActiveTab] = useState<"chart" | "preview">("preview");
   const [visibleCount, setVisibleCount] = useState<number>(4);
+  const [showModifier, setShowModifier] = useState<boolean>(false);
 
   // 小组件：负责从 store 加载本地图片并返回可用于 <img> 的 src（objectUrl）
   function PageThumb({ srcPath, alt }: { srcPath: string; alt?: string }) {
@@ -143,7 +175,7 @@ export default function ComicDetailCard({ comic, currentUserId }: Props) {
     );
   }
 
-  // 封面图片源：运行时加载（优先使用 coverImageUrl，否则使用第一页的 imageUrl）
+  // 封面图片源：运行时加载（优先使用第一页的 ossKey）
   const [coverSrc, setCoverSrc] = useState<string | null>(null);
 
   useEffect(() => {
@@ -151,8 +183,7 @@ export default function ComicDetailCard({ comic, currentUserId }: Props) {
 
     async function loadCover() {
       try {
-        // prefer explicit coverImageUrl if provided, otherwise use first page imageUrl
-        const path = comic.coverImageUrl ?? (comic.pages.length > 0 ? comic.pages[0].imageUrl : undefined);
+        const path = comic.pages.length > 0 ? comic.pages[0].ossKey : undefined;
         if (!path) return;
 
         try {
@@ -178,14 +209,16 @@ export default function ComicDetailCard({ comic, currentUserId }: Props) {
     return () => {
       mounted = false;
     };
-  }, [comic.coverImageUrl, comic.pages]);
+  }, [comic.pages]);
 
   // 模拟当前用户 id（真实场景由 store 提供）
   const mockCurrentUserId = "user-001";
   const effectiveCurrentUserId = currentUserId ?? mockCurrentUserId;
   // 基于 userId 的权限检查，当前为 mock：判断是否被指派为监修
   const isReviewer = (() => {
-    return comic.assignments.some((a) => a.userId === effectiveCurrentUserId && !!a.assignedReviewerAt);
+    return comic.assignments.some(
+      (a) => a.userId === effectiveCurrentUserId && !!a.assignedReviewerAt
+    );
   })();
 
   const calculateProgressStatus = (
@@ -203,10 +236,12 @@ export default function ComicDetailCard({ comic, currentUserId }: Props) {
       proofreaders: comic.assignments.filter((a) => a.assignedProofreaderAt),
       typesetters: [
         ...comic.assignments.filter((a) => a.assignedTypesetterAt),
-        ...comic.assignments.filter((a) => a.assignedRedrawerAt).map((a) => ({
-          ...a,
-          userNickname: `${a.userNickname}(美工)`,
-        })),
+        ...comic.assignments
+          .filter((a) => a.assignedRedrawerAt)
+          .map((a) => ({
+            ...a,
+            userNickname: `${a.userNickname}(美工)`,
+          })),
       ],
       reviewers: comic.assignments.filter((a) => a.assignedReviewerAt),
     }),
@@ -226,7 +261,9 @@ export default function ComicDetailCard({ comic, currentUserId }: Props) {
     );
   }, [comic.pages]);
 
-  const isUserInProject = comic.assignments.some((a) => a.userId === effectiveCurrentUserId);
+  const isUserInProject = comic.assignments.some(
+    (a) => a.userId === effectiveCurrentUserId
+  );
 
   const chartData = comic.pages.map((p) => ({
     p: `P${p.index}`,
@@ -234,195 +271,349 @@ export default function ComicDetailCard({ comic, currentUserId }: Props) {
     outbox: p.outboxCount,
   }));
 
-  
-
   return (
     <div className="comic-detail-card">
-      {/* 左侧栏 */}
-      <div className="left-sidebar">
-        <div className="cover-image">
-          {coverSrc ? (
-            <img src={coverSrc} alt="Cover" />
-          ) : (
-            <div className="cover-placeholder">暂无封面</div>
-          )}
-        </div>
-
-        <div className="sidebar-title">
-          <div className="title-index">[{comic.collectionIndex}-{comic.index}]</div>
-          <div className="title-content">
-            <span className="title-author">【{comic.author}】</span>
-            <span className="title-text">{comic.title}</span>
-          </div>
-
-          <div className="sidebar-tags">
-            {comic.tags.map((t) => (
-              <NatureTag key={t.tagId} tag={t as Tag} theme="theme-glacier" fontSize={11} />
-            ))}
-          </div>
-        </div>
-
-        <div className="sidebar-actions">
-          {/* 仅在未加入时显示加入按钮，退出将放到底部 */}
-          {!isUserInProject && (
-            <NatureButton
-              variant="clay"
-              minWidth="100%"
-              fontSize={11}
-              onClick={() => console.log("加入项目")}
+      {/* 顶部返回区域 */}
+      {onReturn && (
+        <div className="detail-card-header">
+          <button className="return-btn" onClick={onReturn} title="返回列表">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
-              <UserPlus size={12} style={{ marginRight: 4 }} />
-              加入项目
-            </NatureButton>
-          )}
-
-          <div className="action-row">
-            <NatureButton variant="cloud" minWidth="100%" fontSize={10} onClick={() => console.log("导出")}>
-              <Download size={11} style={{ marginRight: 6 }} />
-              导出
-            </NatureButton>
-
-            {isReviewer && (
-              <NatureButton variant="cloud" minWidth="100%" fontSize={10} onClick={() => console.log("修改")}>
-                <Edit3 size={11} style={{ marginRight: 6 }} />
-                修改
-              </NatureButton>
-            )}
-
-            {/* 缓存按钮：仅译者或校对可见；当前 mock 权限始终返回 true，onClick 留空 */}
-            {true && (
-              <NatureButton variant="cloud" minWidth="100%" fontSize={10} onClick={() => {}}>
-                <Save size={11} style={{ marginRight: 6 }} />
-                缓存
-              </NatureButton>
-            )}
-          </div>
-
-          <div className="final-actions">
-            {isUserInProject && (
-              <button className="final-action-btn exit-btn" onClick={() => console.log("退出项目")}>
-                <LogOut size={11} />
-                退出项目
-              </button>
-            )}
-
-            {isReviewer && (
-              <>
-                <button className="final-action-btn complete-btn">
-                  <CheckCircle size={11} />
-                  完结项目
-                </button>
-                <button className="final-action-btn delete-btn">
-                  <Trash2 size={11} />
-                  删除项目
-                </button>
-              </>
-            )}
-          </div>
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            <span>返回</span>
+          </button>
         </div>
-      </div>
+      )}
 
-      {/* 右侧内容 */}
-      <div className="right-content">
-        {/* 分配与统计 */}
-        <div className="assignments-stats-section">
-          <div className="roles-column">
-            <RoleRow label="翻译" users={rolesData.translators} status={calculateProgressStatus(comic.translationStartedAt, comic.translationCompletedAt)} currentUserId={effectiveCurrentUserId} />
-            <RoleRow label="校对" users={rolesData.proofreaders} status={calculateProgressStatus(comic.proofreadingStartedAt, comic.proofreadingCompletedAt)} currentUserId={effectiveCurrentUserId} />
-            <RoleRow label="嵌字" users={rolesData.typesetters} status={calculateProgressStatus(comic.typesettingStartedAt, comic.typesettingCompletedAt)} currentUserId={effectiveCurrentUserId} />
-            <RoleRow label="监修" users={rolesData.reviewers} status={comic.reviewedAt ? "completed" : "pending"} currentUserId={effectiveCurrentUserId} />
+      {/* 主内容区域 */}
+      <div className="comic-detail-card-content">
+        {/* 左侧栏 */}
+        <div className="left-sidebar">
+          <div className="cover-image">
+            {coverSrc ? (
+              <img src={coverSrc} alt="Cover" />
+            ) : (
+              <div className="cover-placeholder">暂无封面</div>
+            )}
           </div>
-          <div className="column-divider" />
-          <div className="stats-column">
-            <CompactStat label="总页数" value={comic.pageCount} icon={<FileText size={16} />} />
-            <CompactStat label="总单元" value={stats.units} icon={<Layers size={16} />} />
-            <CompactStat label="已翻译" value={stats.translated} icon={<Type size={16} />} />
-            <CompactStat label="已校对" value={stats.proofed} icon={<Check size={16} />} />
-            <CompactStat label="框外" value={stats.outbox} icon={<OutPanelIcon size={20} />} />
-            <CompactStat label="框内" value={stats.inbox} icon={<InPanelIcon size={20} />} />
-          </div>
-        </div>
 
-        {/* 可视化区域 */}
-        <div className="visualization-area">
-          <div className="visualization-header">
-            <div className="visualization-left">
-              
-
-              <div className="tab-switcher">
-                <button
-                  className={`tab-btn ${activeTab === "preview" ? "active" : ""}`}
-                  onClick={() => setActiveTab("preview")}
-                >
-                  预览
-                </button>
-                <button
-                  className={`tab-btn ${activeTab === "chart" ? "active" : ""}`}
-                  onClick={() => setActiveTab("chart")}
-                >
-                  图表
-                </button>
-
-              </div>
+          <div className="sidebar-title">
+            <div className="title-index">
+              [{comic.worksetIndex}-{comic.index}]
+            </div>
+            <div className="title-content">
+              <span className="title-author">【{comic.author}】</span>
+              <span className="title-text">{comic.title}</span>
             </div>
 
-            <div className="visualization-right">
-              {activeTab === "preview" && (
-                <NatureButton variant="cloud" fontSize={11} onClick={() => setVisibleCount((v) => Math.min(comic.pages.length, v + 4))}>
-                  加载更多
+            {/* <div className="sidebar-tags">
+              {comic.tags.map((t) => (
+                <NatureTag
+                  key={t.id}
+                  tag={t}
+                  theme="theme-glacier"
+                  fontSize={11}
+                />
+              ))}
+            </div> */}
+          </div>
+
+          <div className="sidebar-actions">
+            {/* 仅在未加入时显示加入按钮，退出将放到底部 */}
+            {!isUserInProject && (
+              <NatureButton
+                variant="clay"
+                minWidth="100%"
+                fontSize={11}
+                onClick={() => console.log("加入项目")}
+              >
+                <UserPlus size={12} style={{ marginRight: 4 }} />
+                加入项目
+              </NatureButton>
+            )}
+
+            <div className="action-row">
+              <NatureButton
+                variant="cloud"
+                minWidth="100%"
+                fontSize={10}
+                onClick={() => console.log("导出")}
+              >
+                <Download size={11} style={{ marginRight: 6 }} />
+                导出
+              </NatureButton>
+
+              {isReviewer && (
+                <NatureButton
+                  variant="cloud"
+                  minWidth="100%"
+                  fontSize={10}
+                  onClick={() => setShowModifier(true)}
+                >
+                  <Edit3 size={11} style={{ marginRight: 6 }} />
+                  修改
+                </NatureButton>
+              )}
+
+              {/* 缓存按钮：仅译者或校对可见；当前 mock 权限始终返回 true，onClick 留空 */}
+              {true && (
+                <NatureButton
+                  variant="cloud"
+                  minWidth="100%"
+                  fontSize={10}
+                  onClick={() => {}}
+                >
+                  <Save size={11} style={{ marginRight: 6 }} />
+                  缓存
+                </NatureButton>
+              )}
+              {/* 开发环境辅助按钮：方便在非 reviewer 下也能打开修改弹窗进行测试 */}
+              {import.meta.env.DEV && (
+                <NatureButton
+                  variant="mist"
+                  minWidth="100%"
+                  fontSize={10}
+                  onClick={() => setShowModifier(true)}
+                >
+                  测试修改
                 </NatureButton>
               )}
             </div>
+
+            <div className="final-actions">
+              {isUserInProject && (
+                <button
+                  className="final-action-btn exit-btn"
+                  onClick={() => console.log("退出项目")}
+                >
+                  <LogOut size={11} />
+                  退出项目
+                </button>
+              )}
+
+              {isReviewer && (
+                <>
+                  <button className="final-action-btn complete-btn">
+                    <CheckCircle size={11} />
+                    完结项目
+                  </button>
+                  <button className="final-action-btn delete-btn">
+                    <Trash2 size={11} />
+                    删除项目
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* 右侧内容 */}
+        <div className="right-content">
+          {/* 分配与统计 */}
+          <div className="assignments-stats-section">
+            <div className="roles-column">
+              <RoleRow
+                label="翻译"
+                users={rolesData.translators}
+                status={calculateProgressStatus(
+                  comic.translatingStartedAt,
+                  comic.translatingCompletedAt
+                )}
+                currentUserId={effectiveCurrentUserId}
+              />
+              <RoleRow
+                label="校对"
+                users={rolesData.proofreaders}
+                status={calculateProgressStatus(
+                  comic.proofreadingStartedAt,
+                  comic.proofreadingCompletedAt
+                )}
+                currentUserId={effectiveCurrentUserId}
+              />
+              <RoleRow
+                label="嵌字"
+                users={rolesData.typesetters}
+                status={calculateProgressStatus(
+                  comic.typesettingStartedAt,
+                  comic.typesettingCompletedAt
+                )}
+                currentUserId={effectiveCurrentUserId}
+              />
+              <RoleRow
+                label="监修"
+                users={rolesData.reviewers}
+                status={comic.reviewingCompletedAt ? "completed" : "pending"}
+                currentUserId={effectiveCurrentUserId}
+              />
+            </div>
+            <div className="column-divider" />
+            <div className="stats-column">
+              <CompactStat
+                label="总页数"
+                value={comic.pageCount}
+                icon={<FileText size={16} />}
+              />
+              <CompactStat
+                label="总单元"
+                value={stats.units}
+                icon={<Layers size={16} />}
+              />
+              <CompactStat
+                label="已翻译"
+                value={stats.translated}
+                icon={<Type size={16} />}
+              />
+              <CompactStat
+                label="已校对"
+                value={stats.proofed}
+                icon={<Check size={16} />}
+              />
+              <CompactStat
+                label="框外"
+                value={stats.outbox}
+                icon={<OutPanelIcon size={20} />}
+              />
+              <CompactStat
+                label="框内"
+                value={stats.inbox}
+                icon={<InPanelIcon size={20} />}
+              />
+            </div>
           </div>
 
-          <div className="visualization-content">
-            {activeTab === "chart" ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -30, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="#f3f3f2" />
-                  <XAxis dataKey="p" axisLine={false} tickLine={false} tick={{ fontSize: 8, fill: "#d6d3d1" }} interval={2} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 8, fill: "#d6d3d1" }} />
-                  <RechartsTooltip
-                    contentStyle={{
-                      fontSize: "10px",
-                      borderRadius: "8px",
-                      border: "1px solid #f5f5f4",
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.03)",
-                    }}
-                    itemStyle={{ padding: "0 2px" }}
-                  />
-                  <Area
-                    name="框内"
-                    type="monotone"
-                    dataKey="inbox"
-                    stroke="#10b981"
-                    fill="#10b981"
-                    fillOpacity={0.08}
-                    strokeWidth={2}
-                    dot={{ r: 1 }}
-                  />
-                  <Area
-                    name="框外"
-                    type="monotone"
-                    dataKey="outbox"
-                    stroke="#f59e0b"
-                    fill="#f59e0b"
-                    fillOpacity={0.08}
-                    strokeWidth={2}
-                    dot={{ r: 1 }}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="preview-grid">
-                {comic.pages.slice(0, visibleCount).map((page) => (
-                  <PageThumb key={page.id} srcPath={page.imageUrl} alt={`P${page.index}`} />
-                ))}
+          {/* 可视化区域 */}
+          <div className="visualization-area">
+            <div className="visualization-header">
+              <div className="visualization-left">
+                <div className="tab-switcher">
+                  <button
+                    className={`tab-btn ${
+                      activeTab === "preview" ? "active" : ""
+                    }`}
+                    onClick={() => setActiveTab("preview")}
+                  >
+                    预览
+                  </button>
+                  <button
+                    className={`tab-btn ${
+                      activeTab === "chart" ? "active" : ""
+                    }`}
+                    onClick={() => setActiveTab("chart")}
+                  >
+                    图表
+                  </button>
+                </div>
               </div>
-            )}
+
+              <div className="visualization-right">
+                {activeTab === "preview" && (
+                  <NatureButton
+                    variant="cloud"
+                    fontSize={11}
+                    onClick={() =>
+                      setVisibleCount((v) =>
+                        Math.min(comic.pages.length, v + 4)
+                      )
+                    }
+                  >
+                    加载更多
+                  </NatureButton>
+                )}
+              </div>
+            </div>
+
+            <div className="visualization-content">
+              {activeTab === "chart" ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart
+                    data={chartData}
+                    margin={{ top: 10, right: 10, left: -30, bottom: 0 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="2 2"
+                      vertical={false}
+                      stroke="#f3f3f2"
+                    />
+                    <XAxis
+                      dataKey="p"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 8, fill: "#d6d3d1" }}
+                      interval={2}
+                    />
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 8, fill: "#d6d3d1" }}
+                    />
+                    <RechartsTooltip
+                      contentStyle={{
+                        fontSize: "10px",
+                        borderRadius: "8px",
+                        border: "1px solid #f5f5f4",
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.03)",
+                      }}
+                      itemStyle={{ padding: "0 2px" }}
+                    />
+                    <Area
+                      name="框内"
+                      type="monotone"
+                      dataKey="inbox"
+                      stroke="#10b981"
+                      fill="#10b981"
+                      fillOpacity={0.08}
+                      strokeWidth={2}
+                      dot={{ r: 1 }}
+                    />
+                    <Area
+                      name="框外"
+                      type="monotone"
+                      dataKey="outbox"
+                      stroke="#f59e0b"
+                      fill="#f59e0b"
+                      fillOpacity={0.08}
+                      strokeWidth={2}
+                      dot={{ r: 1 }}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="preview-grid">
+                  {comic.pages.slice(0, visibleCount).map((page) => (
+                    <PageThumb
+                      key={page.id}
+                      srcPath={page.ossKey}
+                      alt={`P${page.index}`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
+
+      {/* ComicModifier 弹窗 */}
+      {showModifier && (
+        <div className="comic-modifier-overlay">
+          <ComicModifier
+            comicId={comic.id}
+            onClose={() => setShowModifier(false)}
+            onUpdate={async () => {
+              console.log("Comic updated");
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }

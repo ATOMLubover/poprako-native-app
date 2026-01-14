@@ -1,12 +1,12 @@
-import React from 'react';
-import { Collection } from '../models/collection';
-import { CollectionCard } from './CollectionCard';
-import './CollectionList.css';
-import '../styles/scrollbar.css';
+import React from "react";
+import { Workset } from "../models/workset";
+import { CollectionCard } from "./CollectionCard";
+import "./CollectionList.css";
+import "../styles/scrollbar.css";
 
 type CollectionListProps = {
-  collections: Collection[];
-  onCollectionClick?: (collection: Collection) => void;
+  collections: Workset[];
+  onCollectionClick?: (workset: Workset) => void;
   onCreateClick?: () => void;
   showCreateButton?: boolean;
 };
@@ -15,11 +15,11 @@ type CollectionListProps = {
  * CollectionList 组件
  * 展示作品集列表，固定高度可滚动
  */
-export const CollectionList: React.FC<CollectionListProps> = ({ 
+export const CollectionList: React.FC<CollectionListProps> = ({
   collections,
   onCollectionClick = () => {},
   onCreateClick,
-  showCreateButton = true
+  showCreateButton = true,
 }) => {
   return (
     <div className="collection-list">
@@ -28,22 +28,22 @@ export const CollectionList: React.FC<CollectionListProps> = ({
       </header>
 
       <div className="collection-list__scroll-container app-scrollbar">
-        {collections.map(collection => (
-          <CollectionCard 
-            key={collection.id} 
-            collection={collection}
+        {collections.map((collection) => (
+          <CollectionCard
+            key={collection.id}
+            workset={collection}
             onClick={() => onCollectionClick(collection)}
           />
         ))}
       </div>
 
       {showCreateButton && (
-        <button 
+        <button
           className="collection-list__create-button"
           onClick={onCreateClick}
         >
           <span>+</span>
-          <span>New Collection</span>
+          <span>New Workset</span>
         </button>
       )}
     </div>

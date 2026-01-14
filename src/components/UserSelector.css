@@ -55,18 +55,39 @@
 
 .member-item-info {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 
 .member-item-name {
   font-size: 0.95rem;
   font-weight: 600;
   color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.member-item-id {
+.member-item-roles {
+  display: flex;
+  gap: 6px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.member-role-tag {
+  display: inline-block;
+  padding: 2px 6px;
+  background: #e8f4f8;
+  color: #2c7a7b;
+  border-radius: 4px;
   font-size: 0.75rem;
-  color: #999;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 /* Loading / Error */

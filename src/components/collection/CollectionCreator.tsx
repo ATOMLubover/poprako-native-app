@@ -2,34 +2,27 @@ import { useEffect, useRef, useState } from "react";
 import NatureButton from "../NatureButton";
 import { Type as LucideType } from "lucide-react";
 import { useToast } from "../NotificationToast";
-import type { NewCollection } from "../../models/collection";
-import { getAppState, subscribeAppState } from "../../store/app";
+import type { NewWorkset } from "../../models/workset";
+// no app state required for workset creation currently
 import "../TermbaseCreator.css";
 import "./CollectionCreator.css";
 
 type CollectionCreatorProps = {
   visible: boolean;
   onClose: () => void;
-  onSave?: (payload: NewCollection) => Promise<void> | void;
+  onSave?: (payload: NewWorkset) => Promise<void> | void;
 };
 
-export default function CollectionCreator({ visible, onClose, onSave }: CollectionCreatorProps) {
+export default function CollectionCreator({
+  visible,
+  onClose,
+  onSave,
+}: CollectionCreatorProps) {
   const overlayRef = useRef<HTMLDivElement | null>(null);
 
   const { showToast } = useToast();
-
-  const [teamId, setTeamId] = useState<string>(getAppState().currentTeamId ?? "");
   const [name, setName] = useState<string>("");
   const [saving, setSaving] = useState<boolean>(false);
-
-  // 同步全局团队信息，确保浮窗内显示的身份是最新状态
-  useEffect(() => {
-    const unsubscribe = subscribeAppState(() => {
-      setTeamId(getAppState().currentTeamId ?? "");
-    });
-
-    return unsubscribe;
-  }, []);
 
   useEffect(() => {
     if (!visible) {
@@ -50,16 +43,11 @@ export default function CollectionCreator({ visible, onClose, onSave }: Collecti
       return;
     }
 
-    if (!teamId) {
-      showToast("error", "未检测到可用的汉化组身份");
-      return;
-    }
-
     setSaving(true);
 
-    const payload: NewCollection = {
-      teamId,
-      name: trimmedName,
+    const payload: NewWorkset = {
+      index: 0,
+      description: trimmedName,
     };
 
     try {
@@ -130,7 +118,11 @@ export default function CollectionCreator({ visible, onClose, onSave }: Collecti
             <div style={{ width: 12 }} />
 
             <div className="tbc-footer-btn">
-              <NatureButton variant="mist" onClick={handleSave} disabled={saving}>
+              <NatureButton
+                variant="mist"
+                onClick={handleSave}
+                disabled={saving}
+              >
                 {saving ? "创建中..." : "创建"}
               </NatureButton>
             </div>

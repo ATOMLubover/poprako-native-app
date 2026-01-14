@@ -1,13 +1,9 @@
-import { TeamBrief } from "./team";
-
 // 术语库基础类型
 export type Termbase = {
-  teamBrief: TeamBrief;
+  id: string;
   name: string;
-  description: string;
-  likedNum: number;
-  termNum: number;
-  relatedComicId?: string;
+  description?: string;
+  creatorId: string;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -15,28 +11,29 @@ export type Termbase = {
 // 新建术语库时使用的类型
 export type NewTermbase = {
   name: string;
-  teamId: string; // 所属汉化组 ID
-  description: string;
-  isPrivate: boolean;
-  relatedComicId?: string; // 可选的关联漫画 ID
+  description?: string;
 };
 
 // 术语类型定义
 export type Term = {
-  termBaseId: string;
-  originalText: string;
+  id: string;
+  termbaseId: string;
+  sourceText: string;
   targetText: string;
-  modifierId: string;
-  modifierNickname: string;
+  creatorId: string;
   createdAt: Date;
   updatedAt: Date;
 };
 
 // 新建术语时使用的类型
 export type NewTerm = {
-  original: string;
-  definition: string;
+  termbaseId: string;
+  sourceText: string;
+  targetText: string;
 };
 
 // 更新术语时使用的类型
-export type PatchTerm = Partial<NewTerm>;
+export type PatchTerm = {
+  sourceText?: string;
+  targetText?: string;
+};

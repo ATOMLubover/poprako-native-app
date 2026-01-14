@@ -5,12 +5,16 @@ import NatureButton from "../../components/NatureButton";
 import { __mockLogin } from "../../ipc/mock_login";
 import { setOnlineStatus, setCurrentUser, setAppView } from "../../store/app";
 import type { LoginReq } from "../../models/user";
-import type { MemberInfo } from "../../models/member";
+import type { UserProfile } from "../../models/user";
 import { useToast } from "../../components/NotificationToast";
 import { User, Lock, KeyRound } from "lucide-react";
 import "./LoginPage.css";
 
-export default function LoginPage({ allowOnline = true }: { allowOnline?: boolean }) {
+export default function LoginPage({
+  allowOnline = true,
+}: {
+  allowOnline?: boolean;
+}) {
   const [account, setAccount] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [invitationCode, setInvitationCode] = useState<string>("");
@@ -35,17 +39,10 @@ export default function LoginPage({ allowOnline = true }: { allowOnline?: boolea
       return;
     }
 
-    const isEmail = account.includes("@");
     const loginReq: LoginReq = {
+      qqId: account.trim(),
       password: password,
-      invitaionCode: invitationCode.trim() || undefined,
     };
-
-    if (isEmail) {
-      loginReq.email = account.trim();
-    } else {
-      loginReq.qqNumber = account.trim();
-    }
 
     setIsLoading(true);
 
@@ -54,17 +51,11 @@ export default function LoginPage({ allowOnline = true }: { allowOnline?: boolea
 
       console.log("Login successful, token:", resp.token);
 
-      const mockUser: MemberInfo = {
-        memberId: "mock-member-id",
+      const mockUser: UserProfile = {
+        id: "mock-user-id",
         nickname: "测试用户",
-        teamId: "mock-team-id",
-        teamName: "测试汉化组",
-        is_admin: true,
-        is_translator: true,
-        is_proofreader: false,
-        is_typesetter: false,
-        is_redrawer: false,
-        is_reviewer: false,
+        qq: account.trim(),
+        isAdmin: false,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -74,7 +65,7 @@ export default function LoginPage({ allowOnline = true }: { allowOnline?: boolea
       setAppView("panel");
     } catch (error) {
       console.error("Login failed", error);
-      
+
       showToast("error", "登录失败，请检查账号密码");
     } finally {
       setIsLoading(false);
@@ -102,7 +93,7 @@ export default function LoginPage({ allowOnline = true }: { allowOnline?: boolea
             <input
               className="login-input"
               type="text"
-              placeholder="QQ 号 或 邮箱"
+              placeholder="QQ 号"
               value={account}
               onChange={(e) => setAccount(e.target.value)}
               disabled={isLoading || !isOnlineAllowed}
@@ -130,7 +121,7 @@ export default function LoginPage({ allowOnline = true }: { allowOnline?: boolea
             <input
               className="login-input"
               type="text"
-              placeholder="汉化组邀请码"
+              placeholder="邀请码"
               value={invitationCode}
               onChange={(e) => setInvitationCode(e.target.value)}
               disabled={isLoading || !isOnlineAllowed}
@@ -165,7 +156,7 @@ export default function LoginPage({ allowOnline = true }: { allowOnline?: boolea
               </div>
             ) : (
               <NatureButton
-                variant="outline"
+                variant="cloud"
                 onClick={() => {
                   setOnlineStatus(false);
                   setAppView("panel");

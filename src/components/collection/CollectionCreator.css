@@ -1,7 +1,9 @@
-.collection-creator-overlay {
+.collection-creator-overlay,
+.comic-creator-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(247, 249, 252, 0.92);
+  /* Dark overlay for modal backdrop used by collection and comic creators */
+  background: rgba(2, 6, 23, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -10,12 +12,28 @@
 }
 
 .collection-creator-panel {
-  width: min(420px, 100%);
+  /* Center the inner panel content and allow responsive width clamping */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0 12px; /* allow some horizontal gap on narrow screens */
 }
 
-.collection-creator-panel .termbase-creator-card {
+/* Collection creator card (small modal) */
+.collection-creator-panel > .termbase-creator-card {
+  width: min(420px, calc(100% - 48px));
   min-height: auto;
   max-height: 480px;
+}
+
+/* Comic creator modal container (wide). This ensures the comic creator is centered
+   but will clamp to viewport on small screens. */
+.collection-creator-panel > .comic-creator-container {
+  /* allow the comic creator to request wide layout but clamp to viewport */
+  min-width: 0;
+  width: min(900px, calc(100% - 48px));
+  max-width: calc(100% - 48px);
 }
 
 .collection-creator-hint {

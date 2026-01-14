@@ -1,5 +1,5 @@
 import type { ComicBrief } from "../models/comic/comic";
-import NatureTag from "./NatureTag";
+// import NatureTag from "./NatureTag";
 import "./BriefComicCard.css";
 
 type Props = {
@@ -31,13 +31,17 @@ function calculateProgressStatus(
  * 漫画摘要卡片
  * 瘦长布局，展示核心信息和进度
  */
-export default function BriefComicCard({ comic, className = "", style }: Props) {
+export default function BriefComicCard({
+  comic,
+  className = "",
+  style,
+}: Props) {
   const progressItems: ProgressItem[] = [
     {
       label: "翻译",
       status: calculateProgressStatus(
-        comic.translationStartedAt,
-        comic.translationCompletedAt
+        comic.translatingStartedAt,
+        comic.translatingCompletedAt
       ),
     },
     {
@@ -56,15 +60,15 @@ export default function BriefComicCard({ comic, className = "", style }: Props) 
     },
     {
       label: "监修",
-      status: comic.reviewedAt ? "completed" : "pending",
+      status: comic.reviewingCompletedAt ? "completed" : "pending",
     },
     {
       label: "发布",
-      status: comic.publishedAt ? "completed" : "pending",
+      status: comic.uploadingCompletedAt ? "completed" : "pending",
     },
   ];
 
-  const displayTags = comic.tags.slice(0, 3);
+  // const displayTags = comic.tags.slice(0, 3);
 
   const formattedDate = comic.updatedAt
     ? new Date(comic.updatedAt).toLocaleDateString("zh-CN", {
@@ -76,8 +80,6 @@ export default function BriefComicCard({ comic, className = "", style }: Props) 
 
   const metaInfo = [];
   metaInfo.push(`${comic.likesCount} Likes!`);
-  if (!comic.isSeries) metaInfo.push("(单行本)");
-  if (comic.isHidden) metaInfo.push("(隐藏漫画)");
   metaInfo.push(formattedDate);
 
   return (
@@ -86,7 +88,7 @@ export default function BriefComicCard({ comic, className = "", style }: Props) 
       <div className="card-row-1">
         <div className="title-area">
           <span className="title-text">
-            [{comic.collectionId}-{comic.index}]【{comic.author}】{comic.title}
+            [{comic.worksetId}-{comic.index}]【{comic.author}】{comic.title}
           </span>
         </div>
 
@@ -104,16 +106,16 @@ export default function BriefComicCard({ comic, className = "", style }: Props) 
 
       {/* 第二行: 标签 + 元信息 */}
       <div className="card-row-2">
-        <div className="tags-area">
+        {/* <div className="tags-area">
           {displayTags.map((tag) => (
             <NatureTag
-              key={tag.tagId}
-              tag={{ tagId: tag.tagId, name: tag.name, isPinned: false, likedNum: 0 }}
+              key={tag.id}
+              tag={tag}
               theme="theme-glacier"
               fontSize={12}
             />
           ))}
-        </div>
+        </div> */}
 
         <div className="date-area">{metaInfo.join(" | ")}</div>
       </div>

@@ -9,7 +9,8 @@
   border: 2px solid transparent;
   border-radius: 8px;
   cursor: pointer;
-  transition: box-shadow 0.12s ease, transform 0.12s ease, border-color 0.12s ease;
+  transition: box-shadow 0.12s ease, transform 0.12s ease,
+    border-color 0.12s ease;
   box-sizing: border-box;
 }
 
@@ -36,7 +37,7 @@
   min-width: 0;
 }
 
-/* 标题部分：最多占整个card宽度的40%，左对齐，实际宽度由内容决定 */
+/* 标题部分：最多占整个card宽度的60%，左对齐，实际宽度由内容决定 */
 .csc-title {
   color: #111827;
   font-weight: 700;
@@ -46,7 +47,7 @@
   text-overflow: ellipsis;
   flex: 0 0 auto;
   width: fit-content;
-  max-width: 55%;
+  max-width: 60%;
 }
 
 /* 标签部分：紧跟在标题后，最多占整个card宽度的30% */
@@ -121,19 +122,19 @@
 
 /* 进度状态配色 */
 .csc-status-pending {
-  border-color: rgba(96,84,69,0.25);
+  border-color: rgba(96, 84, 69, 0.25);
   background-color: transparent;
   color: #4b3f33;
 }
 
 .csc-status-in-progress {
-  border-color: rgba(160,100,40,0.35);
-  background-color: rgba(160,100,40,0.10);
+  border-color: rgba(160, 100, 40, 0.35);
+  background-color: rgba(160, 100, 40, 0.1);
   color: #7f4519;
 }
 
 .csc-status-completed {
-  border-color: rgba(43,106,69,0.30);
-  background-color: rgba(43,106,69,0.10);
+  border-color: rgba(43, 106, 69, 0.3);
+  background-color: rgba(43, 106, 69, 0.1);
   color: #1f5337;
 }

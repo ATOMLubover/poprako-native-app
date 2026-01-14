@@ -1,23 +1,28 @@
-import { TagBrief } from "../tag";
 import { AssignmentBrief, NewAssignment } from "./assignment";
 import { PageBrief } from "./page";
 
-// 漫画的基本信息，包含最新一章的摘要
+// 漫画的基本信息
 export type ComicBrief = {
   id: string;
 
-  collectionId: string;
-  collectionIndex: string;
+  worksetId: string;
+  worksetIndex: number;
   index: number;
+
+  creatorId: string;
 
   author: string;
   title: string;
+  comment?: string;
+  description?: string;
 
+  pageCount: number;
   likesCount: number;
-  tags: TagBrief[];
 
-  translationStartedAt?: Date;
-  translationCompletedAt?: Date;
+  // tags: TagBrief[];
+
+  translatingStartedAt?: Date;
+  translatingCompletedAt?: Date;
 
   proofreadingStartedAt?: Date;
   proofreadingCompletedAt?: Date;
@@ -25,8 +30,8 @@ export type ComicBrief = {
   typesettingStartedAt?: Date;
   typesettingCompletedAt?: Date;
 
-  reviewedAt?: Date;
-  publishedAt?: Date;
+  reviewingCompletedAt?: Date;
+  uploadingCompletedAt?: Date;
 
   createdAt: Date;
   updatedAt: Date;
@@ -36,26 +41,26 @@ export type ComicBrief = {
 export type ComicInfo = {
   id: string;
 
-  coverImageUrl?: string;
-
-  collectionId: string;
-  collectionIndex: number;
+  worksetId: string;
+  worksetIndex: number;
   index: number;
+
+  creatorId: string;
 
   author: string;
   title: string;
+  comment?: string;
   description?: string;
 
-  likesCount: number;
-  tags: TagBrief[];
-
   pageCount: number;
-  assignments: AssignmentBrief[];
+  likesCount: number;
 
+  // tags: TagBrief[];
+  assignments: AssignmentBrief[];
   pages: PageBrief[];
 
-  translationStartedAt?: Date;
-  translationCompletedAt?: Date;
+  translatingStartedAt?: Date;
+  translatingCompletedAt?: Date;
 
   proofreadingStartedAt?: Date;
   proofreadingCompletedAt?: Date;
@@ -63,8 +68,8 @@ export type ComicInfo = {
   typesettingStartedAt?: Date;
   typesettingCompletedAt?: Date;
 
-  reviewedAt?: Date;
-  publishedAt?: Date;
+  reviewingCompletedAt?: Date;
+  uploadingCompletedAt?: Date;
 
   createdAt: Date;
   updatedAt: Date;
@@ -72,13 +77,14 @@ export type ComicInfo = {
 
 // 用于创建或更新漫画的数据结构
 export type NewComic = {
-  collectionId: string;
+  worksetId: string;
 
   author: string;
   title: string;
+  comment?: string;
   description?: string;
 
-  tagIds: string[];
+  // tagIds: string[];
 
   preAssignments: NewAssignment[];
 };

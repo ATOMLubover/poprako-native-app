@@ -10,20 +10,20 @@ export const PROGRESS_STATUS_LABELS: Record<ProgressStatus, string> = {
 
 export type ComicFilterOptions = {
   searchText: string;
-  collectionId: string | null;
-  translationStatus: ProgressStatus | null;
+  worksetId: string | null;
+  translatingStatus: ProgressStatus | null;
   proofreadingStatus: ProgressStatus | null;
   typesettingStatus: ProgressStatus | null;
-  reviewStatus: ProgressStatus | null;
-  publishStatus: ProgressStatus | null;
+  reviewingStatus: ProgressStatus | null;
+  uploadingStatus: ProgressStatus | null;
 };
 
 export const DEFAULT_FILTER_OPTIONS: ComicFilterOptions = {
   searchText: "",
-  collectionId: null,
-  translationStatus: null,
+  worksetId: null,
+  translatingStatus: null,
   proofreadingStatus: null,
   typesettingStatus: null,
-  reviewStatus: null,
-  publishStatus: null,
+  reviewingStatus: null,
+  uploadingStatus: null,
 };

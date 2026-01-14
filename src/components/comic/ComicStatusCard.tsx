@@ -1,5 +1,5 @@
 import type { ComicBrief } from "../../models/comic/comic";
-import NatureTag from "../NatureTag";
+// import NatureTag from "../NatureTag";
 import "./ComicStatusCard.css";
 
 type ComicStatusCardProps = {
@@ -33,23 +33,32 @@ function buildProgressItems(comic: ComicBrief): ProgressItem[] {
   return [
     {
       label: "翻译",
-      status: calculateProgressStatus(comic.translationStartedAt, comic.translationCompletedAt),
+      status: calculateProgressStatus(
+        comic.translatingStartedAt,
+        comic.translatingCompletedAt
+      ),
     },
     {
       label: "校对",
-      status: calculateProgressStatus(comic.proofreadingStartedAt, comic.proofreadingCompletedAt),
+      status: calculateProgressStatus(
+        comic.proofreadingStartedAt,
+        comic.proofreadingCompletedAt
+      ),
     },
     {
       label: "嵌字",
-      status: calculateProgressStatus(comic.typesettingStartedAt, comic.typesettingCompletedAt),
+      status: calculateProgressStatus(
+        comic.typesettingStartedAt,
+        comic.typesettingCompletedAt
+      ),
     },
     {
       label: "监修",
-      status: comic.reviewedAt ? "completed" : "pending",
+      status: comic.reviewingCompletedAt ? "completed" : "pending",
     },
     {
       label: "发布",
-      status: comic.publishedAt ? "completed" : "pending",
+      status: comic.uploadingCompletedAt ? "completed" : "pending",
     },
   ];
 }
@@ -58,10 +67,13 @@ function buildProgressItems(comic: ComicBrief): ProgressItem[] {
  * 漫画状态卡片
  * 单行布局：标题 + 标签 + 进度
  */
-export default function ComicStatusCard({ comic, onClick }: ComicStatusCardProps) {
+export default function ComicStatusCard({
+  comic,
+  onClick,
+}: ComicStatusCardProps) {
   const progressItems = buildProgressItems(comic);
 
-  const displayTags = comic.tags.slice(0, 3);
+  //const displayTags = comic.tags.slice(0, 3);
 
   function handleClick() {
     if (onClick) {
@@ -74,22 +86,22 @@ export default function ComicStatusCard({ comic, onClick }: ComicStatusCardProps
       {/* 左侧：标题+标签紧密排列 */}
       <div className="csc-main">
         <div className="csc-title-wrap">
-          {/* 标题：最多占card宽度40%，左对齐 */}
+          {/* 标题：最多占card宽度50%，左对齐 */}
           <span className="csc-title">
-            [{comic.collectionIndex}-{comic.index}]【{comic.author}】{comic.title}
+            [{comic.worksetIndex}-{comic.index}]【{comic.author}】{comic.title}
           </span>
 
           {/* 标签：紧跟标题，最多占card宽度30% */}
-          <div className="csc-tags">
+          {/* <div className="csc-tags">
             {displayTags.map((tag) => (
               <NatureTag
-                key={tag.tagId}
-                tag={{ tagId: tag.tagId, name: tag.name, isPinned: false, likedNum: 0 }}
+                key={tag.id}
+                tag={tag}
                 theme="theme-glacier"
                 fontSize={11}
               />
             ))}
-          </div>
+          </div> */}
         </div>
       </div>
 
