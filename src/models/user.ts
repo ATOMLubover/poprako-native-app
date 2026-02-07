@@ -1,24 +1,5 @@
-// // 用户基础类型
-// export type User = {
-//   id: string;
-//   qqId: string;
-//   nickname: string;
-//   passwordHash: string;
-//   isAdmin: boolean;
-
-//   assignedTranslatorAt?: Date;
-//   assignedProoverAt?: Date;
-//   assignedTypesetterAt?: Date;
-//   assignedRedrawerAt?: Date;
-//   assignedReviewerAt?: Date;
-//   assignedUploaderAt?: Date;
-
-//   createdAt: Date;
-//   updatedAt: Date;
-// };
-
 // 用户资料类型定义
-export type UserProfile = {
+export type UserInfo = {
   id: string;
   nickname: string;
   qq: string;
@@ -52,13 +33,14 @@ export type UserBrief = {
 };
 
 // 登录请求
-export type LoginReq = {
-  qqId: string;
+export type LoginArgs = {
+  qq: string;
   password: string;
+  invitationCode?: string;
+  nickname?: string;
 };
 
 // 登录响应
-export type LoginResp = {
-  userId: string;
+export type LoginReply = {
   token: string;
 };

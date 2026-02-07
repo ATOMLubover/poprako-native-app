@@ -14,7 +14,7 @@ import {
   setCurrentTeamId,
   setCurrentUser,
 } from "../store/app";
-import type { UserProfile } from "../models/user";
+import type { UserInfo } from "../models/user";
 
 type MenuItem =
   | "draft-board"
@@ -172,7 +172,7 @@ function DraftBoard() {
     setCollectionIds(["demo_collection_1", "demo_collection_2"]);
     setCurrentTeamId("t_demo_001");
 
-    const mockUser: UserProfile = {
+    const mockUser: UserInfo = {
       id: "m_demo_1",
       nickname: "DemoUser",
       qq: "123456789",

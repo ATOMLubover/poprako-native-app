@@ -3,7 +3,7 @@ import ComicStatusCard from "./ComicStatusCard";
 import ComicDetailCard from "./ComicDetailCard";
 import NatureButton from "../NatureButton";
 import ConfirmDialogBox from "../ConfirmDialogBox";
-import CollectionCreator from "../collection/CollectionCreator";
+import WorksetCreator from "../workset/WorksetCreator";
 import DotLoadSpinner from "../DotLoadSpinner";
 import type { ComicBrief, ComicInfo } from "../../models/comic/comic";
 import type { Workset, NewWorkset } from "../../models/workset";
@@ -547,7 +547,7 @@ export default function ComicList({
           })()}
         </div>
       </div>
-      <CollectionCreator
+      <WorksetCreator
         visible={collectionCreatorVisible}
         onClose={() => setCollectionCreatorVisible(false)}
         onSave={handleCollectionSave}

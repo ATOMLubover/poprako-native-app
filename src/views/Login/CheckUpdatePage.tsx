@@ -1,10 +1,13 @@
 // 版本检查页面
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import DotLoadSpinner from "../../components/DotLoadSpinner";
 import NatureButton from "../../components/NatureButton";
-import { __mockCheckUpdate, __mockGetLocalVersion } from "../../ipc/mock_login";
-import type { CheckUpdateResp } from "../../models/update";
+import {
+  checkUpdate as ipcCheckUpdate,
+  getNativeAppVersion,
+} from "../../ipc/check";
+import type { CheckUpdateResp } from "../../models/check";
 import "./CheckUpdatePage.css";
 
 type CheckUpdatePageProps = {
@@ -21,7 +24,7 @@ export default function CheckUpdatePage({
   const [state, setState] = useState<CheckState>("checking");
   const [updateInfo, setUpdateInfo] = useState<CheckUpdateResp | null>(null);
   const [localVersion, setLocalVersion] = useState<string>("");
-  const [retryCount, setRetryCount] = useState<number>(0);
+  const attemptsRef = useRef<number>(0);
 
   useEffect(() => {
     checkUpdate();
@@ -32,8 +35,8 @@ export default function CheckUpdatePage({
 
     try {
       const [local, update] = await Promise.all([
-        __mockGetLocalVersion(),
-        __mockCheckUpdate(),
+        getNativeAppVersion(),
+        ipcCheckUpdate(),
       ]);
 
       setLocalVersion(local);
@@ -48,8 +51,8 @@ export default function CheckUpdatePage({
     } catch (error) {
       console.error("Check update failed", error);
 
-      if (retryCount < 1) {
-        setRetryCount(retryCount + 1);
+      if (attemptsRef.current < 1) {
+        attemptsRef.current += 1;
 
         setTimeout(() => {
           checkUpdate();
@@ -65,7 +68,7 @@ export default function CheckUpdatePage({
   }
 
   function handleRetry(): void {
-    setRetryCount(0);
+    attemptsRef.current = 0;
     checkUpdate();
   }
 

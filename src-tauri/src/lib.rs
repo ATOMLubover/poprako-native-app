@@ -13,6 +13,7 @@ mod repository;
 mod result_trace;
 mod service;
 mod util;
+mod update;
 
 /// Memo:
 /// setup.logger.initialized level=Level(Debug)
@@ -122,6 +123,7 @@ pub fn run() {
             ipc::project::port::export_project,
             ipc::project::port::import_project,
             ipc::project::port::open_project_dir,
+            ipc::update::get_native_app_version,
         ])
         .run(tauri::generate_context!())
         .expect("无法启动 Tauri 应用程序");

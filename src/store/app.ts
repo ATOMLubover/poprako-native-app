@@ -1,11 +1,11 @@
-import type { UserProfile } from "../models/user";
+import type { UserInfo } from "../models/user";
 
 type AppView = "login" | "panel";
 
 type AppState = {
   view: AppView;
   isOnline: boolean;
-  currentUser: UserProfile | null;
+  currentUser: UserInfo | null;
   currentTeamId: string | null;
   collectionIds: string[];
 };
@@ -40,7 +40,7 @@ export function setOnlineStatus(isOnline: boolean): void {
 }
 
 // 设置当前用户
-export function setCurrentUser(user: UserProfile | null): void {
+export function setCurrentUser(user: UserInfo | null): void {
   appState.currentUser = user;
 
   notifyListeners();

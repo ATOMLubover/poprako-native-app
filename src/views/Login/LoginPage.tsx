@@ -2,13 +2,12 @@
 
 import { useState } from "react";
 import NatureButton from "../../components/NatureButton";
-import { __mockLogin } from "../../ipc/mock_login";
+import { fetchCurrUserInfo, loginUser } from "../../ipc/user";
 import { setOnlineStatus, setCurrentUser, setAppView } from "../../store/app";
-import type { LoginReq } from "../../models/user";
-import type { UserProfile } from "../../models/user";
 import { useToast } from "../../components/NotificationToast";
 import { User, Lock, KeyRound } from "lucide-react";
 import "./LoginPage.css";
+import { saveAuthToken } from "../../util/authStore";
 
 export default function LoginPage({
   allowOnline = true,
@@ -17,6 +16,7 @@ export default function LoginPage({
 }) {
   const [account, setAccount] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [nickname, setNickname] = useState<string>("");
   const [invitationCode, setInvitationCode] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { showToast } = useToast();
@@ -39,29 +39,27 @@ export default function LoginPage({
       return;
     }
 
-    const loginReq: LoginReq = {
-      qqId: account.trim(),
-      password: password,
-    };
-
     setIsLoading(true);
 
     try {
-      const resp = await __mockLogin(loginReq);
-
-      console.log("Login successful, token:", resp.token);
-
-      const mockUser: UserProfile = {
-        id: "mock-user-id",
-        nickname: "测试用户",
-        qq: account.trim(),
-        isAdmin: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+      const args = {
+        qq: account,
+        password: password,
+        invitationCode: invitationCode || undefined,
+        nickname: nickname || undefined,
       };
 
-      setCurrentUser(mockUser);
+      const reply = await loginUser(args);
+
+      saveAuthToken(reply.token);
+
+      console.log("Login successful, token:", reply.token);
+
+      const currUser = await fetchCurrUserInfo();
+
+      setCurrentUser(currUser);
       setOnlineStatus(true);
+
       setAppView("panel");
     } catch (error) {
       console.error("Login failed", error);
@@ -76,7 +74,7 @@ export default function LoginPage({
     <div className="login-page">
       <div className="login-card">
         <div className="login-header">
-          <h3>登录『白杨子 Native』</h3>
+          <h3>登录『白杨子』Native</h3>
         </div>
 
         <div className="login-body">
@@ -121,9 +119,23 @@ export default function LoginPage({
             <input
               className="login-input"
               type="text"
-              placeholder="邀请码"
+              placeholder="首次登录，请输入邀请码"
               value={invitationCode}
               onChange={(e) => setInvitationCode(e.target.value)}
+              disabled={isLoading || !isOnlineAllowed}
+            />
+          </div>
+
+          <div className="login-field">
+            <div className="login-field-icon">
+              <User size={18} />
+            </div>
+            <input
+              className="login-input"
+              type="text"
+              placeholder="首次登录，请输入昵称"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
               disabled={isLoading || !isOnlineAllowed}
             />
           </div>

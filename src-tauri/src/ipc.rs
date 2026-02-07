@@ -4,6 +4,7 @@ pub mod image;
 pub mod project;
 pub mod special_symbol;
 pub mod util;
+pub mod update;
 
 pub(crate) fn get_ipc_request_id() -> u32 {
     rand::random::<u32>() % 10000

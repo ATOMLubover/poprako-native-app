@@ -5,19 +5,19 @@ import { useToast } from "../NotificationToast";
 import type { NewWorkset } from "../../models/workset";
 // no app state required for workset creation currently
 import "../TermbaseCreator.css";
-import "./CollectionCreator.css";
+import "./WorksetCreator.css";
 
-type CollectionCreatorProps = {
+type WorksetCreatorProps = {
   visible: boolean;
   onClose: () => void;
   onSave?: (payload: NewWorkset) => Promise<void> | void;
 };
 
-export default function CollectionCreator({
+export default function WorksetCreator({
   visible,
   onClose,
   onSave,
-}: CollectionCreatorProps) {
+}: WorksetCreatorProps) {
   const overlayRef = useRef<HTMLDivElement | null>(null);
 
   const { showToast } = useToast();

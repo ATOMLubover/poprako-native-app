@@ -1,0 +1,1 @@
+pub const NATIVE_APP_VERSION: &str = "0.2.1";
