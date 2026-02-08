@@ -6,9 +6,9 @@ import SpecialSymbolPage from "./SpecialSymbolPage";
 import ComicWorkspacePage from "./ComicWorkspacePage";
 import ToolboxPage from "./ToolboxPage.tsx";
 import SettingPage from "./SettingPage.tsx";
-import ComicPanelPage from "./ComicPanelPage";
 import "./PanelView.css";
 import ComicCreator from "../components/ComicCreator";
+import { checkDevMode } from "../ipc/check";
 import {
   setCollectionIds,
   setCurrentTeamId,
@@ -69,17 +69,51 @@ type NavItem = {
  * 包含侧边栏导航和主内容区域
  */
 export default function PanelView() {
-  const [activeItem, setActiveItem] = useState<MenuItem>("draft-board");
+  const [activeItem, setActiveItem] = useState<MenuItem>("comic-workspace");
 
-  const navItems: NavItem[] = [
-    { id: "draft-board", icon: "pencil", label: "草稿板" },
-    { id: "comic-panel", icon: "dashboard", label: "仪表盘" },
+  const [showDraft, setShowDraft] = useState<boolean>(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    (async () => {
+      try {
+        const enabled = await checkDevMode();
+
+        if (!mounted) {
+          return;
+        }
+
+        setShowDraft(Boolean(enabled));
+
+        if (!enabled && activeItem === "draft-board") {
+          setActiveItem("comic-workspace");
+        }
+      } catch (e) {
+        if (!mounted) {
+          return;
+        }
+
+        setShowDraft(false);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const baseNav: NavItem[] = [
     { id: "comic-workspace", icon: "proofread", label: "工作区" },
     // { id: "tag-pool", icon: "tag", label: "标签池" },
     // { id: "termbase-pool", icon: "database", label: "术语库" },
     { id: "special-symbols", icon: "star", label: "特殊符号" },
     { id: "toolbox", icon: "wrench", label: "工具箱" },
   ];
+
+  const navItems: NavItem[] = showDraft
+    ? [{ id: "draft-board", icon: "pencil", label: "草稿板" }, ...baseNav]
+    : baseNav;
 
   const settingsItem: NavItem = {
     id: "settings",
@@ -91,8 +125,6 @@ export default function PanelView() {
     switch (activeItem) {
       case "draft-board":
         return <DraftBoard />;
-      case "comic-panel":
-        return <ComicPanelPage />;
       case "toolbox":
         return <ToolboxPage />;
       case "comic-workspace":

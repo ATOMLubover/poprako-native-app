@@ -28,7 +28,7 @@ export const checkUpdate = async () => {
     {
       "X-Client-App-Version": version,
       "X-App-Platform": "desktop",
-    }
+    },
   );
 
   const rawReply = JSON.parse(rawReplyStr) as RawReply;
@@ -39,4 +39,15 @@ export const checkUpdate = async () => {
     allowUsage: rawReply.allow_usage,
     description: rawReply.description,
   } as CheckUpdateReply;
+};
+
+export const checkDevMode = async (): Promise<boolean> => {
+  try {
+    const res = await invoke<boolean>("check_dev_mode");
+
+    return res;
+  } catch (error) {
+    console.error("Failed to check dev mode:", error);
+    return false;
+  }
 };
