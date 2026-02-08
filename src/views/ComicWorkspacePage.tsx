@@ -24,7 +24,7 @@ export default function ComicWorkspacePage() {
   const [showImporter, setShowImporter] = useState<boolean>(false);
   // Restore in-memory active project ID on mount (no persistence involved)
   const [activeProjectId, setActiveProjectIdState] = useState<string | null>(
-    () => getActiveProjectId()
+    () => getActiveProjectId(),
   );
 
   useEffect(() => {
@@ -51,14 +51,15 @@ export default function ComicWorkspacePage() {
     };
   }, []);
 
-  const filteredProjects = searchKeyword.trim() === ""
-    ? allProjects
-    : allProjects.filter((p) => {
-        const keyword = searchKeyword.toLowerCase();
-        const titleMatch = p.title?.toLowerCase().includes(keyword);
-        const authorMatch = p.author?.toLowerCase().includes(keyword);
-        return titleMatch || authorMatch;
-      });
+  const filteredProjects =
+    searchKeyword.trim() === ""
+      ? allProjects
+      : allProjects.filter((p) => {
+          const keyword = searchKeyword.toLowerCase();
+          const titleMatch = p.title?.toLowerCase().includes(keyword);
+          const authorMatch = p.author?.toLowerCase().includes(keyword);
+          return titleMatch || authorMatch;
+        });
 
   const handleCreateLocal = () => {
     setShowCreator(true);
@@ -106,7 +107,7 @@ export default function ComicWorkspacePage() {
   const handleProjectChange = (updatedProject: Project) => {
     // 更新 allProjects 中的对应项目
     setAllProjects((prev) =>
-      prev.map((p) => (p.id === updatedProject.id ? updatedProject : p))
+      prev.map((p) => (p.id === updatedProject.id ? updatedProject : p)),
     );
   };
 
@@ -117,8 +118,8 @@ export default function ComicWorkspacePage() {
 
   if (activeProject) {
     return (
-      <LocalTranslator 
-        project={activeProject} 
+      <LocalTranslator
+        project={activeProject}
         onExit={handleExitTranslator}
         onProjectChange={handleProjectChange}
       />
@@ -147,12 +148,8 @@ export default function ComicWorkspacePage() {
           onChange={(e) => setSearchKeyword(e.target.value)}
         />
 
-        <NatureButton
-          variant="mist"
-          minWidth={120}
-          onClick={handleCreateLocal}
-        >
-          新建本地项目
+        <NatureButton variant="mist" minWidth={120} onClick={handleCreateLocal}>
+          新建项目
         </NatureButton>
 
         <NatureButton
@@ -163,13 +160,13 @@ export default function ComicWorkspacePage() {
           导入项目
         </NatureButton>
 
-        <NatureButton
+        {/*         <NatureButton
           variant="cloud"
           minWidth={120}
           onClick={handleSyncCloud}
         >
           云端项目同步
-        </NatureButton>
+        </NatureButton> */}
       </div>
 
       {/* 第三行：项目列表容器 */}
@@ -221,7 +218,7 @@ export default function ComicWorkspacePage() {
                 />
               </div>
             </div>,
-            document.body
+            document.body,
           )
         : null}
 
@@ -258,7 +255,7 @@ export default function ComicWorkspacePage() {
                 />
               </div>
             </div>,
-            document.body
+            document.body,
           )
         : null}
     </div>

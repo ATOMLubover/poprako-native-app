@@ -2,8 +2,7 @@
   --sidebar-width-collapsed: 70px;
   --sidebar-width-expanded: 240px;
   --titlebar-height: 24px;
-  
-  
+
   /* 自然配色方案 */
   --bg-page: #f6f6f6;
   --bg-sidebar: #ffffff;
@@ -51,12 +50,16 @@
 */
 
 /* 统一盒模型，避免 padding 导致高度溢出产生滚动条 */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
 /* 根元素重置，禁止 body 全局滚动，交由 main-content 内部处理溢出 */
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   margin: 0;
   overflow: hidden;
@@ -116,7 +119,7 @@ html, body, #root {
 .logo-text {
   margin-left: 16px;
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 1.4rem;
   letter-spacing: -0.2px;
   color: var(--text-main);
   white-space: nowrap;
@@ -192,7 +195,9 @@ html, body, #root {
   align-items: center;
   justify-content: center;
   color: #d26a00;
-  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.15s ease;
+  transition:
+    transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    color 0.15s ease;
 }
 
 .nav-item:hover .special-icon {
@@ -208,11 +213,13 @@ html, body, #root {
 
 .nav-text {
   margin-left: 2px;
-  font-size: 0.9rem;
+  font-size: 1.2rem;
   font-weight: 500;
   opacity: 0;
   transform: translateX(-5px);
-  transition: opacity 0.3s, transform 0.3s;
+  transition:
+    opacity 0.3s,
+    transform 0.3s;
 }
 
 .sidebar:hover .nav-text {
@@ -240,4 +247,4 @@ html, body, #root {
   display: flex;
   flex-direction: column;
 }
-  /* entrance animation removed here — use per-page animations instead */
+/* entrance animation removed here — use per-page animations instead */

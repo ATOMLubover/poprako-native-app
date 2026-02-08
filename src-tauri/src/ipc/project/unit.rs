@@ -58,3 +58,42 @@ pub async fn delete_page_units(unit_ids: Vec<String>) -> Result<(), String> {
 
     Ok(())
 }
+
+#[tauri::command]
+#[tracing::instrument]
+pub async fn search_comic_text(project_id: String, query: String) -> Result<Vec<String>, String> {
+    let ipc_id = get_ipc_request_id();
+
+    tracing::info!(ipc_id = ipc_id, "ipc.project.unit.search_comic_text.start");
+
+    let page_ids = service::project::unit::search_comic_text(&project_id, &query)
+        .await
+        .trace_error("搜索漫画文本时失败")
+        .map_err(|e| e.to_string())?;
+
+    tracing::info!(ipc_id = ipc_id, "ipc.project.unit.search_comic_text.success");
+
+    Ok(page_ids)
+}
+
+#[tauri::command]
+#[tracing::instrument]
+pub async fn replace_comic_text(
+    project_id: String,
+    page_ids: Vec<String>,
+    original: String,
+    replacement: String,
+) -> Result<(), String> {
+    let ipc_id = get_ipc_request_id();
+
+    tracing::info!(ipc_id = ipc_id, "ipc.project.unit.replace_comic_text.start");
+
+    service::project::unit::replace_comic_text(&project_id, page_ids, &original, &replacement)
+        .await
+        .trace_error("替换漫画文本时失败")
+        .map_err(|e| e.to_string())?;
+
+    tracing::info!(ipc_id = ipc_id, "ipc.project.unit.replace_comic_text.success");
+
+    Ok(())
+}

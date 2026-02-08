@@ -7,20 +7,32 @@ import { getLocalPostProcessors } from "../../ipc/project/plugin";
 import { exportProject, openProjectDir } from "../../ipc/project/port";
 import type { PostProcessor } from "../../models/project";
 import { useToast } from "../NotificationToast";
-import { Type, Check, FileText, Layers, Image as ImageIcon } from "lucide-react";
+import {
+  Type,
+  Check,
+  FileText,
+  Layers,
+  Image as ImageIcon,
+} from "lucide-react";
 import ProgressBar from "../ProgressBar";
 import NatureButton from "../NatureButton";
 import NatureSwitchButton from "../NatureSwitchButton";
 import InPanelIcon from "../InPanelIcon";
 import OutPanelIcon from "../OutPanelIcon";
+import PagePreviewList from "./PagePreviewList";
 
 type VerticalStatusCardProps = {
   project: Project;
+  onPageSelect?: (pageIndex: number) => void;
 };
 
-export default function VerticalStatusCard({ project }: VerticalStatusCardProps) {
+export default function VerticalStatusCard({
+  project,
+  onPageSelect,
+}: VerticalStatusCardProps) {
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [isPreviewing, setIsPreviewing] = useState(false);
   const [postProcessors, setPostProcessors] = useState<PostProcessor[]>([]);
   const [selectedProcessors, setSelectedProcessors] = useState<string[]>([]);
   const [exportToZip, setExportToZip] = useState(false);
@@ -34,10 +46,10 @@ export default function VerticalStatusCard({ project }: VerticalStatusCardProps)
         if (pages.length > 0) {
           const firstPage = pages[0];
           if (firstPage.localImageUrl) {
-             const url = await proxyLocalImage(firstPage.localImageUrl);
-             if (isMounted) setCoverUrl(url);
+            const url = await proxyLocalImage(firstPage.localImageUrl);
+            if (isMounted) setCoverUrl(url);
           } else if (firstPage.remoteImageUrl) {
-             if (isMounted) setCoverUrl(firstPage.remoteImageUrl);
+            if (isMounted) setCoverUrl(firstPage.remoteImageUrl);
           }
         }
       } catch (e) {
@@ -45,7 +57,9 @@ export default function VerticalStatusCard({ project }: VerticalStatusCardProps)
       }
     }
     fetchCover();
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, [project.id]);
 
   useEffect(() => {
@@ -63,12 +77,14 @@ export default function VerticalStatusCard({ project }: VerticalStatusCardProps)
 
   const author = project.author ?? "";
   const title = project.title ?? "";
-  const trPercent = project.unitCount > 0
-    ? (project.translatedUnitCount / project.unitCount) * 100
-    : 0;
-  const prPercent = project.unitCount > 0
-    ? (project.proovedUnitCount / project.unitCount) * 100
-    : 0;
+  const trPercent =
+    project.unitCount > 0
+      ? (project.translatedUnitCount / project.unitCount) * 100
+      : 0;
+  const prPercent =
+    project.unitCount > 0
+      ? (project.proovedUnitCount / project.unitCount) * 100
+      : 0;
 
   const tr = Math.max(0, Math.min(100, Math.round(trPercent)));
   const pr = Math.max(0, Math.min(100, Math.round(prPercent)));
@@ -84,9 +100,9 @@ export default function VerticalStatusCard({ project }: VerticalStatusCardProps)
   };
 
   const handleProcessorToggle = (name: string) => {
-    setSelectedProcessors(prev => {
+    setSelectedProcessors((prev) => {
       if (prev.includes(name)) {
-        return prev.filter(n => n !== name);
+        return prev.filter((n) => n !== name);
       } else {
         return [...prev, name];
       }
@@ -95,7 +111,11 @@ export default function VerticalStatusCard({ project }: VerticalStatusCardProps)
 
   const handleConfirmExport = async () => {
     try {
-      const path = await exportProject(project.id, exportToZip, selectedProcessors);
+      const path = await exportProject(
+        project.id,
+        exportToZip,
+        selectedProcessors,
+      );
       showToast("success", `项目导出成功: ${path}`);
       setIsExporting(false);
       setSelectedProcessors([]);
@@ -118,9 +138,28 @@ export default function VerticalStatusCard({ project }: VerticalStatusCardProps)
     }
   };
 
+  if (isPreviewing) {
+    return (
+      <div
+        style={{
+          height: "100%",
+          minHeight: 0,
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <PagePreviewList
+          projectId={project.id}
+          onBack={() => setIsPreviewing(false)}
+          onPageSelect={(pageIndex) => onPageSelect?.(pageIndex)}
+        />
+      </div>
+    );
+  }
+
   return (
     <>
-      <div className={`vsc-image-container ${isExporting ? 'collapsed' : ''}`}>
+      <div className={`vsc-image-container ${isExporting ? "collapsed" : ""}`}>
         <div className="vsc-image-box" aria-hidden>
           {coverUrl ? (
             <img src={coverUrl} alt={title} className="vsc-image" />
@@ -133,12 +172,23 @@ export default function VerticalStatusCard({ project }: VerticalStatusCardProps)
       </div>
 
       <div className="vsc-content">
-        <div className="vsc-title" title={author ? `【${author}】${title}` : title}>
+        <div
+          className="vsc-title"
+          title={author ? `【${author}】${title}` : title}
+        >
           {author ? `【${author}】${title}` : title}
         </div>
 
         <div className="vsc-progress-wrap" aria-hidden>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              width: "100%",
+            }}
+          >
             <div style={{ width: "80%" }}>
               <ProgressBar
                 items={[
@@ -173,7 +223,9 @@ export default function VerticalStatusCard({ project }: VerticalStatusCardProps)
               <Type size={16} />
               <span>已翻译</span>
             </div>
-            <div className="vsc-metric-value">{project.translatedUnitCount}</div>
+            <div className="vsc-metric-value">
+              {project.translatedUnitCount}
+            </div>
           </div>
 
           <div className="vsc-metric-card" title="Prooved">
@@ -189,7 +241,9 @@ export default function VerticalStatusCard({ project }: VerticalStatusCardProps)
               <InPanelIcon size={20} />
               <span>框内</span>
             </div>
-            <div className="vsc-metric-value">{project.inboxUnitCount ?? 0}</div>
+            <div className="vsc-metric-value">
+              {project.inboxUnitCount ?? 0}
+            </div>
           </div>
 
           <div className="vsc-metric-card" title="Outbox">
@@ -197,12 +251,16 @@ export default function VerticalStatusCard({ project }: VerticalStatusCardProps)
               <OutPanelIcon size={20} />
               <span>框外</span>
             </div>
-            <div className="vsc-metric-value">{project.outboxUnitCount ?? 0}</div>
+            <div className="vsc-metric-value">
+              {project.outboxUnitCount ?? 0}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className={`vsc-postproc-selector ${isExporting ? 'open' : 'closed'}`}>
+      <div
+        className={`vsc-postproc-selector ${isExporting ? "open" : "closed"}`}
+      >
         <div className="vsc-postproc-header">
           <div className="vsc-postproc-title">选择后处理配置</div>
           <div className="vsc-postproc-actions">
@@ -220,10 +278,10 @@ export default function VerticalStatusCard({ project }: VerticalStatusCardProps)
           {postProcessors.length === 0 ? (
             <div className="vsc-postproc-placeholder">暂无后处理器</div>
           ) : (
-            postProcessors.map(proc => (
+            postProcessors.map((proc) => (
               <div
                 key={proc.name}
-                className={`vsc-postproc-entry ${selectedProcessors.includes(proc.name) ? 'selected' : ''}`}
+                className={`vsc-postproc-entry ${selectedProcessors.includes(proc.name) ? "selected" : ""}`}
                 onClick={() => handleProcessorToggle(proc.name)}
               >
                 {proc.name}
@@ -240,14 +298,26 @@ export default function VerticalStatusCard({ project }: VerticalStatusCardProps)
               <NatureButton
                 variant="cloud"
                 minWidth={0}
+                onClick={() => setIsPreviewing(true)}
+              >
+                图片预览
+              </NatureButton>
+
+              <NatureButton
+                variant="cloud"
+                minWidth={0}
                 onClick={handleOpenProjectDir}
-              >打开项目目录</NatureButton>
+              >
+                打开目录
+              </NatureButton>
 
               <NatureButton
                 variant="mist"
                 minWidth={0}
                 onClick={handleExportClick}
-              >导出</NatureButton>
+              >
+                导出数据
+              </NatureButton>
             </>
           ) : (
             <>
@@ -255,12 +325,16 @@ export default function VerticalStatusCard({ project }: VerticalStatusCardProps)
                 variant="cloud"
                 minWidth={0}
                 onClick={handleCancelExport}
-              >取消</NatureButton>
+              >
+                取消
+              </NatureButton>
               <NatureButton
                 variant="mist"
                 minWidth={0}
                 onClick={handleConfirmExport}
-              >导出</NatureButton>
+              >
+                导出
+              </NatureButton>
             </>
           )}
         </div>

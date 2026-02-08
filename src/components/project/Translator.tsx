@@ -6,10 +6,11 @@ import { Stage, type StageHandle } from "./Stage";
 import { useSpecialSymbolsStore } from "../../store/specialSymbols";
 import ConfirmDialogBox from "../ConfirmDialogBox";
 import { useToast } from "../NotificationToast";
-import { RefreshCw, LogOut } from "lucide-react";
+import { RefreshCw, LogOut, Search } from "lucide-react";
 import type { Project, Page, Unit } from "../../models/project";
 import { SpecialSymbolCard } from "./SpecialSymbolCard";
 import VerticalStatusCard from "../project/VerticalStatusCard";
+import { SearchReplaceView } from "./SearchReplaceView";
 import { firstNonEmpty } from "../../util/string";
 import type { UnitStatsSummary } from "./UnitStatsBar";
 
@@ -39,7 +40,9 @@ export type TranslatorProps = {
   // `mode` is used as initial mode only; Translator owns its internal mode state
 };
 
-const ArrowButton: React.FC<{ direction: "prev" | "next" }> = ({ direction }) => {
+const ArrowButton: React.FC<{ direction: "prev" | "next" }> = ({
+  direction,
+}) => {
   const isPrev = direction === "prev";
 
   return (
@@ -73,7 +76,16 @@ const NoteIcon: React.FC = () => {
       strokeLinejoin="round"
       aria-hidden
     >
-      <text x="50%" y="50%" dy="0.35em" textAnchor="middle" fontSize="16" fill="#374151">♪</text>
+      <text
+        x="50%"
+        y="50%"
+        dy="0.35em"
+        textAnchor="middle"
+        fontSize="16"
+        fill="#374151"
+      >
+        ♪
+      </text>
     </svg>
   );
 };
@@ -81,7 +93,17 @@ const NoteIcon: React.FC = () => {
 const ModeIcon: React.FC<{ mode: TranslatorMode }> = ({ mode }) => {
   if (mode === "translate") {
     return (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#374151"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
         <path d="M12 20h9" />
         <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5Z" />
       </svg>
@@ -90,14 +112,34 @@ const ModeIcon: React.FC<{ mode: TranslatorMode }> = ({ mode }) => {
 
   if (mode === "proofread") {
     return (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-        <circle cx="11" cy="11" r="6" />
-        <line x1="16" y1="16" x2="21" y2="21" />
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#374151"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <circle cx="12" cy="12" r="9" />
+        <path d="M9 12l2 2 4-4" strokeWidth="1.8" />
       </svg>
     );
   }
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#374151"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
       <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z" />
       <circle cx="12" cy="12" r="3" />
     </svg>
@@ -106,9 +148,21 @@ const ModeIcon: React.FC<{ mode: TranslatorMode }> = ({ mode }) => {
 
 const MemoIcon: React.FC = () => {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#374151"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
       <circle cx="12" cy="12" r="10" />
-      <text x="12" y="16" textAnchor="middle" fontSize="12" fill="#374151">?</text>
+      <text x="12" y="16" textAnchor="middle" fontSize="12" fill="#374151">
+        ?
+      </text>
     </svg>
   );
 };
@@ -130,8 +184,10 @@ const deriveUnitStats = (units: Unit[]): UnitStatsSummary => {
   const proovedCount = units.filter((u) => !!u.isProoved).length;
   const pendingProofCount = total - proovedCount;
   const unTranslatedCount = units.filter((u) => {
-    const hasTranslated = (firstNonEmpty(u.translatedText) ?? "").toString().trim() !== "";
-    const hasProovedText = (firstNonEmpty(u.proovedText) ?? "").toString().trim() !== "";
+    const hasTranslated =
+      (firstNonEmpty(u.translatedText) ?? "").toString().trim() !== "";
+    const hasProovedText =
+      (firstNonEmpty(u.proovedText) ?? "").toString().trim() !== "";
     return !hasTranslated && !hasProovedText;
   }).length;
 
@@ -185,24 +241,28 @@ export const Translator: React.FC<TranslatorProps> = ({
   const { showToast } = useToast();
   // `mode` prop is treated as initial mode only; Translator manages its own mode thereafter
   const [localMode, setLocalMode] = useState<TranslatorMode>(mode);
-  const [editMode, setEditMode] = useState<TranslatorMode>(mode === "read" ? "translate" : mode);
   const [isRepositionMode, setIsRepositionMode] = useState<boolean>(false);
-  const [pageInput, setPageInput] = useState<string>((currentPageIndex + 1).toString());
+  const [pageInput, setPageInput] = useState<string>(
+    (currentPageIndex + 1).toString(),
+  );
   const editorRef = useRef<EditorRef>(null);
   const stageRef = useRef<StageHandle>(null);
 
   const selectedUnit = currentUnits.find((u) => u.id === selectedUnitId);
   const effectiveMode = localMode;
-  // sidebar view state: 'vsc' for read-mode VerticalStatusCard, 'editor' for unit list + editor
-  const [displaySidebarView, setDisplaySidebarView] = useState<"vsc" | "editor">(
-    effectiveMode === "read" ? "vsc" : "editor"
-  );
+  // sidebar view state: 'vsc' for read-mode VerticalStatusCard, 'editor' for unit list + editor, 'search' for SearchReplaceView
+  const [displaySidebarView, setDisplaySidebarView] = useState<
+    "vsc" | "editor" | "search"
+  >(effectiveMode === "read" ? "vsc" : "editor");
 
   const [animatingOut, setAnimatingOut] = useState(false);
 
   useEffect(() => {
     const target = effectiveMode === "read" ? "vsc" : "editor";
     if (target === displaySidebarView) return;
+
+    // Don't auto-switch if user is in search mode
+    if (displaySidebarView === "search") return;
 
     // animate current view out, then swap
     setAnimatingOut(true);
@@ -216,23 +276,50 @@ export const Translator: React.FC<TranslatorProps> = ({
   const [showMemo, setShowMemo] = useState(false);
   const [showSymbolCard, setShowSymbolCard] = useState(false);
   const [currentScale, setCurrentScale] = useState<number>(1);
-  const unitStats = useMemo(() => deriveUnitStats(currentUnits), [currentUnits]);
+  const unitStats = useMemo(
+    () => deriveUnitStats(currentUnits),
+    [currentUnits],
+  );
 
-  // 抽离模式切换逻辑以供快捷键复用
-  const toggleMode = () => {
-    if (effectiveMode === "read") return;
-
-    const next = editMode === "translate" ? "proofread" : "translate";
-    setEditMode(next);
-    setLocalMode(next);
-
+  // 循环切换模式：translate -> proofread -> read -> translate
+  const handleCycleMode = async () => {
     const labelMap: Record<TranslatorMode, string> = {
       translate: "翻译模式",
       proofread: "校对模式",
       read: "阅览模式",
     };
 
-    showToast("success", `已切换到 ${labelMap[next]}`);
+    let nextMode: TranslatorMode;
+
+    if (effectiveMode === "translate") {
+      nextMode = "proofread";
+    } else if (effectiveMode === "proofread") {
+      nextMode = "read";
+    } else {
+      nextMode = "translate";
+    }
+
+    // 切换到阅览模式前需要刷新数据
+    if (nextMode === "read" && typeof onFlush === "function") {
+      try {
+        await onFlush();
+      } catch (err) {
+        console.error("Failed to flush before entering read mode", err);
+      }
+    }
+
+    // 如果当前在查找替换模式，先退出到对应的默认视图
+    if (displaySidebarView === "search") {
+      const target = nextMode === "read" ? "vsc" : "editor";
+      setAnimatingOut(true);
+      setTimeout(() => {
+        setDisplaySidebarView(target);
+        setAnimatingOut(false);
+      }, 220);
+    }
+
+    setLocalMode(nextMode);
+    showToast("success", `已切换到 ${labelMap[nextMode]}`);
   };
 
   useEffect(() => {
@@ -243,7 +330,8 @@ export const Translator: React.FC<TranslatorProps> = ({
   const handleBulkConfirmProofAll = () => {
     for (const u of currentUnits) {
       // 若单元有任何文本（翻译文本或校对文本），则可被标记为已校对
-      const hasAnyText = ((u.translatedText ?? "") as string).toString().trim() !== "" ||
+      const hasAnyText =
+        ((u.translatedText ?? "") as string).toString().trim() !== "" ||
         ((u.proovedText ?? "") as string).toString().trim() !== "";
 
       if (!u.isProoved && hasAnyText) {
@@ -293,7 +381,7 @@ export const Translator: React.FC<TranslatorProps> = ({
     };
 
     onUnitSave(newUnit);
-    
+
     // 自动选中新创建的unit
     if (onUnitSelect) {
       onUnitSelect(newId);
@@ -317,6 +405,25 @@ export const Translator: React.FC<TranslatorProps> = ({
     }
 
     showToast("info", "刷新功能尚未配置");
+  };
+
+  // 查找替换切换
+  const handleSearchToggle = () => {
+    if (displaySidebarView === "search") {
+      // Toggle back to default view for current mode
+      const target = effectiveMode === "read" ? "vsc" : "editor";
+      setAnimatingOut(true);
+      setTimeout(() => {
+        setDisplaySidebarView(target);
+        setAnimatingOut(false);
+      }, 220);
+    } else {
+      setAnimatingOut(true);
+      setTimeout(() => {
+        setDisplaySidebarView("search");
+        setAnimatingOut(false);
+      }, 220);
+    }
   };
 
   // 重定位模式切换（占位）
@@ -392,7 +499,7 @@ export const Translator: React.FC<TranslatorProps> = ({
       key: "m",
       ctrl: true,
       handler: () => {
-        toggleMode();
+        handleCycleMode();
       },
       description: "切换模式 (Ctrl+M)",
     },
@@ -484,7 +591,10 @@ export const Translator: React.FC<TranslatorProps> = ({
       handler: () => {
         if (!onRequestPage) return;
 
-        const next = Math.min((project.pageCount ?? 1) - 1, currentPageIndex + 1);
+        const next = Math.min(
+          (project.pageCount ?? 1) - 1,
+          currentPageIndex + 1,
+        );
         if (next !== currentPageIndex) {
           onRequestPage(next);
         }
@@ -531,325 +641,341 @@ export const Translator: React.FC<TranslatorProps> = ({
 
   return (
     <>
-      <div className="translator-container" data-is-me-translator={isMeTranslator} data-is-me-proofreader={isMeProofreader}>
-      {/* 顶部栏 */}
-      <div className="translator-header">
-        <div
-          className="toolbox-pill"
-          aria-label="退出"
-          title="退出到项目列表"
-          onClick={() => {
-            if (typeof onReturn === "function") {
-              onReturn();
-            }
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
+      <div
+        className="translator-container"
+        data-is-me-translator={isMeTranslator}
+        data-is-me-proofreader={isMeProofreader}
+      >
+        {/* 顶部栏 */}
+        <div className="translator-header">
+          <div
+            className="toolbox-pill"
+            aria-label="退出"
+            title="退出到项目列表"
+            onClick={() => {
               if (typeof onReturn === "function") {
                 onReturn();
               }
-            }
-          }}
-          style={{ cursor: "pointer", marginRight: 10 }}
-          role="button"
-          tabIndex={0}
-        >
-          <LogOut size={18} color="#374151" style={{ transform: "scaleX(-1)" }} />
-        </div>
-
-        <div className="project-info">
-          [{project.author}] {project.title}
-        </div>
-
-        
-
-        <div className="header-toolbox" style={{ marginLeft: 'auto' }}>
-          <div className="toolbox-pill" aria-label="翻译模式" title="翻译模式（Ctrl+M）">
-            <div
-              role="button"
-              tabIndex={0}
-              onClick={() => {
-                setLocalMode("translate");
-                setEditMode("translate");
-                showToast("success", "已切换到 翻译模式");
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  setLocalMode("translate");
-                  setEditMode("translate");
-                  showToast("success", "已切换到 翻译模式");
-                }
-              }}
-              style={{ display: "inline-flex", cursor: "pointer" }}
-            >
-              <ModeIcon mode="translate" />
-            </div>
-          </div>
-
-          <div className="toolbox-pill" aria-label="校对模式" title="校对模式（Ctrl+M）">
-            <div
-              role="button"
-              tabIndex={0}
-              onClick={() => {
-                setLocalMode("proofread");
-                setEditMode("proofread");
-                showToast("success", "已切换到 校对模式");
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  setLocalMode("proofread");
-                  setEditMode("proofread");
-                  showToast("success", "已切换到 校对模式");
-                }
-              }}
-              style={{ display: "inline-flex", cursor: "pointer" }}
-            >
-              <ModeIcon mode="proofread" />
-            </div>
-          </div>
-
-          <div className="toolbox-pill" aria-label="阅览模式" title="阅览模式">
-            <div
-              role="button"
-              tabIndex={0}
-              onClick={async () => {
-                // 切换到审阅模式前先刷新，确保 project 元数据已写入数据库
-                if (typeof onFlush === "function") {
-                  try {
-                    await onFlush();
-                  } catch (err) {
-                    console.error("Failed to flush before entering read mode", err);
-                  }
-                }
-                
-                setLocalMode("read");
-                showToast("success", "已切换到 阅览模式");
-              }}
-              onKeyDown={async (e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  
-                  // 切换到审阅模式前先刷新，确保 project 元数据已写入数据库
-                  if (typeof onFlush === "function") {
-                    try {
-                      await onFlush();
-                    } catch (err) {
-                      console.error("Failed to flush before entering read mode", err);
-                    }
-                  }
-                  
-                  setLocalMode("read");
-                  showToast("success", "已切换到 阅览模式");
-                }
-              }}
-              style={{ display: "inline-flex", cursor: "pointer" }}
-            >
-              <ModeIcon mode="read" />
-            </div>
-          </div>
-
-          <div
-            className="toolbox-pill"
-            aria-label="刷新"
-            title="刷新"
-            onClick={handleRefreshClick}
-            style={{ cursor: "pointer" }}
-          >
-            <RefreshCw size={18} color="#374151" />
-          </div>
-
-          {/* export button removed from header; moved to VSC card bottom */}
-
-          <div
-            className="toolbox-pill"
-            aria-label="重定位模式"
-            title="切换重定位模式（Ctrl+L）"
-            onClick={handleRepositionToggle}
-            style={{ cursor: "pointer" }}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <circle cx="12" cy="12" r="9" />
-              <circle cx="12" cy="12" r="2" fill="#374151" />
-            </svg>
-          </div>
-
-          
-
-          <div
-            className="toolbox-pill"
-            aria-label="特殊符号"
-            title="特殊符号"
-            onClick={() => setShowSymbolCard(true)}
-            style={{ cursor: "pointer" }}
-          >
-            <NoteIcon />
-          </div>
-
-          <div className="toolbox-pill" aria-label="快捷键说明" title="快捷键说明" onClick={() => setShowMemo(true)} style={{ cursor: 'pointer' }}>
-            <MemoIcon />
-          </div>
-
-          {/* prev / next moved to the right to sit near page indicator */}
-          {(() => {
-            const isPrevDisabled = currentPageIndex <= 0;
-            const isNextDisabled = currentPageIndex >= (project.pageCount ?? 1) - 1;
-
-            return (
-              <>
-                <div
-                  className="toolbox-pill"
-                  aria-label="上一页"
-                  title="上一页 (PageUp)"
-                  onClick={() => {
-                    if (isPrevDisabled) return;
-
-                    const prev = Math.max(0, currentPageIndex - 1);
-                    if (prev !== currentPageIndex) {
-                      onRequestPage(prev);
-                    }
-                  }}
-                  style={{ cursor: isPrevDisabled ? "default" : "pointer", opacity: isPrevDisabled ? 0.4 : 1, pointerEvents: isPrevDisabled ? "none" : "auto" }}
-                >
-                  <ArrowButton direction="prev" />
-                </div>
-
-                <div
-                  className="toolbox-pill"
-                  aria-label="下一页"
-                  title="下一页 (PageDown)"
-                  onClick={() => {
-                    if (isNextDisabled) return;
-
-                    const next = Math.min((project.pageCount ?? 1) - 1, currentPageIndex + 1);
-                    if (next !== currentPageIndex) {
-                      onRequestPage(next);
-                    }
-                  }}
-                  style={{ cursor: isNextDisabled ? "default" : "pointer", opacity: isNextDisabled ? 0.4 : 1, pointerEvents: isNextDisabled ? "none" : "auto" }}
-                >
-                  <ArrowButton direction="next" />
-                </div>
-              </>
-            );
-          })()}
-        </div>
-
-        <div className="page-indicator" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <input
-            aria-label="输入页码"
-            value={pageInput}
-            onChange={(e) => handlePageInputChange(e.target.value)}
-            onBlur={() => submitPageInput()}
+            }}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                submitPageInput();
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                if (typeof onReturn === "function") {
+                  onReturn();
+                }
               }
             }}
-            style={{ width: 48, padding: "2px 6px", borderRadius: 4, border: "1px solid #e5e7eb", textAlign: "center" }}
-          />
-          <span>/</span>
-          <span>{project.pageCount}</span>
-        </div>
-      </div>
+            style={{ cursor: "pointer", marginRight: 10 }}
+            role="button"
+            tabIndex={0}
+          >
+            <LogOut
+              size={18}
+              color="#374151"
+              style={{ transform: "scaleX(-1)" }}
+            />
+          </div>
 
-      {/* 主体区域 */}
-      <div className="translator-body">
-        {/* 中间画布区 */}
-        <div className="translator-stage">
-          <Stage
-            ref={stageRef}
-            page={currentPage}
-            units={currentUnits}
-            mode={effectiveMode}
-            selectedUnitId={selectedUnitId}
-            onUnitClick={onUnitSelect}
-            onUnitCreate={handleUnitCreate}
-            onUnitRemove={onUnitRemove}
-            onUnitMoveEnd={(unitId, x, y) => {
-              // 持久化单元位置变更为 patch
-              onUnitSave({ id: unitId, x, y });
-            }}
-            onScaleChange={setCurrentScale}
-            unitStats={unitStats}
-          />
-        </div>
+          <div className="project-info">
+            [{project.author}] {project.title}
+          </div>
 
-        {/* 右侧侧边栏 */}
-        <div className="translator-sidebar">
-          {/* render currently displayed view; animate out before swapping */}
-          {displaySidebarView === "vsc" ? (
-            <div className={`sidebar-content sidebar-vsc ${animatingOut ? "fade-out" : "fade-in"}`}>
-              <VerticalStatusCard project={project} />
+          <div className="header-toolbox" style={{ marginLeft: "auto" }}>
+            <div
+              className={`toolbox-pill ${displaySidebarView === "search" ? "active" : ""}`}
+              aria-label="查找替换"
+              title="查找替换"
+              onClick={handleSearchToggle}
+            >
+              <Search size={18} color="#374151" />
             </div>
-          ) : (
-            <div className={`sidebar-content sidebar-editor-list ${animatingOut ? "fade-out" : "fade-in"}`}>
-              <div className="sidebar-unitlist">
-                <UnitList
-                  units={currentUnits}
-                  onUnitClick={onUnitSelect}
-                  selectedUnitId={selectedUnitId}
-                  isProofMode={effectiveMode === "proofread"}
-                  onCopyTranslatedToProof={handleCopyTranslatedToProof}
-                  onBulkConfirmProofAll={handleBulkConfirmProofAll}
+
+            <div
+              className="toolbox-pill"
+              aria-label="切换模式"
+              title="切换模式 (Ctrl+M)"
+              onClick={handleCycleMode}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleCycleMode();
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              style={{ cursor: "pointer" }}
+            >
+              <ModeIcon mode={effectiveMode} />
+            </div>
+
+            <div
+              className="toolbox-pill"
+              aria-label="刷新"
+              title="刷新"
+              onClick={handleRefreshClick}
+              style={{ cursor: "pointer" }}
+            >
+              <RefreshCw size={18} color="#374151" />
+            </div>
+
+            {/* export button removed from header; moved to VSC card bottom */}
+
+            <div
+              className="toolbox-pill"
+              aria-label="重定位模式"
+              title="切换重定位模式（Ctrl+L）"
+              onClick={handleRepositionToggle}
+              style={{ cursor: "pointer" }}
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#374151"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <circle cx="12" cy="12" r="9" />
+                <circle cx="12" cy="12" r="2" fill="#374151" />
+              </svg>
+            </div>
+
+            <div
+              className="toolbox-pill"
+              aria-label="特殊符号"
+              title="特殊符号"
+              onClick={() => setShowSymbolCard(true)}
+              style={{ cursor: "pointer" }}
+            >
+              <NoteIcon />
+            </div>
+
+            <div
+              className="toolbox-pill"
+              aria-label="快捷键说明"
+              title="快捷键说明"
+              onClick={() => setShowMemo(true)}
+              style={{ cursor: "pointer" }}
+            >
+              <MemoIcon />
+            </div>
+
+            {/* prev / next moved to the right to sit near page indicator */}
+            {(() => {
+              const isPrevDisabled = currentPageIndex <= 0;
+              const isNextDisabled =
+                currentPageIndex >= (project.pageCount ?? 1) - 1;
+
+              return (
+                <>
+                  <div
+                    className="toolbox-pill"
+                    aria-label="上一页"
+                    title="上一页 (PageUp)"
+                    onClick={() => {
+                      if (isPrevDisabled) return;
+
+                      const prev = Math.max(0, currentPageIndex - 1);
+                      if (prev !== currentPageIndex) {
+                        onRequestPage(prev);
+                      }
+                    }}
+                    style={{
+                      cursor: isPrevDisabled ? "default" : "pointer",
+                      opacity: isPrevDisabled ? 0.4 : 1,
+                      pointerEvents: isPrevDisabled ? "none" : "auto",
+                    }}
+                  >
+                    <ArrowButton direction="prev" />
+                  </div>
+
+                  <div
+                    className="toolbox-pill"
+                    aria-label="下一页"
+                    title="下一页 (PageDown)"
+                    onClick={() => {
+                      if (isNextDisabled) return;
+
+                      const next = Math.min(
+                        (project.pageCount ?? 1) - 1,
+                        currentPageIndex + 1,
+                      );
+                      if (next !== currentPageIndex) {
+                        onRequestPage(next);
+                      }
+                    }}
+                    style={{
+                      cursor: isNextDisabled ? "default" : "pointer",
+                      opacity: isNextDisabled ? 0.4 : 1,
+                      pointerEvents: isNextDisabled ? "none" : "auto",
+                    }}
+                  >
+                    <ArrowButton direction="next" />
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+
+          <div
+            className="page-indicator"
+            style={{ display: "flex", alignItems: "center", gap: 8 }}
+          >
+            <input
+              aria-label="输入页码"
+              value={pageInput}
+              onChange={(e) => handlePageInputChange(e.target.value)}
+              onBlur={() => submitPageInput()}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  submitPageInput();
+                }
+              }}
+              style={{
+                width: 48,
+                padding: "2px 6px",
+                borderRadius: 4,
+                border: "1px solid #e5e7eb",
+                textAlign: "center",
+              }}
+            />
+            <span>/</span>
+            <span>{project.pageCount}</span>
+          </div>
+        </div>
+
+        {/* 主体区域 */}
+        <div className="translator-body">
+          {/* 中间画布区 */}
+          <div className="translator-stage">
+            <Stage
+              ref={stageRef}
+              page={currentPage}
+              units={currentUnits}
+              mode={effectiveMode}
+              selectedUnitId={selectedUnitId}
+              onUnitClick={onUnitSelect}
+              onUnitCreate={handleUnitCreate}
+              onUnitRemove={onUnitRemove}
+              onUnitMoveEnd={(unitId, x, y) => {
+                // 持久化单元位置变更为 patch
+                onUnitSave({ id: unitId, x, y });
+              }}
+              onScaleChange={setCurrentScale}
+              unitStats={unitStats}
+            />
+          </div>
+
+          {/* 右侧侧边栏 */}
+          <div className="translator-sidebar">
+            {/* render currently displayed view; animate out before swapping */}
+            {displaySidebarView === "search" ? (
+              <div
+                className={`sidebar-content sidebar-search ${animatingOut ? "fade-out" : "fade-in"}`}
+                style={{ height: "100%" }}
+              >
+                <SearchReplaceView
+                  projectId={project.id}
+                  onPageSelect={(pageIndex) => onRequestPage(pageIndex)}
                 />
               </div>
-
-              {selectedUnit && isMeProofreader && (
-                <div className="sidebar-editor">
-                  <Editor
-                    ref={editorRef}
-                    key={selectedUnit.id}
-                    indexInPage={selectedUnit.indexInPage}
-                    isInsideBox={selectedUnit.isInbox}
-                    symbols={customSymbols}
-                    initialText={
-                      effectiveMode === "proofread"
-                        ? (selectedUnit.proovedText !== undefined ? selectedUnit.proovedText : (firstNonEmpty(selectedUnit.translatedText, "") ?? ""))
-                        : (firstNonEmpty(selectedUnit.translatedText, "") ?? "")
-                    }
-                      translatedText={firstNonEmpty(selectedUnit.translatedText) ?? ""}
-                      isProofMode={effectiveMode === "proofread"}
-                    totalUnits={currentUnits.length}
-                    onTextModify={handleTextModify}
-                    onStatusClick={() => {
-                      // 切换 isInbox 状态并保存
-                      const newIsInbox = !selectedUnit.isInbox;
-                      onUnitSave({ id: selectedUnit.id, isInbox: newIsInbox });
-                    }}
-                    onIndexChange={(targetIndexOneBased) => {
-                      if (!onRearrangeUnits) return;
-
-                      // Editor passes 1-based target; convert to array index (0-based)
-                      const arrayIndex = Math.max(0, targetIndexOneBased - 1);
-                      onRearrangeUnits(selectedUnit.id, arrayIndex);
-                    }}
-                      onRestore={() => {
-                          // 将 proovedText 标记为无效（删除该字段），而非设置为空字符串
-                          onUnitSave({ id: selectedUnit.id, proovedText: undefined });
-                          showToast("success", "已重置校对文本");
-                      }}
+            ) : displaySidebarView === "vsc" ? (
+              <div
+                className={`sidebar-content sidebar-vsc ${animatingOut ? "fade-out" : "fade-in"}`}
+              >
+                <VerticalStatusCard
+                  project={project}
+                  onPageSelect={(pageIndex) => onRequestPage(pageIndex)}
+                />
+              </div>
+            ) : (
+              <div
+                className={`sidebar-content sidebar-editor-list ${animatingOut ? "fade-out" : "fade-in"}`}
+              >
+                <div className="sidebar-unitlist">
+                  <UnitList
+                    units={currentUnits}
+                    onUnitClick={onUnitSelect}
+                    selectedUnitId={selectedUnitId}
+                    isProofMode={effectiveMode === "proofread"}
+                    onCopyTranslatedToProof={handleCopyTranslatedToProof}
+                    onBulkConfirmProofAll={handleBulkConfirmProofAll}
                   />
                 </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
 
-      {/* 底部栏 */}
-      <div className="translator-footer">
-        <div className="footer-info-group">
-          <span className="footer-info-item">
-            缩放倍数 {(currentScale * 100).toFixed(0)}%
-          </span>
-          <span className="footer-info-item">
-            当前模式 {effectiveMode === "translate" ? "翻译" : effectiveMode === "proofread" ? "校对" : "阅览"}
-          </span>
+                {selectedUnit && isMeProofreader && (
+                  <div className="sidebar-editor">
+                    <Editor
+                      ref={editorRef}
+                      key={selectedUnit.id}
+                      indexInPage={selectedUnit.indexInPage}
+                      isInsideBox={selectedUnit.isInbox}
+                      symbols={customSymbols}
+                      initialText={
+                        effectiveMode === "proofread"
+                          ? selectedUnit.proovedText !== undefined
+                            ? selectedUnit.proovedText
+                            : (firstNonEmpty(selectedUnit.translatedText, "") ??
+                              "")
+                          : (firstNonEmpty(selectedUnit.translatedText, "") ??
+                            "")
+                      }
+                      translatedText={
+                        firstNonEmpty(selectedUnit.translatedText) ?? ""
+                      }
+                      isProofMode={effectiveMode === "proofread"}
+                      totalUnits={currentUnits.length}
+                      onTextModify={handleTextModify}
+                      onStatusClick={() => {
+                        // 切换 isInbox 状态并保存
+                        const newIsInbox = !selectedUnit.isInbox;
+                        onUnitSave({
+                          id: selectedUnit.id,
+                          isInbox: newIsInbox,
+                        });
+                      }}
+                      onIndexChange={(targetIndexOneBased) => {
+                        if (!onRearrangeUnits) return;
+
+                        // Editor passes 1-based target; convert to array index (0-based)
+                        const arrayIndex = Math.max(0, targetIndexOneBased - 1);
+                        onRearrangeUnits(selectedUnit.id, arrayIndex);
+                      }}
+                      onRestore={() => {
+                        // 将 proovedText 标记为无效（删除该字段），而非设置为空字符串
+                        onUnitSave({
+                          id: selectedUnit.id,
+                          proovedText: undefined,
+                        });
+                        showToast("success", "已重置校对文本");
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+
+        {/* 底部栏 */}
+        <div className="translator-footer">
+          <div className="footer-info-group">
+            <span className="footer-info-item">
+              缩放倍数 {(currentScale * 100).toFixed(0)}%
+            </span>
+            <span className="footer-info-item">
+              当前模式{" "}
+              {effectiveMode === "translate"
+                ? "翻译"
+                : effectiveMode === "proofread"
+                  ? "校对"
+                  : "阅览"}
+            </span>
+          </div>
+        </div>
       </div>
 
       <ConfirmDialogBox

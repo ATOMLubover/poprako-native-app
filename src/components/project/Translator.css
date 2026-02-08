@@ -54,7 +54,7 @@
 
 .project-info {
   flex-shrink: 0;
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 600;
   color: #374151;
 }
@@ -80,6 +80,11 @@
 }
 
 .toolbox-pill:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+.toolbox-pill.active {
   background: #e5e7eb;
   transform: translateY(-1px);
 }
@@ -130,14 +135,16 @@
 
 /* ========== 右侧侧边栏 ========== */
 .translator-sidebar {
-  width: 400px;
+  width: 440px;
   flex-shrink: 0;
   background: #ffffff;
   border-left: 1px solid #e5e7eb;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: width 0.3s ease, opacity 0.3s ease;
+  transition:
+    width 0.3s ease,
+    opacity 0.3s ease;
 }
 
 .translator-sidebar.hidden {

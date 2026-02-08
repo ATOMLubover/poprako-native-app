@@ -1,7 +1,14 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Translator } from "./Translator";
 import type { Project, Page, Unit } from "../../models/project";
-import { getProjectPages, getPageUnits, savePageUnits, setActiveProjectPageIndex, getActiveProjectPageIndex, getProjects } from "../../store/project";
+import {
+  getProjectPages,
+  getPageUnits,
+  savePageUnits,
+  setActiveProjectPageIndex,
+  getActiveProjectPageIndex,
+  getProjects,
+} from "../../store/project";
 import { useToast } from "../NotificationToast";
 
 export type LocalTranslatorProps = {
@@ -13,7 +20,7 @@ export type LocalTranslatorProps = {
 
 /**
  * LocalTranslator 组件
- * 
+ *
  * 职责：
  * 1. 持有本地项目所有页面元数据
  * 2. 按需加载当前页面的 units
@@ -61,7 +68,11 @@ export const LocalTranslator: React.FC<LocalTranslatorProps> = ({
         try {
           const storedIndex = getActiveProjectPageIndex();
 
-          if (typeof storedIndex === "number" && storedIndex >= 0 && storedIndex < loadedPages.length) {
+          if (
+            typeof storedIndex === "number" &&
+            storedIndex >= 0 &&
+            storedIndex < loadedPages.length
+          ) {
             initialIndex = storedIndex;
           }
         } catch (err) {
@@ -98,8 +109,33 @@ export const LocalTranslator: React.FC<LocalTranslatorProps> = ({
 
       const units = await getPageUnits(pageId);
 
-      setCurrentUnits(units);
-      currentPageDirtyRef.current = false;
+      // 自动修复：检查是否有非法索引（< 1），强制重新索引为严格的 1..N
+      const hasInvalidIndex = units.some((u) => u.indexInPage < 1);
+
+      let finalUnits = units;
+
+      if (hasInvalidIndex) {
+        // 按当前索引排序（fallback 为数组位置），然后重新分配 1..N
+        const sorted = [...units].sort((a, b) => a.indexInPage - b.indexInPage);
+        finalUnits = sorted.map((u, idx) => ({
+          ...u,
+          indexInPage: idx + 1,
+        }));
+
+        // 标记为脏以便保存修复后的索引
+        currentPageDirtyRef.current = true;
+
+        console.log(
+          `Auto-repaired unit indices for page ${pageId}: fixed ${units.filter((u) => u.indexInPage < 1).length} invalid indices`,
+        );
+      }
+
+      setCurrentUnits(finalUnits);
+
+      // 只有在没有自动修复的情况下才重置 dirty flag
+      if (!hasInvalidIndex) {
+        currentPageDirtyRef.current = false;
+      }
 
       setLoadingUnits(false);
     } catch (err) {
@@ -141,10 +177,7 @@ export const LocalTranslator: React.FC<LocalTranslatorProps> = ({
   // 处理页面切换：先保存当前页，再切换并加载新页
   const handleRequestPage = useCallback(
     async (pageIndex: number) => {
-      const targetIndex = Math.max(
-        0,
-        Math.min(pageIndex, pages.length - 1)
-      );
+      const targetIndex = Math.max(0, Math.min(pageIndex, pages.length - 1));
 
       // 如果切换到同一页，不做任何操作
       if (targetIndex === currentPageIndex) return;
@@ -176,7 +209,7 @@ export const LocalTranslator: React.FC<LocalTranslatorProps> = ({
 
       setSelectedUnitId(null);
     },
-    [pages, currentPageIndex, flushCurrentPage, loadPageUnits, showToast]
+    [pages, currentPageIndex, flushCurrentPage, loadPageUnits, showToast],
   );
 
   // 强制刷新：保存当前页并更新 project 元数据
@@ -212,9 +245,7 @@ export const LocalTranslator: React.FC<LocalTranslatorProps> = ({
   const handleUnitSave = useCallback(
     (unit: Partial<Unit> & { id: string }) => {
       setCurrentUnits((prevUnits) => {
-        const existingUnitIndex = prevUnits.findIndex(
-          (u) => u.id === unit.id
-        );
+        const existingUnitIndex = prevUnits.findIndex((u) => u.id === unit.id);
 
         let updatedUnits: Unit[];
 
@@ -228,20 +259,26 @@ export const LocalTranslator: React.FC<LocalTranslatorProps> = ({
           if ("indexInPage" in unit) updated.indexInPage = unit.indexInPage!;
           if ("isInbox" in unit) updated.isInbox = unit.isInbox!;
           if ("isProoved" in unit) updated.isProoved = unit.isProoved!;
-          if ("translatedText" in unit) updated.translatedText = unit.translatedText;
+          if ("translatedText" in unit)
+            updated.translatedText = unit.translatedText;
           if ("proovedText" in unit) updated.proovedText = unit.proovedText;
           if ("comment" in unit) updated.comment = unit.comment;
 
           updatedUnits = prevUnits.map((u, idx) =>
-            idx === existingUnitIndex ? updated : u
+            idx === existingUnitIndex ? updated : u,
           );
         } else {
+          // 新建单元：使用当前最大索引 + 1（防止索引冲突）
+          const maxIndex =
+            prevUnits.length > 0
+              ? Math.max(...prevUnits.map((u) => u.indexInPage))
+              : 0;
           const newUnit: Unit = {
             id: unit.id,
             x: unit.x ?? 0,
             y: unit.y ?? 0,
-            // Use 1-based default index
-            indexInPage: unit.indexInPage ?? (prevUnits.length + 1),
+            // Use max index + 1 to prevent collision
+            indexInPage: unit.indexInPage ?? maxIndex + 1,
             isInbox: unit.isInbox ?? true,
             isProoved: unit.isProoved ?? false,
             translatedText: unit.translatedText,
@@ -257,7 +294,7 @@ export const LocalTranslator: React.FC<LocalTranslatorProps> = ({
         return updatedUnits;
       });
     },
-    [markCurrentPageDirty]
+    [markCurrentPageDirty],
   );
 
   // 处理单元删除（仅更新内存 + 标记 dirty）
@@ -279,7 +316,7 @@ export const LocalTranslator: React.FC<LocalTranslatorProps> = ({
         return reindexedUnits;
       });
     },
-    [selectedUnitId, markCurrentPageDirty]
+    [selectedUnitId, markCurrentPageDirty],
   );
 
   // 处理单元选择
@@ -291,9 +328,7 @@ export const LocalTranslator: React.FC<LocalTranslatorProps> = ({
   const handleRearrangeUnits = useCallback(
     (unitId: string, targetIndex: number) => {
       setCurrentUnits((prevUnits) => {
-        const currentIndex = prevUnits.findIndex(
-          (u) => u.id === unitId
-        );
+        const currentIndex = prevUnits.findIndex((u) => u.id === unitId);
 
         if (currentIndex === -1) return prevUnits;
 
@@ -317,7 +352,7 @@ export const LocalTranslator: React.FC<LocalTranslatorProps> = ({
         return reindexedUnits;
       });
     },
-    [markCurrentPageDirty]
+    [markCurrentPageDirty],
   );
 
   // 退出前强制保存
@@ -354,7 +389,14 @@ export const LocalTranslator: React.FC<LocalTranslatorProps> = ({
     } catch (err) {
       showToast("error", "保存失败，无法退出");
     }
-  }, [flushCurrentPage, currentPageIndex, onExit, showToast, project.id, onProjectChange]);
+  }, [
+    flushCurrentPage,
+    currentPageIndex,
+    onExit,
+    showToast,
+    project.id,
+    onProjectChange,
+  ]);
 
   if (loading) {
     return (

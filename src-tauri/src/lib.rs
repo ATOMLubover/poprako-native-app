@@ -113,6 +113,8 @@ pub fn run() {
             ipc::project::unit::get_page_units,
             ipc::project::unit::save_page_units,
             ipc::project::unit::delete_page_units,
+            ipc::project::unit::search_comic_text,
+            ipc::project::unit::replace_comic_text,
             ipc::project::select_project_dir,
             ipc::project::select_project_archive,
             ipc::project::plugin::get_local_post_processors,

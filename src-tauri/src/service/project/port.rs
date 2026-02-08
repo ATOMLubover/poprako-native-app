@@ -168,15 +168,23 @@ pub async fn import_project(
             local_image_path: page.image_filename.clone(),
         });
 
-        for unit in &page.units {
-            let unit_id = format!("{}-unit-{}", page_id, unit.index_in_page);
+        // 清理和规范化导入的单元索引：强制使用严格的 1..N 索引
+        let mut page_units = page.units.clone();
+
+        // 按原始索引排序（确保导入顺序一致）
+        page_units.sort_by(|a, b| a.index_in_page.cmp(&b.index_in_page));
+
+        // 重新分配严格的 1..N 索引
+        for (k, unit) in page_units.iter().enumerate() {
+            let sanitized_index = (k + 1) as u32;
+            let unit_id = format!("{}-unit-{}", page_id, sanitized_index);
 
             units_to_create.push(LocalUnit {
                 id: unit_id,
                 page_id: page_id.clone(),
                 x_coordinate: unit.x,
                 y_coordinate: unit.y,
-                index_in_page: unit.index_in_page,
+                index_in_page: sanitized_index,
                 is_inbox: unit.is_inbox,
                 translated_text: unit.translated_text.clone(),
                 is_prooved: unit.is_prooved,

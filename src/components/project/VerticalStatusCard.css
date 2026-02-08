@@ -4,18 +4,22 @@
 .vsc-card {
   display: flex;
   flex-direction: column;
-  width: 220px;
+  width: 100%;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   background-color: white;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
   user-select: none;
 }
 
 .vsc-card:hover {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
   transform: translateY(-2px);
 }
 
@@ -28,7 +32,9 @@
   justify-content: center;
   overflow: hidden;
   border-bottom: 1px solid #f3f4f6;
-  transition: height 0.3s ease, opacity 0.3s ease;
+  transition:
+    height 0.3s ease,
+    opacity 0.3s ease;
 }
 
 .vsc-image-container.collapsed {
@@ -117,7 +123,10 @@
   align-items: center;
   justify-content: center;
   cursor: default;
-  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease;
 }
 
 .vsc-metric-title {
@@ -139,13 +148,13 @@
 /* interactive feel similar to nature tag */
 .vsc-metric-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 6px 18px rgba(16,24,40,0.06);
-  border-color: rgba(99,102,241,0.12);
+  box-shadow: 0 6px 18px rgba(16, 24, 40, 0.06);
+  border-color: rgba(99, 102, 241, 0.12);
 }
 
 .vsc-metric-card:active {
   transform: translateY(-1px) scale(0.997);
-  box-shadow: 0 3px 10px rgba(16,24,40,0.06);
+  box-shadow: 0 3px 10px rgba(16, 24, 40, 0.06);
 }
 
 .vsc-metric-card .vsc-metric-title svg {
@@ -173,7 +182,10 @@
   max-height: 0;
   opacity: 0;
   transform: translateY(-8px);
-  transition: max-height 320ms ease, opacity 240ms ease, transform 240ms ease;
+  transition:
+    max-height 320ms ease,
+    opacity 240ms ease,
+    transform 240ms ease;
 }
 
 .vsc-postproc-header {

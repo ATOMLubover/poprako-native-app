@@ -8,7 +8,7 @@
 /* 核心卡片样式 */
 .editor-card {
   width: 100%;
-  max-width: 500px;
+  max-width: 100%;
   max-height: 250px;
   min-height: 200px;
   background: var(--bg-color);
@@ -59,7 +59,7 @@
   border-radius: 4px;
   background-color: #f0f7ff; /* 淡蓝 */
   color: #5676a1;
-  border: 1px solid rgba(15,23,42,0.04);
+  border: 1px solid rgba(15, 23, 42, 0.04);
   font-weight: 500;
   user-select: none;
 }
@@ -96,7 +96,6 @@
   border-bottom: 1px dashed var(--border-color);
 }
 
-
 .symbol-btn {
   background: #f3f4f6;
   padding: 2px 6px;
@@ -105,9 +104,10 @@
   cursor: pointer;
   border: 1px solid #e5e7eb;
   box-shadow: none;
-  transition: background 0.1s, border 0.1s;
+  transition:
+    background 0.1s,
+    border 0.1s;
 }
-
 
 .symbol-btn:hover {
   background: #e5e7eb;

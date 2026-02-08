@@ -41,7 +41,7 @@ export async function getPageUnits(pageId: string): Promise<Unit[]> {
 
 export async function savePageUnits(
   pageId: string,
-  units: Unit[]
+  units: Unit[],
 ): Promise<void> {
   try {
     const rawUnits = (units || []).map((u) => ({
@@ -77,8 +77,39 @@ export async function deletePageUnits(unitIds: string[]): Promise<void> {
   }
 }
 
+export async function searchComicText(
+  projectId: string,
+  query: string,
+): Promise<string[]> {
+  try {
+    return await invoke<string[]>("search_comic_text", { projectId, query });
+  } catch (e) {
+    throw new Error((e as Error).message || String(e));
+  }
+}
+
+export async function replaceComicText(
+  projectId: string,
+  pageIds: string[],
+  original: string,
+  replacement: string,
+): Promise<void> {
+  try {
+    await invoke<void>("replace_comic_text", {
+      projectId,
+      pageIds,
+      original,
+      replacement,
+    });
+  } catch (e) {
+    throw new Error((e as Error).message || String(e));
+  }
+}
+
 export default {
   getPageUnits,
   savePageUnits,
   deletePageUnits,
+  searchComicText,
+  replaceComicText,
 };

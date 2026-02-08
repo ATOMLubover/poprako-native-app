@@ -11,7 +11,7 @@
 }
 
 .unit-list {
-  width: 400px;
+  width: 100%;
   background-color: var(--bg-list);
   border-radius: 16px;
   display: flex;
@@ -40,16 +40,20 @@
   justify-content: center;
 }
 
-.action-button--danger{
+.action-button--danger {
   padding: 6px 10px;
   margin: 6px 10px;
   border-radius: 8px;
   border: none;
   background: #ffffff;
-  font-size: 0.80rem;
+  font-size: 0.8rem;
+  font-weight: bold; /* 略微加粗文本 */
   cursor: pointer;
   color: inherit;
-  transition: transform 120ms ease, background-color 160ms ease, color 160ms ease;
+  transition:
+    transform 120ms ease,
+    background-color 160ms ease,
+    color 160ms ease;
 }
 
 .action-button--danger:hover,
@@ -133,7 +137,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
+  font-weight: bold; /* 略微加粗文本 */
   font-size: 0.85rem;
   color: var(--text-index);
   flex-shrink: 0;
@@ -175,6 +179,7 @@
   min-height: 1.25rem;
   white-space: pre-wrap;
   word-break: break-word;
+  font-weight: bold; /* 略微加粗文本 */
 }
 
 .status-empty {
@@ -200,6 +205,16 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+/* 校对模式（proof mode）文本略微加粗，确保 translated / proofed 在校对视图中明显 */
+.unit-content-dual .translated-text,
+.unit-content-dual .proofed-text {
+  font-weight: 700;
+}
+
+.translated-text--muted {
+  font-weight: 600; /* muted 状态仍比常规粗一点，但保持视觉差异 */
 }
 
 .translated-text,
